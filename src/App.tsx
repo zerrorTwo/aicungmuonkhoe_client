@@ -1,14 +1,20 @@
-import { Button, DatePicker } from 'antd';
-import './App.css'
-import 'antd/dist/reset.css'
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import Home from '@/pages/Home';
+import Login from '@/pages/Login';
+import './App.css';
 
 function App() {
   return (
-    <div className="p-8 flex flex-col items-center gap-4">
-      <h1 className="text-2xl font-bold">🚀 Ant Design + Tailwind + Vite</h1>
-      <Button type="primary">Primary Button</Button>
-      <DatePicker />
-    </div>
+    <Router>
+      <div className="min-h-screen bg-slate-50">
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Login />} />
+          {/* Add more routes as needed */}
+        </Routes>
+      </div>
+    </Router>
   );
 }
 
