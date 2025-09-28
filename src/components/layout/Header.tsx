@@ -36,8 +36,8 @@ const Header: React.FC = () => {
                             <Link key={item.href} to={item.href}>
                                 <Button
                                     variant={item.active ? "default" : "ghost"}
-                                    className={`px-4 py-2 text-sm font-medium transition-all duration-300 ${item.active
-                                        ? 'bg-emerald-600 text-white shadow-lg'
+                                    className={`cursor-pointer px-4 py-2 text-sm font-medium transition-all duration-300 ${item.active
+                                        ? 'bg-gradient-primary text-white shadow-lg'
                                         : 'hover:bg-slate-100 text-slate-600 hover:text-slate-900'
                                         }`}
                                 >
@@ -81,7 +81,7 @@ const Header: React.FC = () => {
                                     <Button
                                         variant={item.active ? "default" : "ghost"}
                                         className={`w-full justify-start text-sm ${item.active
-                                            ? 'bg-emerald-600 text-white'
+                                            ? 'bg-gradient-primary text-white'
                                             : 'text-slate-600 hover:text-slate-900'
                                             }`}
                                     >
