@@ -10,8 +10,7 @@ import {
     Youtube,
     MessageCircle
 } from 'lucide-react';
-import HealthLogo from '@/components/ui/health-logo';
-
+import healthLogo from '@/assets/health-logo.png';
 const Footer: React.FC = () => {
     const footerSections = [
         {
@@ -48,7 +47,7 @@ const Footer: React.FC = () => {
 
     const contactInfo = [
         { icon: Phone, text: '1900 1234 567', link: 'tel:19001234567' },
-        { icon: Mail, text: 'support@suckhoegiadinh.vn', link: 'mailto:support@suckhoegiadinh.vn' },
+        { icon: Mail, text: 'support@gmail.com', link: 'mailto:support@gmail.com' },
         { icon: MapPin, text: 'TP. Hồ Chí Minh, Việt Nam', link: '#' }
     ];
 
@@ -61,14 +60,18 @@ const Footer: React.FC = () => {
 
     return (
         <footer className="bg-white border-t border-slate-200">
-            <div className="container mx-auto px-4 lg:px-6">
+            <div className="container mx-auto">
                 {/* Main Footer Content */}
                 <div className="py-12 lg:py-16">
                     <div className="grid grid-cols-1 lg:grid-cols-4 gap-8 lg:gap-12">
                         {/* Brand Section */}
                         <div className="lg:col-span-1 space-y-6">
                             <div className="flex items-center space-x-3">
-                                <HealthLogo className="w-12 h-12" />
+                                <img 
+              src={healthLogo} 
+              alt="Sức khỏe gia đình Việt" 
+              className="w-10 h-10 lg:w-12 lg:h-12 rounded-full object-cover shadow-card"
+            />
                                 <div>
                                     <h3 className="text-xl font-bold text-slate-900">
                                         Sức khỏe gia đình Việt
