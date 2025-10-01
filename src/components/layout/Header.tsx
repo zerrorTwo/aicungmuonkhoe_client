@@ -17,7 +17,7 @@ const Header: React.FC = () => {
 
     return (
         <header className="bg-white/95 backdrop-blur-md border-b border-slate-200 sticky top-0 z-50">
-            <div className="container mx-auto px-4 lg:px-6">
+            <div className="container mx-auto">
                 <div className="flex items-center justify-between h-16 lg:h-20">
                     {/* Logo */}
                     <div className="flex items-center space-x-3">
@@ -29,7 +29,6 @@ const Header: React.FC = () => {
                             <p className="text-xs text-slate-600">Chăm sóc sức khỏe toàn diện</p>
                         </div>
                     </div>
-
                     {/* Desktop Navigation */}
                     <nav className="hidden lg:flex items-center space-x-1">
                         {navigationItems.map((item) => (

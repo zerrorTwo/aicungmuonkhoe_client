@@ -48,7 +48,7 @@ const Footer: React.FC = () => {
 
     const contactInfo = [
         { icon: Phone, text: '1900 1234 567', link: 'tel:19001234567' },
-        { icon: Mail, text: 'support@suckhoegiadinh.vn', link: 'mailto:support@suckhoegiadinh.vn' },
+        { icon: Mail, text: 'support@gmail.com', link: 'mailto:support@gmail.com' },
         { icon: MapPin, text: 'TP. Hồ Chí Minh, Việt Nam', link: '#' }
     ];
 
@@ -61,7 +61,7 @@ const Footer: React.FC = () => {
 
     return (
         <footer className="bg-white border-t border-slate-200">
-            <div className="container mx-auto px-4 lg:px-6">
+            <div className="container mx-auto">
                 {/* Main Footer Content */}
                 <div className="py-12 lg:py-16">
                     <div className="grid grid-cols-1 lg:grid-cols-4 gap-8 lg:gap-12">

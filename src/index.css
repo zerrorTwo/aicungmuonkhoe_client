@@ -9,9 +9,9 @@
     --foreground: 210 15% 20%;
 
     /* Health-themed Color Palette */
-    --primary: 158 64% 52%; /* Fresh mint green */
-    --primary-light: 158 64% 72%;
-    --primary-dark: 158 64% 32%;
+    --primary: 134 61% 51%; /* Wellness green - matches the buttons in image */
+    --primary-light: 134 61% 71%;
+    --primary-dark: 134 61% 31%;
     --primary-foreground: 0 0% 100%;
 
     --secondary: 195 100% 85%; /* Soft sky blue */
@@ -25,18 +25,18 @@
     /* Gradients */
     --gradient-primary: linear-gradient(
       135deg,
-      hsl(158 64% 52%),
-      hsl(158 64% 72%)
+      hsl(134 61% 51%),
+      hsl(134 61% 71%)
     );
     --gradient-wellness: linear-gradient(
       135deg,
-      hsl(134 61% 41%),
-      hsl(158 64% 52%)
+      hsl(134 61% 51%),
+      hsl(158 64% 58%)
     );
     --gradient-sky: linear-gradient(
       135deg,
-      hsl(195 100% 85%),
-      hsl(210 100% 56%)
+      hsl(195 100% 78%),
+      hsl(210 100% 84%)
     );
     --gradient-vitality: linear-gradient(
       135deg,
@@ -52,26 +52,26 @@
     /* Card & Surface */
     --card: 0 0% 100%;
     --card-foreground: 210 15% 20%;
-    --card-shadow: 0 4px 20px -2px hsl(158 64% 52% / 0.1);
+    --card-shadow: 0 4px 20px -2px hsl(134 61% 51% / 0.1);
 
     /* Weather Card */
-    --weather-bg: linear-gradient(135deg, hsl(195 100% 95%), hsl(210 100% 98%));
-    --weather-shadow: 0 8px 32px -4px hsl(210 100% 56% / 0.15);
+    --weather-bg: linear-gradient(135deg, hsl(195 100% 92%), hsl(210 100% 94%));
+    --weather-shadow: 0 8px 32px -4px hsl(210 100% 56% / 0.12);
 
     /* Tip Card */
-    --tip-bg: linear-gradient(135deg, hsl(158 64% 96%), hsl(134 61% 98%));
-    --tip-shadow: 0 8px 32px -4px hsl(158 64% 52% / 0.15);
+    --tip-bg: linear-gradient(135deg, hsl(158 64% 92%), hsl(134 61% 94%));
+    --tip-shadow: 0 8px 32px -4px hsl(134 61% 51% / 0.12);
 
     /* Interactive Elements */
     --muted: 210 40% 96%;
     --muted-foreground: 215 16% 47%;
 
-    --accent: 158 64% 52%;
+    --accent: 134 61% 51%;
     --accent-foreground: 0 0% 100%;
 
     --border: 214 32% 91%;
     --input: 214 32% 91%;
-    --ring: 158 64% 52%;
+    --ring: 134 61% 51%;
 
     /* Radius */
     --radius: 0.75rem;
@@ -144,5 +144,19 @@
 
   ::-webkit-scrollbar-thumb:hover {
     @apply bg-emerald-600/50;
+  }
+
+  /* Custom Float Animation */
+  .feature-float {
+    animation: featureFloat 3s ease-in-out infinite;
+  }
+
+  @keyframes featureFloat {
+    0%, 100% { 
+      transform: translateY(0px);
+    }
+    50% { 
+      transform: translateY(-12px);
+    }
   }
 }

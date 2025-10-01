@@ -1,9 +1,15 @@
+
 import React, { useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Heart, Activity, Users, Shield } from 'lucide-react';
 import Header from '@/components/layout/Header';
+import HeroSection from '@/components/sections/HeroSection';
+import WeatherTipSection from '@/components/sections/WeatherTipSection';
+import HealthTrackingSection from '@/components/sections/HealthTrackingSection';
+import HealthConsultationSection from '@/components/sections/HealthConsultationSection';
+import MealPlanningSection from '@/components/sections/MealPlanningSection';
 import Footer from '@/components/layout/Footer';
 import { HealthInfoModal } from '@/components/modals';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
