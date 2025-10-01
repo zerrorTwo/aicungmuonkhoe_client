@@ -1,12 +1,80 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
+import React, { useEffect } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Heart, Activity, Users, Shield } from 'lucide-react';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
+import { HealthInfoModal } from '@/components/modals';
+import { useAppDispatch, useAppSelector } from '@/store/hooks';
+import { useAuth } from '@/hooks/useAuth';
+import { setShowHealthInfoModal, setHasHealthDocument, setHealthDocument } from '@/store/slices/healthDocumentSlice';
+import { useCreateHealthDocumentMutation } from '@/store/api/healthDocumentApi';
 
 const Home: React.FC = () => {
+    const navigate = useNavigate();
+    const dispatch = useAppDispatch();
+    const { isAuthenticated } = useAuth();
+    const [createHealthDocument] = useCreateHealthDocumentMutation();
+
+    // Redux selectors
+    const showHealthInfoModal = useAppSelector(state => state.healthDocument.showHealthInfoModal);
+    const hasHealthDocument = useAppSelector(state => state.healthDocument.hasHealthDocument);
+    const currentHealthDocument = useAppSelector(state => state.healthDocument.currentHealthDocument);
+    const isLoggedIn = useAppSelector(state => !!state.auth.token);
+
+    // Check health document status when user is authenticated
+    useEffect(() => {
+        if (isAuthenticated() && isLoggedIn) {
+            console.log('User is authenticated, checking health document status...');
+            console.log('Has health document:', hasHealthDocument);
+            console.log('Current health document:', currentHealthDocument);
+
+            // If no health document exists, show the modal
+            if (!hasHealthDocument || !currentHealthDocument) {
+                console.log('No health document found, showing modal on home page');
+                dispatch(setShowHealthInfoModal(true));
+                dispatch(setHasHealthDocument(false));
+            } else {
+                console.log('Health document exists, not showing modal');
+                dispatch(setShowHealthInfoModal(false));
+            }
+        }
+    }, [isAuthenticated, isLoggedIn, hasHealthDocument, currentHealthDocument, dispatch]);
+
+    // HealthInfoModal handlers
+    const handleHealthInfoSave = async (healthData: any) => {
+        try {
+            const result = await createHealthDocument(healthData).unwrap();
+            if (result.success) {
+                dispatch(setHealthDocument(result.data));
+                dispatch(setHasHealthDocument(true));
+                dispatch(setShowHealthInfoModal(false));
+                console.log('Health document saved successfully');
+            }
+        } catch (err: any) {
+            console.error('Failed to save health info:', err);
+        }
+    };
+
+    const handleHealthInfoSaveAndNavigate = async (healthData: any) => {
+        try {
+            const result = await createHealthDocument(healthData).unwrap();
+            if (result.success) {
+                dispatch(setHealthDocument(result.data));
+                dispatch(setHasHealthDocument(true));
+                dispatch(setShowHealthInfoModal(false));
+                navigate('/health-tracking'); // Navigate to health tracking page
+            }
+        } catch (err: any) {
+            console.error('Failed to save health info:', err);
+        }
+    };
+
+    const handleHealthInfoClose = () => {
+        dispatch(setShowHealthInfoModal(false));
+    };
+
     const features = [
         {
             icon: Heart,
@@ -122,6 +190,14 @@ const Home: React.FC = () => {
             </main>
 
             <Footer />
+
+            {/* Health Info Modal */}
+            <HealthInfoModal
+                isOpen={showHealthInfoModal}
+                onClose={handleHealthInfoClose}
+                onSave={handleHealthInfoSave}
+                onSaveAndNavigate={handleHealthInfoSaveAndNavigate}
+            />
         </div>
     );
 };

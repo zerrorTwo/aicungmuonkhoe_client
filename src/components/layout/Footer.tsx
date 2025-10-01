@@ -10,7 +10,7 @@ import {
     Youtube,
     MessageCircle
 } from 'lucide-react';
-import HealthLogo from '@/components/ui/health-logo';
+import Logo from '@/components/ui/Logo';
 
 const Footer: React.FC = () => {
     const footerSections = [
@@ -68,10 +68,10 @@ const Footer: React.FC = () => {
                         {/* Brand Section */}
                         <div className="lg:col-span-1 space-y-6">
                             <div className="flex items-center space-x-3">
-                                <HealthLogo className="w-12 h-12" />
+                                <Logo className="w-12 h-12" width={48} height={48} />
                                 <div>
                                     <h3 className="text-xl font-bold text-slate-900">
-                                        Sức khỏe gia đình Việt
+                                        Ai cũng muốn khỏe
                                     </h3>
                                     <p className="text-sm text-slate-600">
                                         Chăm sóc toàn diện

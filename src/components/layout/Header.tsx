@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Menu, X, User } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import HealthLogo from '@/components/ui/health-logo';
+import Logo from '@/components/ui/Logo';
 
 const Header: React.FC = () => {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -21,10 +21,10 @@ const Header: React.FC = () => {
                 <div className="flex items-center justify-between h-16 lg:h-20">
                     {/* Logo */}
                     <div className="flex items-center space-x-3">
-                        <HealthLogo className="w-10 h-10 lg:w-12 lg:h-12" />
+                        <Logo className="w-10 h-10 lg:w-12 lg:h-12" width={48} height={48} />
                         <div className="hidden sm:block">
                             <h1 className="text-lg lg:text-xl font-bold text-slate-900">
-                                Sức khỏe gia đình Việt
+                                Ai cũng muốn khỏe
                             </h1>
                             <p className="text-xs text-slate-600">Chăm sóc sức khỏe toàn diện</p>
                         </div>
