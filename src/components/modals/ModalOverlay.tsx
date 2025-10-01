@@ -16,8 +16,10 @@ const ModalOverlay: React.FC<ModalOverlayProps> = ({
 }) => {
     if (!isOpen) return null;
 
+    console.log('ModalOverlay rendering with isOpen:', isOpen);
+
     return (
-        <div className="fixed inset-0 bg-black/20 flex items-center justify-center z-50">
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[9999]" onClick={onClose}>
             <div
                 className={`bg-white rounded-lg shadow-xl border ${maxWidth} w-full mx-4 relative`}
                 onClick={(e) => e.stopPropagation()}
