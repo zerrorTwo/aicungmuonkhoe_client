@@ -18,17 +18,7 @@ export interface LoginResponse {
     status: number;
     message: string;
     data: {
-        user: {
-            USER_ID: number;
-            EMAIL: string;
-            FULL_NAME: string;
-            PHONE_NUMBER: string;
-            DATE_OF_BIRTH: string;
-            GENDER_ID: number;
-            IS_ACTIVE: boolean;
-            CREATED_AT: string;
-            UPDATED_AT: string;
-        };
+        user: AuthUser;
         access_token: string;
     };
 }
@@ -36,13 +26,14 @@ export interface LoginResponse {
 export interface AuthUser {
     USER_ID: number;
     EMAIL: string;
-    FULL_NAME: string;
-    PHONE_NUMBER: string;
-    DATE_OF_BIRTH: string;
-    GENDER_ID: number;
-    IS_ACTIVE: boolean;
-    CREATED_AT: string;
-    UPDATED_AT: string;
+    PHONE?: string;
+    STATUS_ACTIVE?: number;
+    IS_ADMIN?: number;
+    IS_DELETED?: number;
+    FACE_IMAGE?: string;
+    START_TOUR?: string;
+    CREATED_AT?: string;
+    UPDATED_AT?: string;
 }
 
 // Auth API slice
