@@ -17,7 +17,7 @@ const Header: React.FC = () => {
     
     // Auth state
     const { isAuthenticated } = useAuth();
-    const { user } = useAppSelector(state => state.auth);
+    const user = localStorage.getItem('user') ? JSON.parse(localStorage.getItem('user')!) : null;
     const [logoutMutation] = useLogoutMutation();
 
     // Close dropdown when clicking outside

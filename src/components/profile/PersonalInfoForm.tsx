@@ -26,7 +26,7 @@ const PersonalInfoForm: React.FC<PersonalInfoFormProps> = ({ userInfo, isEditing
         gender: userInfo.gender,
         address: userInfo.address
     });
-
+    
     const handleDateChange = (date: string) => {
         setFormData(prev => ({ ...prev, birthDate: date }));
     };

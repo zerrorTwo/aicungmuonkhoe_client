@@ -21,13 +21,30 @@ const PersonalInfoTab: React.FC<PersonalInfoTabProps> = ({ userInfo }) => {
     const [isEditing, setIsEditing] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
 
+    // Log để debug dữ liệu nhận được
+    console.log('PersonalInfoTab received userInfo:', userInfo);
+
     const handleSave = async () => {
         setIsLoading(true);
+        // TODO: Implement actual save logic với API
+        console.log('Saving user info:', userInfo);
+        
         // Mock save logic
         setTimeout(() => {
             setIsLoading(false);
             setIsEditing(false);
         }, 1500);
+    };
+
+    // Đảm bảo userInfo có đầy đủ properties với default values
+    const safeUserInfo = {
+        name: userInfo?.name || "Người dùng",
+        email: userInfo?.email || "",
+        phone: userInfo?.phone || "",
+        birthDate: userInfo?.birthDate || "",
+        gender: userInfo?.gender || "",
+        address: userInfo?.address || "",
+        avatar: userInfo?.avatar || "",
     };
 
     return (
@@ -49,8 +66,8 @@ const PersonalInfoTab: React.FC<PersonalInfoTabProps> = ({ userInfo }) => {
             </CardHeader>
 
             <CardContent className="space-y-6">
-                <ProfileAvatar userInfo={userInfo} isEditing={isEditing} />
-                <PersonalInfoForm userInfo={userInfo} isEditing={isEditing} />
+                <ProfileAvatar userInfo={safeUserInfo} isEditing={isEditing} />
+                <PersonalInfoForm userInfo={safeUserInfo} isEditing={isEditing} />
 
                 {isEditing && (
                     <div className="flex justify-end space-x-4">

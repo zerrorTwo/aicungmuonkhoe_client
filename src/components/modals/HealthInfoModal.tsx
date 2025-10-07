@@ -18,6 +18,7 @@ interface HealthInfoData {
     EXERCISE_INTENSITY_ID?: number;
     DATE_WORKDAY?: string;
     DATE_OFF?: string;
+    IS_MYSELF?: boolean;
 }
 
 interface HealthInfoModalProps {
@@ -32,6 +33,7 @@ const HealthInfoModal: React.FC<HealthInfoModalProps> = ({
     isOpen,
     onClose,
     onSave,
+    onSaveAndNavigate,
     initialData
 }) => {
     const [formData, setFormData] = useState<HealthInfoData>({
@@ -44,7 +46,8 @@ const HealthInfoModal: React.FC<HealthInfoModalProps> = ({
         EXERCISE_FREQUENCY: '1-3 lần / tuần',
         EXERCISE_INTENSITY_ID: 2,
         DATE_WORKDAY: '0',
-        DATE_OFF: '0'
+        DATE_OFF: '0',
+        IS_MYSELF: true
     });
 
     const [errors, setErrors] = useState<Record<string, string>>({});
@@ -104,6 +107,12 @@ const HealthInfoModal: React.FC<HealthInfoModalProps> = ({
     const handleSave = () => {
         if (validateForm()) {
             onSave(formData);
+        }
+    };
+
+    const handleSaveAndNavigate = () => {
+        if (validateForm()) {
+            onSaveAndNavigate(formData);
         }
     };
 
@@ -366,12 +375,20 @@ const HealthInfoModal: React.FC<HealthInfoModalProps> = ({
                     </div>
 
                     {/* Action Buttons */}
-                    <div className="mt-6">
+                    <div className="mt-6 space-y-3">
                         <Button
                             onClick={handleSave}
                             className="w-full bg-blue-600 hover:bg-blue-700 text-white"
                         >
                             Lưu
+                        </Button>
+                        
+                        <Button
+                            onClick={handleSaveAndNavigate}
+                            variant="outline"
+                            className="w-full border-emerald-500 text-emerald-600 hover:bg-emerald-50"
+                        >
+                            Lưu và chuyển đến theo dõi sức khỏe
                         </Button>
                     </div>
                 </div>

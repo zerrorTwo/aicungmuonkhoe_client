@@ -6,15 +6,12 @@ import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent } from '@/components/ui/card';
 import { Eye, EyeOff, Mail, Lock } from 'lucide-react';
-import { HealthInfoModal } from '@/components/modals';
 import Logo from '@/components/ui/Logo';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 import { useLoginMutation, useSignupMutation } from '@/store/store';
-import { useCreateHealthDocumentMutation } from '@/store/api/healthDocumentApi';
-import { useAppDispatch, useAppSelector } from '@/store/hooks';
+import { useAppDispatch } from '@/store/hooks';
 import { loginStart, loginSuccess, loginFailure } from '@/store/slices/authSlice';
-import { setHealthDocument, setShowHealthInfoModal, setHasHealthDocument } from '@/store/slices/healthDocumentSlice';
 import { handleApiError } from '@/utils/api';
 import { useAuth } from '@/hooks/useAuth';
 
@@ -24,13 +21,9 @@ const Login: React.FC = () => {
     const { isAuthenticated } = useAuth();
     const [login, { isLoading: isLoginLoading }] = useLoginMutation();
     const [signup] = useSignupMutation();
-    const [createHealthDocument] = useCreateHealthDocumentMutation();
 
     const [showPassword, setShowPassword] = useState(false);
     const [error, setError] = useState<string>('');
-    const showHealthInfoModal = useAppSelector(state => state.healthDocument.showHealthInfoModal);
-    const hasHealthDocument = useAppSelector(state => state.healthDocument.hasHealthDocument);
-    const currentHealthDocument = useAppSelector(state => state.healthDocument.currentHealthDocument);
 
     // Login form state
     const [loginData, setLoginData] = useState({
@@ -44,23 +37,6 @@ const Login: React.FC = () => {
         password: '',
         confirmPassword: ''
     });
-
-    // Function to check if user has health document
-    const checkHealthDocumentStatus = () => {
-        console.log('Checking health document status...');
-        console.log('Has health document:', hasHealthDocument);
-        console.log('Current health document:', currentHealthDocument);
-
-        // If no health document exists, show the modal
-        if (!hasHealthDocument || !currentHealthDocument) {
-            console.log('No health document found, showing modal');
-            dispatch(setShowHealthInfoModal(true));
-            dispatch(setHasHealthDocument(false));
-        } else {
-            console.log('Health document exists, not showing modal');
-            dispatch(setShowHealthInfoModal(false));
-        }
-    };
 
     // Check if user is already authenticated and redirect to home
     useEffect(() => {
@@ -102,11 +78,7 @@ const Login: React.FC = () => {
                 localStorage.setItem('access_token', result.data.access_token);
                 localStorage.setItem('user', JSON.stringify(result.data.user));
 
-                console.log('Login successful, checking health document status...');
-                // Check if user has health document
-                checkHealthDocumentStatus();
-
-                console.log('Navigating to home page...');
+                console.log('Login successful, navigating to home page...');
                 // Navigate to home page with fallback
                 setTimeout(() => {
                     try {
@@ -164,11 +136,7 @@ const Login: React.FC = () => {
                 localStorage.setItem('access_token', result.data.access_token);
                 localStorage.setItem('user', JSON.stringify(result.data.user));
 
-                console.log('Register successful, checking health document status...');
-                // Check if user has health document
-                checkHealthDocumentStatus();
-
-                console.log('Navigating to home page...');
+                console.log('Register successful, navigating to home page...');
                 // Navigate to home page with fallback
                 setTimeout(() => {
                     try {
@@ -201,42 +169,6 @@ const Login: React.FC = () => {
             ...prev,
             [name]: value
         }));
-    };
-
-    // HealthInfoModal handlers
-    const handleHealthInfoSave = async (healthData: any) => {
-        try {
-            const result = await createHealthDocument(healthData).unwrap();
-            if (result.success) {
-                dispatch(setHealthDocument(result.data));
-                dispatch(setHasHealthDocument(true));
-                dispatch(setShowHealthInfoModal(false));
-                navigate('/');
-            }
-        } catch (err: any) {
-            console.error('Failed to save health info:', err);
-            // Optionally show error message
-        }
-    };
-
-    const handleHealthInfoSaveAndNavigate = async (healthData: any) => {
-        try {
-            const result = await createHealthDocument(healthData).unwrap();
-            if (result.success) {
-                dispatch(setHealthDocument(result.data));
-                dispatch(setHasHealthDocument(true));
-                dispatch(setShowHealthInfoModal(false));
-                navigate('/health-tracking'); // Navigate to health tracking page
-            }
-        } catch (err: any) {
-            console.error('Failed to save health info:', err);
-            // Optionally show error message
-        }
-    };
-
-    const handleHealthInfoClose = () => {
-        dispatch(setShowHealthInfoModal(false));
-        navigate('/'); // Navigate to home if user closes without saving
     };
 
     return (
@@ -521,14 +453,6 @@ const Login: React.FC = () => {
 
             {/* Footer */}
             <Footer />
-
-            {/* Health Info Modal */}
-            <HealthInfoModal
-                isOpen={showHealthInfoModal}
-                onClose={handleHealthInfoClose}
-                onSave={handleHealthInfoSave}
-                onSaveAndNavigate={handleHealthInfoSaveAndNavigate}
-            />
         </div>
     );
 };

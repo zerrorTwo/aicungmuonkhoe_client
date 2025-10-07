@@ -8,15 +8,42 @@ import NotificationsTab from "../components/profile/NotificationsTab"
 import ManagementAccountTab from "../components/profile/ManagementAccountTab"
 
 const Profile: React.FC = () => {
-    const userInfo = {
-        name: "Nguyễn Thị Minh",
-        email: "minhnguyen@example.com",
-        phone: "0987654321",
-        birthDate: "1997-06-01",
-        gender: "Nữ",
-        address: "Bắc Liêu",
-        avatar: "/lovable-uploads/23d499ac-1a93-4679-bbf9-af5ae87928a7.png",
-    }
+    // Lấy dữ liệu user từ localStorage
+    const user = JSON.parse(localStorage.getItem('user') || '{}');
+    
+    // Chuyển đổi dữ liệu backend thành format cho PersonalInfoTab
+    const formatUserInfo = (userData: any) => {
+        if (!userData || !userData.EMAIL) {
+            return {
+                name: "",
+                email: "",
+                phone: "",
+                birthDate: "",
+                gender: "",
+                address: "",
+                avatar: "",
+            };
+        }
+
+        // Tách tên từ email nếu không có tên riêng
+        const nameFromEmail = userData.EMAIL.split('@')[0] || "Người dùng";
+        
+        return {
+            name: nameFromEmail,
+            email: userData.EMAIL || "",
+            phone: userData.PHONE || "",
+            birthDate: "", // Sẽ lấy từ health document sau
+            gender: "", // Sẽ lấy từ health document sau  
+            address: "", // Sẽ lấy từ health document sau
+            avatar: userData.FACE_IMAGE || "",
+        };
+    };
+
+    const userInfo = formatUserInfo(user);
+    
+    console.log('Raw user data from localStorage:', user);
+    console.log('Formatted user info:', userInfo);
+   
 
     return (
         <div className="from-background via-primary/5 to-accent/10 min-h-screen bg-gradient-to-br">
