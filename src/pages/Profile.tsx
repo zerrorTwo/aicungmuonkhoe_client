@@ -6,17 +6,88 @@ import PersonalInfoTab from "../components/profile/PersonalInfoTab"
 import SecurityTab from "../components/profile/SecurityTab"
 import NotificationsTab from "../components/profile/NotificationsTab"
 import ManagementAccountTab from "../components/profile/ManagementAccountTab"
+import { useGetUserProfileQuery } from "../store/api/userApi"
 
 const Profile: React.FC = () => {
-    const userInfo = {
-        name: "Nguyễn Thị Minh",
-        email: "minhnguyen@example.com",
-        phone: "0987654321",
-        birthDate: "1997-06-01",
-        gender: "Nữ",
-        address: "Bắc Liêu",
-        avatar: "/lovable-uploads/23d499ac-1a93-4679-bbf9-af5ae87928a7.png",
+    // Call API để lấy user profile thay vì từ localStorage
+    const { 
+        data: profileResponse, 
+        isLoading, 
+        error,
+        refetch 
+    } = useGetUserProfileQuery();
+
+    console.log('API Profile Response:', profileResponse);
+    console.log('Loading:', isLoading);
+    console.log('Error:', error);
+
+    // Chuyển đổi dữ liệu API response thành format cho PersonalInfoTab
+    const formatUserInfo = (profileData: any) => {
+        if (!profileData || !profileData.data) {
+            console.log('No profile data available');
+            return {
+                name: "",
+                email: "",
+                phone: "",
+                birthDate: "",
+                gender: "",
+                address: "",
+                avatar: "",
+            };
+        }
+
+        const userData = profileData.data;
+        // console.log('Raw userData from API:', userData);
+        
+        const formattedInfo = {
+            name: userData.fullName || userData.email?.split('@')[0] || "Người dùng",
+            email: userData.email || "",
+            phone: userData.phone || "",
+            birthDate: userData.birthDate || "",
+            gender: userData.gender || "",
+            address: userData.address || "",
+            avatar: userData.avatar || "",
+        };
+
+        // console.log('Formatted user info:', formattedInfo);
+        return formattedInfo;
+    };
+
+    // Loading state
+    if (isLoading) {
+        return (
+            <div className="from-background via-primary/5 to-accent/10 min-h-screen bg-gradient-to-br flex items-center justify-center">
+                <div className="text-center">
+                    <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary mx-auto"></div>
+                    <p className="mt-4 text-lg">Đang tải thông tin...</p>
+                </div>
+            </div>
+        );
     }
+
+    // Error state
+    if (error) {
+        return (
+            <div className="from-background via-primary/5 to-accent/10 min-h-screen bg-gradient-to-br flex items-center justify-center">
+                <div className="text-center">
+                    <div className="text-red-500 text-6xl mb-4">⚠️</div>
+                    <h2 className="text-xl font-semibold mb-2">Có lỗi xảy ra</h2>
+                    <p className="text-gray-600 mb-4">Không thể tải thông tin profile</p>
+                    <button 
+                        onClick={() => refetch()} 
+                        className="px-4 py-2 bg-primary text-white rounded hover:bg-primary/90"
+                    >
+                        Thử lại
+                    </button>
+                </div>
+            </div>
+        );
+    }
+
+    const userInfo = formatUserInfo(profileResponse);
+    
+    console.log('Formatted user info for UI:', userInfo);
+   
 
     return (
         <div className="from-background via-primary/5 to-accent/10 min-h-screen bg-gradient-to-br">

@@ -75,6 +75,7 @@ export interface HealthDocumentResponse {
     success: boolean;
     message: string;
     data: HealthDocument;
+    status: number;
 }
 
 export interface HealthDocumentsListResponse {

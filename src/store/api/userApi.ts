@@ -31,6 +31,45 @@ export interface UsersListResponse {
     data: AuthUser[];
 }
 
+export interface UserProfileHealthDocument {
+    id: number;
+    height: string;
+    weight: string;
+    healthStatus: string;
+    exerciseFrequency: string;
+    isCompleted: boolean;
+}
+
+export interface UserProfileData {
+    userId: number;
+    fullName: string;
+    email: string;
+    phone: string;
+    birthDate: string;
+    gender: string;
+    address: string;
+    avatar: string;
+    isActive: boolean;
+    isAdmin: boolean;
+    healthDocument: UserProfileHealthDocument;
+}
+
+export interface UserProfileResponse {
+    data: UserProfileData;
+    message: string;
+    status: number;
+}
+
+// Update user profile request
+export interface UpdateUserProfileRequest {
+    fullName?: string;
+    phone?: string;
+    birthDate?: string;
+    address?: string;
+    avatar?: string;
+    genderId?: number;
+}
+
 // User API slice
 export const userApi = baseApi.injectEndpoints({
     endpoints: (builder) => ({
@@ -74,14 +113,44 @@ export const userApi = baseApi.injectEndpoints({
             query: () => '/user',
             providesTags: ['User'],
         }),
+
+        // Get user profile (including health document)
+        getUserProfile: builder.query<UserProfileResponse, void>({
+            query: () => '/user/profile/me',
+            providesTags: ['User'],
+        }),
+
+        // Update user profile
+        updateUserProfile: builder.mutation<UserProfileResponse, UpdateUserProfileRequest>({
+            query: (updateData) => ({
+                url: '/user/profile/me',
+                method: 'PUT',
+                body: updateData,
+            }),
+            invalidatesTags: ['User'],
+        }),
+
+        // Upload user avatar (separate endpoint)
+        uploadUserAvatar: builder.mutation<UserProfileResponse, FormData>({
+            query: (formData) => ({
+                url: '/user/profile/me/avatar',
+                method: 'PUT',
+                body: formData,
+            }),
+            invalidatesTags: ['User'],
+        }),
+
     }),
 });
 
 // Export hooks for components
 export const {
     useCreateUserMutation,
-    useGetUserByIdQuery,
+    useGetUserByIdQuery, 
     useUpdateUserMutation,
     useDeleteUserMutation,
     useGetAllUsersQuery,
+    useGetUserProfileQuery,
+    useUpdateUserProfileMutation,
+    useUploadUserAvatarMutation,
 } = userApi;

@@ -17,7 +17,7 @@ const Header: React.FC = () => {
     
     // Auth state
     const { isAuthenticated } = useAuth();
-    const { user } = useAppSelector(state => state.auth);
+    const user = localStorage.getItem('user') ? JSON.parse(localStorage.getItem('user')!) : null;
     const [logoutMutation] = useLogoutMutation();
 
     // Close dropdown when clicking outside
@@ -59,8 +59,8 @@ const Header: React.FC = () => {
     };
 
     const getUserAvatar = () => {
-        if (user?.FACE_IMAGE) {
-            return user.FACE_IMAGE;
+        if (user?.avatar) {
+            return user.avatar;
         }
         return null;
     };
@@ -114,19 +114,24 @@ const Header: React.FC = () => {
                                     className="flex items-center space-x-2 p-2 rounded-full hover:bg-slate-100 transition-colors duration-200 user-avatar"
                                 >
                                     {getUserAvatar() ? (
-                                        <img
-                                            src={getUserAvatar()!}
-                                            alt="User Avatar"
-                                            className="w-10 h-10 rounded-full border-2 border-emerald-200 object-cover"
-                                        />
+                                        <>
+                                            <span className="hidden sm:block text-sm font-medium text-teal-500">
+                                                Hi, {getUserDisplayName()}
+                                            </span>
+                                            <img
+                                                src={getUserAvatar()!}
+                                                alt="User Avatar"
+                                                className="w-10 h-10 rounded-full border-2 border-emerald-200 object-cover"
+                                            />
+                                        </>
                                     ) : (
                                         <>
-                                        <span className="hidden sm:block text-sm font-medium text-teal-500">
-                                            Hi, {getUserDisplayName()}
-                                        </span>
-                                        <div className="w-10 h-10 bg-gradient-to-br from-emerald-400 to-emerald-600 rounded-full flex items-center justify-center text-white font-semibold">
-                                            {getUserDisplayName().charAt(0).toUpperCase()}
-                                        </div>
+                                            <span className="hidden sm:block text-sm font-medium text-teal-500">
+                                                Hi, {getUserDisplayName()}
+                                            </span>
+                                            <div className="w-10 h-10 bg-gradient-to-br from-emerald-400 to-emerald-600 rounded-full flex items-center justify-center text-white font-semibold">
+                                                {getUserDisplayName().charAt(0).toUpperCase()}
+                                            </div>
                                         </>
                                     )}
                                 </button>

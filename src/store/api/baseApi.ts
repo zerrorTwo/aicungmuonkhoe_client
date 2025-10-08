@@ -8,19 +8,17 @@ const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000
 // Define base query with authentication header
 const baseQuery = fetchBaseQuery({
     baseUrl: API_BASE_URL,
-    credentials: 'include', // Important for cookies
+    credentials: 'include',
+    // baseApi.ts - sửa prepareHeaders
     prepareHeaders: (headers) => {
-        // Get token from localStorage or Redux state
         const token = localStorage.getItem('access_token');
-
-        if (token) {
-            headers.set('authorization', `Bearer ${token}`);
-        }
-
-        headers.set('Content-Type', 'application/json');
+        if (token) headers.set('authorization', `Bearer ${token}`);
+        // Không set Content-Type ở đây: trình duyệt sẽ tự set khi body là FormData
         return headers;
     },
+
 });
+
 
 // Enhanced base query with automatic token refresh
 const baseQueryWithReauth: BaseQueryFn<
