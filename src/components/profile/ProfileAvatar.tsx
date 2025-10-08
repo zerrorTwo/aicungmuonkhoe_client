@@ -11,9 +11,12 @@ interface ProfileAvatarProps {
         avatar?: string;
     };
     isEditing: boolean;
+    onAvatarChange?: (file: File | null) => void;
 }
 
-const ProfileAvatar: React.FC<ProfileAvatarProps> = ({ userInfo, isEditing }) => {
+const ProfileAvatar: React.FC<ProfileAvatarProps> = ({ userInfo, isEditing, onAvatarChange }) => {
+    const fileInputRef = React.useRef<HTMLInputElement>(null);
+
     // Lấy initials từ tên hoặc email
     const getInitials = (name: string, email: string) => {
         if (name && name.trim()) {
@@ -27,9 +30,22 @@ const ProfileAvatar: React.FC<ProfileAvatarProps> = ({ userInfo, isEditing }) =>
         return email.charAt(0).toUpperCase();
     };
 
+    const handleCameraClick = () => {
+        if (isEditing && onAvatarChange) {
+            fileInputRef.current?.click();
+        }
+    };
+
+    const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+        const file = event.target.files?.[0] || null;
+        if (onAvatarChange) {
+            onAvatarChange(file);
+        }
+        // Reset input để có thể chọn lại cùng file
+        event.target.value = '';
+    };
+
     const initials = getInitials(userInfo.name, userInfo.email);
-    console.log('ProfileAvatar userInfo:', userInfo);
-    console.log('Generated initials:', initials);
     
     return (
         <div className="flex flex-col items-center space-y-4">
@@ -51,13 +67,23 @@ const ProfileAvatar: React.FC<ProfileAvatarProps> = ({ userInfo, isEditing }) =>
                         {initials}
                     </AvatarFallback>
                 </Avatar>
-                {isEditing && (
-                    <Button
-                        size="sm"
-                        className="absolute -bottom-2 -right-2 rounded-full w-8 h-8 p-0"
-                    >
-                        <Camera className="w-4 h-4" />
-                    </Button>
+                {isEditing && onAvatarChange && (
+                    <>
+                        <Button
+                            size="sm"
+                            className="absolute -bottom-2 -right-2 rounded-full w-8 h-8 p-0"
+                            onClick={handleCameraClick}
+                        >
+                            <Camera className="w-4 h-4" />
+                        </Button>
+                        <input
+                            ref={fileInputRef}
+                            type="file"
+                            accept="image/jpeg,image/jpg,image/png,image/webp"
+                            onChange={handleFileChange}
+                            className="hidden"
+                        />
+                    </>
                 )}
             </div>
             <div className="text-center">

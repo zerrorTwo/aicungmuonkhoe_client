@@ -129,16 +129,28 @@ export const userApi = baseApi.injectEndpoints({
             }),
             invalidatesTags: ['User'],
         }),
+
+        // Upload user avatar (separate endpoint)
+        uploadUserAvatar: builder.mutation<UserProfileResponse, FormData>({
+            query: (formData) => ({
+                url: '/user/profile/me/avatar',
+                method: 'PUT',
+                body: formData,
+            }),
+            invalidatesTags: ['User'],
+        }),
+
     }),
 });
 
 // Export hooks for components
 export const {
     useCreateUserMutation,
-    useGetUserByIdQuery,
+    useGetUserByIdQuery, 
     useUpdateUserMutation,
     useDeleteUserMutation,
     useGetAllUsersQuery,
     useGetUserProfileQuery,
     useUpdateUserProfileMutation,
+    useUploadUserAvatarMutation,
 } = userApi;

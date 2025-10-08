@@ -37,7 +37,7 @@ const Profile: React.FC = () => {
         }
 
         const userData = profileData.data;
-        console.log('Raw userData from API:', userData);
+        // console.log('Raw userData from API:', userData);
         
         const formattedInfo = {
             name: userData.fullName || userData.email?.split('@')[0] || "Người dùng",
@@ -49,7 +49,7 @@ const Profile: React.FC = () => {
             avatar: userData.avatar || "",
         };
 
-        console.log('Formatted user info:', formattedInfo);
+        // console.log('Formatted user info:', formattedInfo);
         return formattedInfo;
     };
 
