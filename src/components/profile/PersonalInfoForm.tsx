@@ -15,10 +15,25 @@ interface PersonalInfoFormProps {
         address: string;
     };
     isEditing: boolean;
+    formData?: {
+        fullName: string;
+        phone: string;
+        birthDate: string;
+        address: string;
+        avatar: string;
+        genderId: number;
+    };
+    onFormDataChange?: (data: any) => void;
 }
 
-const PersonalInfoForm: React.FC<PersonalInfoFormProps> = ({ userInfo, isEditing }) => {
-    const [formData, setFormData] = useState({
+const PersonalInfoForm: React.FC<PersonalInfoFormProps> = ({ 
+    userInfo, 
+    isEditing, 
+    formData: parentFormData, 
+    onFormDataChange 
+}) => {
+    // Use parent formData if provided, otherwise fall back to userInfo
+    const [localFormData, setLocalFormData] = useState({
         name: userInfo.name,
         email: userInfo.email,
         phone: userInfo.phone,
@@ -26,13 +41,44 @@ const PersonalInfoForm: React.FC<PersonalInfoFormProps> = ({ userInfo, isEditing
         gender: userInfo.gender,
         address: userInfo.address
     });
+
+    // Sync with parent formData khi có
+    React.useEffect(() => {
+        if (parentFormData) {
+            setLocalFormData(prev => ({
+                ...prev,
+                name: parentFormData.fullName,
+                phone: parentFormData.phone,
+                birthDate: parentFormData.birthDate,
+                address: parentFormData.address,
+                gender: parentFormData.genderId === 2 ? 'NỮ' : 'NAM'
+            }));
+        }
+    }, [parentFormData]);
+
+    const handleInputChange = (field: string, value: string) => {
+        setLocalFormData(prev => ({ ...prev, [field]: value }));
+        
+        // Notify parent component
+        if (onFormDataChange) {
+            const updatedData = { ...localFormData, [field]: value };
+            onFormDataChange({
+                fullName: updatedData.name,
+                phone: updatedData.phone,
+                birthDate: updatedData.birthDate,
+                address: updatedData.address,
+                avatar: parentFormData?.avatar || '',
+                genderId: updatedData.gender === 'NỮ' ? 2 : 1
+            });
+        }
+    };
     
     const handleDateChange = (date: string) => {
-        setFormData(prev => ({ ...prev, birthDate: date }));
+        handleInputChange('birthDate', date);
     };
 
     const handleGenderChange = (gender: string) => {
-        setFormData(prev => ({ ...prev, gender }));
+        handleInputChange('gender', gender);
     };
 
     return (
@@ -43,7 +89,8 @@ const PersonalInfoForm: React.FC<PersonalInfoFormProps> = ({ userInfo, isEditing
                     <User className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                     <Input
                         id="fullName"
-                        defaultValue={userInfo.name}
+                        value={localFormData.name}
+                        onChange={(e) => handleInputChange('name', e.target.value)}
                         className="pl-10"
                         disabled={!isEditing}
                     />
@@ -59,7 +106,7 @@ const PersonalInfoForm: React.FC<PersonalInfoFormProps> = ({ userInfo, isEditing
                         type="email"
                         defaultValue={userInfo.email}
                         className="pl-10"
-                        disabled={!isEditing}
+                        disabled={true} // Email không thể chỉnh sửa
                     />
                 </div>
             </div>
@@ -70,7 +117,8 @@ const PersonalInfoForm: React.FC<PersonalInfoFormProps> = ({ userInfo, isEditing
                     <Phone className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                     <Input
                         id="phone"
-                        defaultValue={userInfo.phone}
+                        value={localFormData.phone}
+                        onChange={(e) => handleInputChange('phone', e.target.value)}
                         className="pl-10"
                         disabled={!isEditing}
                     />
@@ -83,7 +131,7 @@ const PersonalInfoForm: React.FC<PersonalInfoFormProps> = ({ userInfo, isEditing
                     <Calendar className="absolute left-3 top-3 h-4 w-4 text-muted-foreground z-10" />
                     <DatePicker
                         placeholder="Chọn ngày sinh"
-                        value={formData.birthDate}
+                        value={localFormData.birthDate}
                         onChange={handleDateChange}
                         disabled={!isEditing}
                         format="YYYY-MM-DD"
@@ -94,14 +142,14 @@ const PersonalInfoForm: React.FC<PersonalInfoFormProps> = ({ userInfo, isEditing
 
             <div className="space-y-2">
                 <Label htmlFor="gender">Giới tính</Label>
-                <Select disabled={!isEditing} value={formData.gender} onValueChange={handleGenderChange}>
+                <Select disabled={!isEditing} value={localFormData.gender} onValueChange={handleGenderChange}>
                     <SelectTrigger>
                         <SelectValue placeholder="Chọn giới tính" />
                     </SelectTrigger>
                     <SelectContent>
-                        <SelectItem value="Nam">Nam</SelectItem>
-                        <SelectItem value="Nữ">Nữ</SelectItem>
-                        <SelectItem value="Khác">Khác</SelectItem>
+                        <SelectItem value="NAM">Nam</SelectItem>
+                        <SelectItem value="NỮ">Nữ</SelectItem>
+                        <SelectItem value="KHÁC">Khác</SelectItem>
                     </SelectContent>
                 </Select>
             </div>
@@ -112,7 +160,8 @@ const PersonalInfoForm: React.FC<PersonalInfoFormProps> = ({ userInfo, isEditing
                     <MapPin className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                     <Input
                         id="address"
-                        defaultValue={userInfo.address}
+                        value={localFormData.address}
+                        onChange={(e) => handleInputChange('address', e.target.value)}
                         className="pl-10"
                         disabled={!isEditing}
                     />

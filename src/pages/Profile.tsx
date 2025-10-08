@@ -6,14 +6,25 @@ import PersonalInfoTab from "../components/profile/PersonalInfoTab"
 import SecurityTab from "../components/profile/SecurityTab"
 import NotificationsTab from "../components/profile/NotificationsTab"
 import ManagementAccountTab from "../components/profile/ManagementAccountTab"
+import { useGetUserProfileQuery } from "../store/api/userApi"
 
 const Profile: React.FC = () => {
-    // Lấy dữ liệu user từ localStorage
-    const user = JSON.parse(localStorage.getItem('user') || '{}');
-    
-    // Chuyển đổi dữ liệu backend thành format cho PersonalInfoTab
-    const formatUserInfo = (userData: any) => {
-        if (!userData || !userData.EMAIL) {
+    // Call API để lấy user profile thay vì từ localStorage
+    const { 
+        data: profileResponse, 
+        isLoading, 
+        error,
+        refetch 
+    } = useGetUserProfileQuery();
+
+    console.log('API Profile Response:', profileResponse);
+    console.log('Loading:', isLoading);
+    console.log('Error:', error);
+
+    // Chuyển đổi dữ liệu API response thành format cho PersonalInfoTab
+    const formatUserInfo = (profileData: any) => {
+        if (!profileData || !profileData.data) {
+            console.log('No profile data available');
             return {
                 name: "",
                 email: "",
@@ -25,24 +36,57 @@ const Profile: React.FC = () => {
             };
         }
 
-        // Tách tên từ email nếu không có tên riêng
-        const nameFromEmail = userData.EMAIL.split('@')[0] || "Người dùng";
+        const userData = profileData.data;
+        console.log('Raw userData from API:', userData);
         
-        return {
-            name: nameFromEmail,
-            email: userData.EMAIL || "",
-            phone: userData.PHONE || "",
-            birthDate: "", // Sẽ lấy từ health document sau
-            gender: "", // Sẽ lấy từ health document sau  
-            address: "", // Sẽ lấy từ health document sau
-            avatar: userData.FACE_IMAGE || "",
+        const formattedInfo = {
+            name: userData.fullName || userData.email?.split('@')[0] || "Người dùng",
+            email: userData.email || "",
+            phone: userData.phone || "",
+            birthDate: userData.birthDate || "",
+            gender: userData.gender || "",
+            address: userData.address || "",
+            avatar: userData.avatar || "",
         };
+
+        console.log('Formatted user info:', formattedInfo);
+        return formattedInfo;
     };
 
-    const userInfo = formatUserInfo(user);
+    // Loading state
+    if (isLoading) {
+        return (
+            <div className="from-background via-primary/5 to-accent/10 min-h-screen bg-gradient-to-br flex items-center justify-center">
+                <div className="text-center">
+                    <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary mx-auto"></div>
+                    <p className="mt-4 text-lg">Đang tải thông tin...</p>
+                </div>
+            </div>
+        );
+    }
+
+    // Error state
+    if (error) {
+        return (
+            <div className="from-background via-primary/5 to-accent/10 min-h-screen bg-gradient-to-br flex items-center justify-center">
+                <div className="text-center">
+                    <div className="text-red-500 text-6xl mb-4">⚠️</div>
+                    <h2 className="text-xl font-semibold mb-2">Có lỗi xảy ra</h2>
+                    <p className="text-gray-600 mb-4">Không thể tải thông tin profile</p>
+                    <button 
+                        onClick={() => refetch()} 
+                        className="px-4 py-2 bg-primary text-white rounded hover:bg-primary/90"
+                    >
+                        Thử lại
+                    </button>
+                </div>
+            </div>
+        );
+    }
+
+    const userInfo = formatUserInfo(profileResponse);
     
-    console.log('Raw user data from localStorage:', user);
-    console.log('Formatted user info:', userInfo);
+    console.log('Formatted user info for UI:', userInfo);
    
 
     return (
