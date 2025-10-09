@@ -1,14 +1,45 @@
-import { Button, DatePicker } from 'antd';
-import './App.css'
-import 'antd/dist/reset.css'
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+import '@/styles/toast.css';
+import Home from '@/pages/Home';
+import Login from '@/pages/Login';
+import HealthTracking from '@/pages/HealthTracking';
+import Profile from './pages/Profile';
+import HealthDocumentGuard from '@/components/auth/HealthDocumentGuard';
+import './App.css';
 
 function App() {
   return (
-    <div className="p-8 flex flex-col items-center gap-4">
-      <h1 className="text-2xl font-bold">🚀 Ant Design + Tailwind + Vite</h1>
-      <Button type="primary">Primary Button</Button>
-      <DatePicker />
-    </div>
+    <Router>
+      <div className="min-h-screen bg-slate-50">
+        <HealthDocumentGuard excludePaths={['/login', '/register', '/']}>
+          <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/register" element={<Login />} />
+            <Route path="/profile" element={<Profile />} />
+            <Route path="/health-tracking" element={<HealthTracking />} />
+            {/* Add more routes as needed */}
+          </Routes>
+        </HealthDocumentGuard>
+        
+        {/* Toast Container for beautiful notifications */}
+        <ToastContainer
+          position="top-right"
+          autoClose={3000}
+          hideProgressBar={false}
+          newestOnTop
+          closeOnClick
+          rtl={false}
+          pauseOnFocusLoss
+          draggable
+          pauseOnHover
+          theme="colored"
+          className="custom-toast-container"
+        />
+      </div>
+    </Router>
   );
 }
 
