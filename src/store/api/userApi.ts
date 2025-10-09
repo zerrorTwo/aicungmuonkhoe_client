@@ -70,6 +70,14 @@ export interface UpdateUserProfileRequest {
     genderId?: number;
 }
 
+export interface UpdateSecuritySettingRequest {
+    NEW_PASSWORD?: string;
+    CURRENT_PASSWORD?: string;
+    PHONE?: string;
+    EMAIL?: string;
+    OTP_CODE?: string;
+}
+
 // User API slice
 export const userApi = baseApi.injectEndpoints({
     endpoints: (builder) => ({
@@ -140,7 +148,23 @@ export const userApi = baseApi.injectEndpoints({
             invalidatesTags: ['User'],
         }),
 
-    }),
+        updateSecuritySetting: builder.mutation<UserResponse, UpdateSecuritySettingRequest>({
+            query: (data) => ({
+                url: '/user/security/me',
+                method: 'PUT',
+                body: data,
+            }),
+            invalidatesTags: ['User'],
+        }),
+
+        sendOtp: builder.mutation<{ success: boolean; message: string }, { email?: string; phone?: string }>({
+            query: (data) => ({
+                url: '/mail/send-verification',
+                method: 'POST',
+                body: data,
+            }),
+        }),
+    })
 });
 
 // Export hooks for components
@@ -153,4 +177,6 @@ export const {
     useGetUserProfileQuery,
     useUpdateUserProfileMutation,
     useUploadUserAvatarMutation,
+    useUpdateSecuritySettingMutation,
+    useSendOtpMutation,
 } = userApi;

@@ -29,7 +29,7 @@ const baseQueryWithReauth: BaseQueryFn<
     let result = await baseQuery(args, api, extraOptions);
 
     // If we get a 401 (unauthorized), try to refresh the token
-    if (result.error && result.error.status === 401) {
+    if (result.error && result.error.status === 410) {
         console.log('Access token expired, trying to refresh...');
 
         // Try to refresh the token
