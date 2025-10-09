@@ -34,6 +34,7 @@ const Login: React.FC = () => {
     // Register form state
     const [registerData, setRegisterData] = useState({
         email: '',
+        phone: '',
         password: '',
         confirmPassword: ''
     });
@@ -63,7 +64,7 @@ const Login: React.FC = () => {
                 PASSWORD: loginData.password
             }).unwrap();
 
-            console.log(result);
+            console.log('Login result:', result);
 
             if (result.status === 200) {
                 console.log('Login successful, user data:', result.data.user);
@@ -79,22 +80,20 @@ const Login: React.FC = () => {
                 localStorage.setItem('user', JSON.stringify(result.data.user));
 
                 console.log('Login successful, navigating to home page...');
-                // Navigate to home page with fallback
-                setTimeout(() => {
-                    try {
-                        navigate('/', { replace: true });
-                    } catch (error) {
-                        console.log('React Router navigation failed, using window.location');
-                        window.location.href = '/';
-                    }
-                }, 100);
+                // Navigate to home page - only on success
+                navigate('/', { replace: true });
             } else {
-                throw new Error(result.message || 'Đăng nhập thất bại');
+                // Login failed - don't navigate
+                console.log('Login failed with status:', result.status);
+                dispatch(loginFailure());
+                setError(result.message || 'Đăng nhập thất bại');
             }
         } catch (err: any) {
+            console.log('Login error caught:', err);
             const errorMessage = handleApiError(err);
             setError(errorMessage);
             dispatch(loginFailure());
+            // Don't navigate on error - stay on login page
         }
     };
 
@@ -104,6 +103,11 @@ const Login: React.FC = () => {
 
         if (!registerData.email || !registerData.password || !registerData.confirmPassword) {
             setError('Vui lòng điền đầy đủ thông tin');
+            return;
+        }
+
+        if (!registerData.phone) {
+            setError('Vui lòng nhập số điện thoại');
             return;
         }
 
@@ -121,7 +125,10 @@ const Login: React.FC = () => {
             const result = await signup({
                 EMAIL: registerData.email,
                 PASSWORD: registerData.password,
+                PHONE: registerData.phone,
             }).unwrap();
+
+            console.log('Register result:', result);
 
             if (result.status === 200) {
                 console.log('Register successful, user data:', result.data.user);
@@ -137,21 +144,18 @@ const Login: React.FC = () => {
                 localStorage.setItem('user', JSON.stringify(result.data.user));
 
                 console.log('Register successful, navigating to home page...');
-                // Navigate to home page with fallback
-                setTimeout(() => {
-                    try {
-                        navigate('/', { replace: true });
-                    } catch (error) {
-                        console.log('React Router navigation failed, using window.location');
-                        window.location.href = '/';
-                    }
-                }, 100);
+                // Navigate to home page - only on success
+                navigate('/', { replace: true });
             } else {
-                throw new Error(result.message || 'Đăng ký thất bại');
+                // Register failed - don't navigate
+                console.log('Register failed with status:', result.status);
+                setError(result.message || 'Đăng ký thất bại');
             }
         } catch (err: any) {
+            console.log('Register error caught:', err);
             const errorMessage = handleApiError(err);
             setError(errorMessage);
+            // Don't navigate on error - stay on login page
         }
     };
 
@@ -333,9 +337,31 @@ const Login: React.FC = () => {
                                                                     id="regEmail"
                                                                     name="email"
                                                                     type="email"
-                                                                    placeholder="email@example.com"
+                                                                    placeholder="email@gmail.com"
                                                                     className="pl-10 h-11 border-gray-300 focus:border-emerald-500 focus:ring-emerald-500"
                                                                     value={registerData.email}
+                                                                    onChange={handleRegisterInputChange}
+                                                                    required
+                                                                />
+                                                            </div>
+                                                        </div>
+
+                                                        <div className="space-y-2">
+                                                            <Label
+                                                                htmlFor="regPhone"
+                                                                className="text-sm font-medium text-gray-700"
+                                                            >
+                                                                Số điện thoại
+                                                            </Label>
+                                                            <div className="relative">
+                                                                <Mail className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                                                                <Input
+                                                                    id="regPhone"
+                                                                    name="phone"
+                                                                    type="tel"
+                                                                    placeholder="0123456789"
+                                                                    className="pl-10 h-11 border-gray-300 focus:border-emerald-500 focus:ring-emerald-500"
+                                                                    value={registerData.phone}
                                                                     onChange={handleRegisterInputChange}
                                                                     required
                                                                 />

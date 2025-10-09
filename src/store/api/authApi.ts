@@ -9,6 +9,7 @@ export interface LoginRequest {
 
 export interface SignupRequest {
     EMAIL: string;
+    PHONE: string;
     PASSWORD: string;
     FIRST_NAME?: string;
     LAST_NAME?: string;
