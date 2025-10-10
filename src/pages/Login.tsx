@@ -5,11 +5,12 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent } from '@/components/ui/card';
-import { Eye, EyeOff, Mail, Lock } from 'lucide-react';
+import { Eye, EyeOff, Mail, Lock, User, Shield } from 'lucide-react';
 import Logo from '@/components/ui/Logo';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
-import { useLoginMutation, useSignupMutation } from '@/store/store';
+import { useLoginMutation, useSignupMutation } from '../store/api/authApi';
+import { useForgotPasswordMutation, useResetPasswordMutation } from '../store/api/userApi';
 import { useAppDispatch } from '@/store/hooks';
 import { loginStart, loginSuccess, loginFailure } from '@/store/slices/authSlice';
 import { handleApiError } from '@/utils/api';
@@ -21,9 +22,20 @@ const Login: React.FC = () => {
     const { isAuthenticated } = useAuth();
     const [login, { isLoading: isLoginLoading }] = useLoginMutation();
     const [signup] = useSignupMutation();
+    const [forgotPassword, { isLoading: isForgotPasswordLoading }] = useForgotPasswordMutation();
+    const [resetPassword, { isLoading: isResetPasswordLoading }] = useResetPasswordMutation();
 
     const [showPassword, setShowPassword] = useState(false);
     const [error, setError] = useState<string>('');
+    
+    // Forgot password flow state
+    const [forgotPasswordStep, setForgotPasswordStep] = useState<'email' | 'reset' | null>(null);
+    const [forgotPasswordData, setForgotPasswordData] = useState({
+        email: '',
+        otp: '',
+        newPassword: '',
+        confirmPassword: ''
+    });
 
     // Login form state
     const [loginData, setLoginData] = useState({
@@ -175,6 +187,116 @@ const Login: React.FC = () => {
         }));
     };
 
+    // Forgot password handlers
+    const handleForgotPasswordInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const { name, value } = e.target;
+        setForgotPasswordData(prev => ({
+            ...prev,
+            [name]: value
+        }));
+    };
+
+    const handleSendOTP = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setError('');
+
+        if (!forgotPasswordData.email) {
+            setError('Vui lòng nhập email');
+            return;
+        }
+
+        try {
+            console.log('Sending OTP to:', forgotPasswordData.email);
+            
+            // Call API to send OTP
+            const result = await forgotPassword({
+                EMAIL: forgotPasswordData.email
+            }).unwrap();
+
+            console.log('Send OTP result:', result);
+            
+            // Move to OTP verification step
+            setForgotPasswordStep('reset');
+            
+        } catch (err: any) {
+            console.log('Send OTP error:', err);
+            const errorMessage = handleApiError(err);
+            setError(errorMessage);
+        }
+    };
+
+    const handleResetPassword = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setError('');
+
+        if (!forgotPasswordData.otp || !forgotPasswordData.newPassword || !forgotPasswordData.confirmPassword) {
+            setError('Vui lòng điền đầy đủ thông tin');
+            return;
+        }
+
+        if (forgotPasswordData.newPassword !== forgotPasswordData.confirmPassword) {
+            setError('Mật khẩu mới và xác nhận mật khẩu không khớp');
+            return;
+        }
+
+        if (forgotPasswordData.newPassword.length < 6) {
+            setError('Mật khẩu phải có ít nhất 6 ký tự');
+            return;
+        }
+
+        try {
+            console.log('Resetting password with OTP:', forgotPasswordData.otp);
+            
+            // Call API to reset password
+            const result = await resetPassword({
+                EMAIL: forgotPasswordData.email,
+                OTP_CODE: forgotPasswordData.otp,
+                NEW_PASSWORD: forgotPasswordData.newPassword
+            }).unwrap();
+
+            console.log('Reset password result:', result);
+            
+            // Reset state and show success
+            setForgotPasswordStep(null);
+            setForgotPasswordData({ email: '', otp: '', newPassword: '', confirmPassword: '' });
+            setError('');
+            
+            
+            
+        } catch (err: any) {
+            console.log('Reset password error:', err);
+            const errorMessage = handleApiError(err);
+            setError(errorMessage);
+        }
+    };
+
+    const handleBackToLogin = () => {
+        setForgotPasswordStep(null);
+        setForgotPasswordData({ email: '', otp: '', newPassword: '', confirmPassword: '' });
+        setError('');
+    };
+
+    const handleResendOTP = async () => {
+        setForgotPasswordData(prev => ({ ...prev, otp: '' }));
+        setError('');
+        
+        try {
+            console.log('Resending OTP to:', forgotPasswordData.email);
+            
+            // Call API to resend OTP
+            const result = await forgotPassword({
+                EMAIL: forgotPasswordData.email
+            }).unwrap();
+
+            console.log('Resend OTP result:', result);
+            
+        } catch (err: any) {
+            console.log('Resend OTP error:', err);
+            const errorMessage = handleApiError(err);
+            setError(errorMessage);
+        }
+    };
+
     return (
         <div className="min-h-screen flex flex-col">
             {/* Header */}
@@ -215,22 +337,24 @@ const Login: React.FC = () => {
                                 {/* Auth Form */}
                                 <Card className="rounded-lg border-0 bg-white text-slate-900 shadow-[0_0_8px_rgba(0,0,0,0.2)]">
                                     <CardContent className="p-6">
-                                        <Tabs defaultValue="login" className="w-full">
-                                            <TabsList className="grid w-full grid-cols-2 mb-6">
-                                                <TabsTrigger value="login" className="text-sm font-medium">
-                                                    Đăng nhập
-                                                </TabsTrigger>
-                                                <TabsTrigger value="register" className="text-sm font-medium">
-                                                    Đăng ký
-                                                </TabsTrigger>
-                                            </TabsList>
+                                        {/* Show Login/Register tabs only when not in forgot password mode */}
+                                        {forgotPasswordStep === null ? (
+                                            <Tabs defaultValue="login" className="w-full">
+                                                <TabsList className="grid w-full grid-cols-2 mb-6">
+                                                    <TabsTrigger value="login" className="text-sm font-medium">
+                                                        Đăng nhập
+                                                    </TabsTrigger>
+                                                    <TabsTrigger value="register" className="text-sm font-medium">
+                                                        Đăng ký
+                                                    </TabsTrigger>
+                                                </TabsList>
 
-                                            {/* Error Message */}
-                                            {error && (
-                                                <div className="mb-4 p-3 text-red-600 text-sm bg-red-50 border border-red-200 rounded-lg">
-                                                    {error}
-                                                </div>
-                                            )}
+                                                {/* Error Message */}
+                                                {error && (
+                                                    <div className="mb-4 p-3 text-red-600 text-sm bg-red-50 border border-red-200 rounded-lg">
+                                                        {error}
+                                                    </div>
+                                                )}
 
                                             {/* Form Container with Fixed Height */}
                                             <div className="min-h-[300px]">{/* Fixed height container */}
@@ -295,16 +419,15 @@ const Login: React.FC = () => {
                                                             </div>
                                                         </div>
 
-                                                        <div className="flex items-center justify-between">
-                                                            <Link
-                                                                to="/forgot-password"
-                                                                className="text-sm text-emerald-600 hover:text-emerald-700 hover:underline font-medium"
-                                                            >
-                                                                Quên mật khẩu?
-                                                            </Link>
-                                                        </div>
-
-                                                        <Button
+                                        <div className="flex items-center justify-between">
+                                            <button
+                                                type="button"
+                                                onClick={() => setForgotPasswordStep('email')}
+                                                className="text-sm text-emerald-600 hover:text-emerald-700 hover:underline font-medium"
+                                            >
+                                                Quên mật khẩu?
+                                            </button>
+                                        </div>                                                        <Button
                                                             type="submit"
                                                             className="w-full h-11 bg-emerald-600 hover:bg-emerald-700 text-white font-medium"
                                                             disabled={isLoginLoading}
@@ -444,6 +567,183 @@ const Login: React.FC = () => {
                                                 </TabsContent>
                                             </div>{/* End of fixed height container */}
                                         </Tabs>
+                                        ) : (
+                                            /* Forgot Password Flow */
+                                            <div className="w-full">
+                                                {/* Error Message for Forgot Password */}
+                                                {error && (
+                                                    <div className="mb-4 p-3 text-red-600 text-sm bg-red-50 border border-red-200 rounded-lg">
+                                                        {error}
+                                                    </div>
+                                                )}
+
+                                                {/* Step 1: Enter Email */}
+                                                {forgotPasswordStep === 'email' && (
+                                                    <div>
+                                                        <div className="mb-6">
+                                                            <h3 className="text-xl font-semibold text-gray-900 mb-1">
+                                                                Quên mật khẩu
+                                                            </h3>
+                                                            <p className="text-sm text-gray-600">
+                                                                Nhập email của bạn để nhận mã xác thực
+                                                            </p>
+                                                        </div>
+
+                                                        <form onSubmit={handleSendOTP} className="space-y-4">
+                                                            <div className="space-y-2">
+                                                                <Label className="text-sm font-medium text-gray-700">
+                                                                    Email
+                                                                </Label>
+                                                                <div className="relative">
+                                                                    <Mail className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                                                                    <Input
+                                                                        name="email"
+                                                                        type="email"
+                                                                        required
+                                                                        value={forgotPasswordData.email}
+                                                                        onChange={handleForgotPasswordInputChange}
+                                                                        className="pl-10 h-11 border-gray-300 focus:border-emerald-500 focus:ring-emerald-500"
+                                                                        placeholder="Nhập email của bạn"
+                                                                    />
+                                                                </div>
+                                                            </div>
+
+                                                            <div className="flex space-x-3 pt-2">
+                                                                <Button
+                                                                    type="button"
+                                                                    variant="outline"
+                                                                    onClick={handleBackToLogin}
+                                                                    className="flex-1"
+                                                                >
+                                                                    Quay lại
+                                                                </Button>
+                                                                <Button
+                                                                    type="submit"
+                                                                    disabled={isForgotPasswordLoading}
+                                                                    className="flex-1 bg-emerald-600 hover:bg-emerald-700"
+                                                                >
+                                                                    {isForgotPasswordLoading ? (
+                                                                        <div className="flex items-center">
+                                                                            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                                                                            Đang gửi...
+                                                                        </div>
+                                                                    ) : (
+                                                                        'Gửi mã'
+                                                                    )}
+                                                                </Button>
+                                                            </div>
+                                                        </form>
+                                                    </div>
+                                                )}
+
+                                                {/* Step 2: Enter OTP and New Password */}
+                                                {forgotPasswordStep === 'reset' && (
+                                                    <div>
+                                                        <div className="mb-6">
+                                                            <h3 className="text-xl font-semibold text-gray-900 mb-1">
+                                                                Đặt lại mật khẩu
+                                                            </h3>
+                                                            <p className="text-sm text-gray-600">
+                                                                Nhập mã OTP đã được gửi đến: <span className="font-medium">{forgotPasswordData.email}</span>
+                                                            </p>
+                                                        </div>
+
+                                                        <form onSubmit={handleResetPassword} className="space-y-4">
+                                                            <div className="space-y-2">
+                                                                <Label className="text-sm font-medium text-gray-700">
+                                                                    Mã OTP
+                                                                </Label>
+                                                                <div className="relative">
+                                                                    <Shield className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                                                                    <Input
+                                                                        name="otp"
+                                                                        type="text"
+                                                                        required
+                                                                        maxLength={6}
+                                                                        value={forgotPasswordData.otp}
+                                                                        onChange={handleForgotPasswordInputChange}
+                                                                        className="pl-10 h-11 border-gray-300 focus:border-emerald-500 focus:ring-emerald-500 text-center tracking-wider font-mono"
+                                                                        placeholder="000000"
+                                                                    />
+                                                                </div>
+                                                            </div>
+
+                                                            <div className="space-y-2">
+                                                                <Label className="text-sm font-medium text-gray-700">
+                                                                    Mật khẩu mới
+                                                                </Label>
+                                                                <div className="relative">
+                                                                    <Lock className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                                                                    <Input
+                                                                        name="newPassword"
+                                                                        type="password"
+                                                                        required
+                                                                        value={forgotPasswordData.newPassword}
+                                                                        onChange={handleForgotPasswordInputChange}
+                                                                        className="pl-10 h-11 border-gray-300 focus:border-emerald-500 focus:ring-emerald-500"
+                                                                        placeholder="Mật khẩu ít nhất 6 ký tự"
+                                                                    />
+                                                                </div>
+                                                            </div>
+
+                                                            <div className="space-y-2">
+                                                                <Label className="text-sm font-medium text-gray-700">
+                                                                    Xác nhận mật khẩu mới
+                                                                </Label>
+                                                                <div className="relative">
+                                                                    <Lock className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                                                                    <Input
+                                                                        name="confirmPassword"
+                                                                        type="password"
+                                                                        required
+                                                                        value={forgotPasswordData.confirmPassword}
+                                                                        onChange={handleForgotPasswordInputChange}
+                                                                        className="pl-10 h-11 border-gray-300 focus:border-emerald-500 focus:ring-emerald-500"
+                                                                        placeholder="Nhập lại mật khẩu mới"
+                                                                    />
+                                                                </div>
+                                                            </div>
+
+                                                            <div className="flex space-x-3 pt-2">
+                                                                <Button
+                                                                    type="button"
+                                                                    variant="outline"
+                                                                    onClick={() => setForgotPasswordStep('email')}
+                                                                    className="flex-1"
+                                                                >
+                                                                    Quay lại
+                                                                </Button>
+                                                                <Button
+                                                                    type="submit"
+                                                                    disabled={isResetPasswordLoading}
+                                                                    className="flex-1 bg-emerald-600 hover:bg-emerald-700"
+                                                                >
+                                                                    {isResetPasswordLoading ? (
+                                                                        <div className="flex items-center">
+                                                                            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                                                                            Đang xử lý...
+                                                                        </div>
+                                                                    ) : (
+                                                                        'Đặt lại mật khẩu'
+                                                                    )}
+                                                                </Button>
+                                                            </div>
+
+                                                            <div className="text-center pt-4">
+                                                                <button
+                                                                    type="button"
+                                                                    onClick={handleResendOTP}
+                                                                    disabled={isForgotPasswordLoading}
+                                                                    className="text-sm text-emerald-600 hover:text-emerald-700 hover:underline font-medium disabled:opacity-50"
+                                                                >
+                                                                    {isForgotPasswordLoading ? 'Đang gửi...' : 'Gửi lại mã OTP'}
+                                                                </button>
+                                                            </div>
+                                                        </form>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        )}
 
                                         {/* Terms */}
                                         <div className="mt-6 text-center text-xs text-gray-500">
