@@ -78,6 +78,27 @@ export interface UpdateSecuritySettingRequest {
     OTP_CODE?: string;
 }
 
+// Forgot password request/response types
+export interface ForgotPasswordRequest {
+    EMAIL: string;
+}
+
+export interface ForgotPasswordResponse {
+    message: string;
+    status: number;
+}
+
+export interface ResetPasswordRequest {
+    EMAIL: string;
+    OTP_CODE: string;
+    NEW_PASSWORD: string;
+}
+
+export interface ResetPasswordResponse {
+    message: string;
+    status: number;
+}
+
 // User API slice
 export const userApi = baseApi.injectEndpoints({
     endpoints: (builder) => ({
@@ -164,6 +185,24 @@ export const userApi = baseApi.injectEndpoints({
                 body: data,
             }),
         }),
+
+        // Forgot password - Send OTP to email
+        forgotPassword: builder.mutation<ForgotPasswordResponse, ForgotPasswordRequest>({
+            query: (data) => ({
+                url: '/user/forgot-password',
+                method: 'POST',
+                body: data,
+            }),
+        }),
+
+        // Reset password with OTP
+        resetPassword: builder.mutation<ResetPasswordResponse, ResetPasswordRequest>({
+            query: (data) => ({
+                url: '/user/reset-password',
+                method: 'POST',
+                body: data,
+            }),
+        }),
     })
 });
 
@@ -179,4 +218,6 @@ export const {
     useUploadUserAvatarMutation,
     useUpdateSecuritySettingMutation,
     useSendOtpMutation,
+    useForgotPasswordMutation,
+    useResetPasswordMutation,
 } = userApi;
