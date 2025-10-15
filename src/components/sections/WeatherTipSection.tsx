@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { 
-  Sun, 
-  CloudRain, 
-  Cloud, 
-  Snowflake, 
+import {
+  Sun,
+  CloudRain,
+  Cloud,
+  Snowflake,
   Wind,
   Clock,
   Lightbulb,
@@ -101,17 +101,17 @@ const WeatherTipSection: React.FC = () => {
 
   return (
     <section className="py-16 lg:py-15 bg-gradient-to-br from-muted/30 to-secondary/20" style={{ background: 'linear-gradient(135deg, hsl(195 100% 98%), hsl(210 100% 98%))' }}>
-      <div className="container mx-auto" >
+      <div className="container mx-auto px-4 lg:px-6" >
         <div className="grid lg:grid-cols-2 gap-8">
           {/* Weather & Time Card */}
-          <Card 
+          <Card
             className="p-6 lg:p-8 border-0 shadow-weather backdrop-blur-sm animate-slide-in-up"
             style={{ background: 'linear-gradient(135deg, hsl(195 100% 96%), hsl(210 100% 97%))' }}
           >
             <div className="space-y-6">
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-3">
-                  <div 
+                  <div
                     className="p-3 rounded-full"
                     style={{ background: 'linear-gradient(135deg, hsl(195 100% 85%), hsl(210 100% 90%))' }}
                   >
@@ -142,7 +142,7 @@ const WeatherTipSection: React.FC = () => {
                     </div>
                     <p className="text-2xl font-bold text-foreground">{weather.temperature}°C</p>
                   </div>
-                  
+
                   <div className="text-center p-4 bg-background/30 rounded-xl">
                     <div className="flex items-center justify-center space-x-2 mb-2">
                       <MapPin className="w-4 h-4 text-blue-500" />
@@ -162,14 +162,14 @@ const WeatherTipSection: React.FC = () => {
           </Card>
 
           {/* Health Tip Card */}
-          <Card 
+          <Card
             className="p-6 lg:p-8 border-0 shadow-tip backdrop-blur-sm animate-slide-in-up"
             style={{ background: 'linear-gradient(135deg, hsl(158 64% 96%), hsl(134 61% 97%))' }}
           >
             <div className="space-y-6">
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-3">
-                  <div 
+                  <div
                     className="p-3 rounded-full"
                     style={{ background: 'linear-gradient(135deg, hsl(134 61% 65%), hsl(158 64% 70%))' }}
                   >

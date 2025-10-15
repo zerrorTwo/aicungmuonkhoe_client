@@ -1,10 +1,10 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { Menu, X, User, Settings, LogOut, UserCircle, FileText, Shield, Bell } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import Logo from '@/components/ui/Logo';
 import { useAuth } from '@/hooks/useAuth';
-import { useAppSelector, useAppDispatch } from '@/store/hooks';
+import { useAppDispatch } from '@/store/hooks';
 import { logout as logoutAction } from '@/store/slices/authSlice';
 import { useLogoutMutation } from '@/store/api/authApi';
 
@@ -13,8 +13,9 @@ const Header: React.FC = () => {
     const [isUserDropdownOpen, setIsUserDropdownOpen] = useState(false);
     const dropdownRef = useRef<HTMLDivElement>(null);
     const navigate = useNavigate();
+    const location = useLocation();
     const dispatch = useAppDispatch();
-    
+
     // Auth state
     const { isAuthenticated } = useAuth();
     const user = localStorage.getItem('user') ? JSON.parse(localStorage.getItem('user')!) : null;
@@ -65,8 +66,16 @@ const Header: React.FC = () => {
         return null;
     };
 
+    // Function to check if a route is active
+    const isRouteActive = (href: string) => {
+        if (href === '/') {
+            return location.pathname === '/';
+        }
+        return location.pathname.startsWith(href);
+    };
+
     const navigationItems = [
-        { label: 'Trang chủ', href: '/', active: true },
+        { label: 'Trang chủ', href: '/' },
         { label: 'Theo dõi sức khỏe', href: '/health-tracking' },
         { label: 'Thông tin sức khỏe', href: '/health-info' },
         { label: 'Liên kết tài khoản', href: '/account-linking' },
@@ -75,7 +84,7 @@ const Header: React.FC = () => {
 
     return (
         <header className="bg-white/95 backdrop-blur-md border-b border-slate-200 sticky top-0 z-50">
-            <div className="container mx-auto">
+            <div className="container mx-auto px-4 sm:px-6 lg:px-8">
                 <div className="flex items-center justify-between h-16 lg:h-20">
                     {/* Logo */}
                     <div className="flex items-center space-x-3">
@@ -89,19 +98,22 @@ const Header: React.FC = () => {
                     </div>
                     {/* Desktop Navigation */}
                     <nav className="hidden lg:flex items-center space-x-1">
-                        {navigationItems.map((item) => (
-                            <Link key={item.href} to={item.href}>
-                                <Button
-                                    variant={item.active ? "default" : "ghost"}
-                                    className={`cursor-pointer px-4 py-2 text-sm font-medium transition-all duration-300 ${item.active
-                                        ? 'bg-gradient-primary text-white shadow-lg'
-                                        : 'hover:bg-slate-100 text-slate-600 hover:text-slate-900'
-                                        }`}
-                                >
-                                    {item.label}
-                                </Button>
-                            </Link>
-                        ))}
+                        {navigationItems.map((item) => {
+                            const isActive = isRouteActive(item.href);
+                            return (
+                                <Link key={item.href} to={item.href} onClick={() => setIsMenuOpen(false)}>
+                                    <Button
+                                        variant={isActive ? "default" : "ghost"}
+                                        className={`cursor-pointer px-4 py-2 text-sm font-medium transition-all duration-300 ${isActive
+                                            ? 'bg-gradient-primary text-white shadow-lg'
+                                            : 'hover:bg-slate-100 text-slate-600 hover:text-slate-900'
+                                            }`}
+                                    >
+                                        {item.label}
+                                    </Button>
+                                </Link>
+                            );
+                        })}
                     </nav>
 
                     {/* User Actions */}
@@ -250,20 +262,23 @@ const Header: React.FC = () => {
                 {isMenuOpen && (
                     <div className="lg:hidden py-4 border-t border-slate-200">
                         <nav className="space-y-2">
-                            {navigationItems.map((item) => (
-                                <Link key={item.href} to={item.href}>
-                                    <Button
-                                        variant={item.active ? "default" : "ghost"}
-                                        className={`w-full justify-start text-sm ${item.active
-                                            ? 'bg-gradient-primary text-white'
-                                            : 'text-slate-600 hover:text-slate-900'
-                                            }`}
-                                    >
-                                        {item.label}
-                                    </Button>
-                                </Link>
-                            ))}
-                            
+                            {navigationItems.map((item) => {
+                                const isActive = isRouteActive(item.href);
+                                return (
+                                    <Link key={item.href} to={item.href} onClick={() => setIsMenuOpen(false)}>
+                                        <Button
+                                            variant={isActive ? "default" : "ghost"}
+                                            className={`w-full justify-start text-sm ${isActive
+                                                ? 'bg-gradient-primary text-white'
+                                                : 'text-slate-600 hover:text-slate-900'
+                                                }`}
+                                        >
+                                            {item.label}
+                                        </Button>
+                                    </Link>
+                                );
+                            })}
+
                             <div className="pt-2 mt-2 border-t border-slate-200">
                                 {isAuthenticated() && user ? (
                                     // User info for mobile
