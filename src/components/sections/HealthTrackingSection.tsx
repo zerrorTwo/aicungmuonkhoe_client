@@ -39,7 +39,7 @@ const HealthTrackingSection: React.FC = () => {
 
   return (
     <section className="py-16 lg:py-15 bg-gradient-to-br from-background via-muted/20 to-background">
-      <div className="container mx-auto">
+      <div className="container mx-auto px-4 lg:px-6">
         <div className="text-center mb-12">
           <div className="inline-flex items-center px-4 py-2 bg-primary/10 rounded-full text-primary font-medium text-sm mb-4">
             <User className="w-4 h-4 mr-2" />
@@ -49,14 +49,14 @@ const HealthTrackingSection: React.FC = () => {
             Theo dõi <span className="bg-gradient-primary bg-clip-text text-transparent">sức khỏe</span>
           </h2>
           <p className="text-lg text-muted-foreground max-w-3xl mx-auto leading-relaxed">
-            Theo dõi chỉ số sức khỏe quan trọng trong suốt cuộc đời cho tất cả thành viên trong gia đình 
+            Theo dõi chỉ số sức khỏe quan trọng trong suốt cuộc đời cho tất cả thành viên trong gia đình
             để hỗ trợ chăm sóc sức khỏe tốt hơn
           </p>
         </div>
 
         <div className="grid md:grid-cols-3 gap-8 mb-12">
           {trackingCategories.map((category, index) => (
-            <Card 
+            <Card
               key={index}
               className="p-8 text-center hover:shadow-weather transition-all duration-300 border-border/50 bg-card/50 backdrop-blur-sm hover:scale-105 group cursor-pointer"
               onMouseEnter={(e) => {
@@ -94,8 +94,8 @@ const HealthTrackingSection: React.FC = () => {
         </div>
 
         <div className="text-center">
-          <Button 
-            size="lg" 
+          <Button
+            size="lg"
             className="bg-gradient-primary hover:opacity-90 hover:scale-105 text-primary-foreground font-semibold px-8 py-4 h-auto shadow-card group transform transition-all duration-300"
           >
             Xem chi tiết

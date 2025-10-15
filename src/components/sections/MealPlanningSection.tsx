@@ -40,7 +40,7 @@ const MealPlanningSection: React.FC = () => {
 
   return (
     <section className="py-16 lg:py-15 bg-gradient-to-br from-muted/20 via-background to-muted/20">
-      <div className="container mx-auto">
+      <div className="container mx-auto px-4 lg:px-6">
         <div className="text-center mb-12">
           <div className="inline-flex items-center px-4 py-2 bg-primary/10 rounded-full text-primary font-medium text-sm mb-4">
             <ChefHat className="w-4 h-4 mr-2" />
@@ -50,7 +50,7 @@ const MealPlanningSection: React.FC = () => {
             Kiểm tra & <span className="bg-gradient-primary bg-clip-text text-transparent">lên bữa ăn</span>
           </h2>
           <p className="text-lg text-muted-foreground max-w-3xl mx-auto leading-relaxed">
-            Bạn sẽ kiểm tra được năng lượng của các bữa đã ăn hoặc dự định ăn, đồng thời nhận được gợi ý 
+            Bạn sẽ kiểm tra được năng lượng của các bữa đã ăn hoặc dự định ăn, đồng thời nhận được gợi ý
             bữa ăn còn lại phù hợp tình trạng sức khỏe của bạn
           </p>
         </div>
@@ -62,11 +62,10 @@ const MealPlanningSection: React.FC = () => {
               <button
                 key={index}
                 onClick={() => setActiveTab(index)}
-                className={`flex items-center space-x-2 px-6 py-3 rounded-full font-medium transition-all duration-300 ${
-                  activeTab === index
+                className={`flex items-center space-x-2 px-6 py-3 rounded-full font-medium transition-all duration-300 ${activeTab === index
                     ? 'bg-gradient-primary text-primary-foreground shadow-card'
                     : 'text-muted-foreground hover:text-foreground'
-                }`}
+                  }`}
               >
                 {React.createElement(feature.icon, { className: "w-4 h-4" })}
                 <span className="hidden sm:inline">{feature.title}</span>
@@ -80,8 +79,8 @@ const MealPlanningSection: React.FC = () => {
           {/* Image */}
           <div className="order-2 lg:order-1">
             <div className="relative rounded-2xl overflow-hidden shadow-weather group">
-              <img 
-                src={mealFeatures[activeTab].image} 
+              <img
+                src={mealFeatures[activeTab].image}
                 alt={mealFeatures[activeTab].title}
                 className="w-full h-80 lg:h-96 object-cover transition-transform duration-700 group-hover:scale-105"
               />
@@ -128,8 +127,8 @@ const MealPlanningSection: React.FC = () => {
               <span>Chỉ mất 2-3 phút để hoàn thành</span>
             </div>
 
-            <Button 
-              size="lg" 
+            <Button
+              size="lg"
               className="bg-gradient-primary hover:opacity-90 hover:scale-105 text-primary-foreground font-semibold px-8 py-4 h-auto shadow-card group transform transition-all duration-300"
             >
               Bắt đầu ngay

@@ -54,7 +54,7 @@ const HealthConsultationSection: React.FC = () => {
 
   return (
     <section className="py-16 lg:py-15 bg-background">
-      <div className="container mx-auto">
+      <div className="container mx-auto px-4 lg:px-6">
         <div className="text-center mb-12">
           <div className="inline-flex items-center px-4 py-2 bg-primary/10 rounded-full text-primary font-medium text-sm mb-4">
             <MessageCircle className="w-4 h-4 mr-2" />
@@ -70,7 +70,7 @@ const HealthConsultationSection: React.FC = () => {
 
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6 mb-12">
           {consultationAreas.map((area, index) => (
-            <Card 
+            <Card
               key={index}
               className="p-6 text-center hover:shadow-weather transition-all duration-300 border-border/50 bg-card/50 backdrop-blur-sm hover:scale-105 group cursor-pointer"
               onMouseEnter={(e) => {
@@ -93,12 +93,12 @@ const HealthConsultationSection: React.FC = () => {
           ))}
         </div>
 
-        <div 
+        <div
           className="rounded-2xl p-8"
           style={{ background: 'linear-gradient(135deg, hsl(158 64% 96%), hsl(134 61% 97%))' }}
         >
           <div className="text-center">
-            <div 
+            <div
               className="inline-flex p-4 rounded-full mb-6"
               style={{ background: 'linear-gradient(135deg, hsl(134 61% 51%), hsl(158 64% 58%))' }}
             >
@@ -108,11 +108,11 @@ const HealthConsultationSection: React.FC = () => {
               Nhận tư vấn từ chuyên gia
             </h3>
             <p className="text-muted-foreground mb-6 max-w-2xl mx-auto">
-              Đội ngũ chuyên gia dinh dưỡng và sức khỏe sẽ hỗ trợ bạn 24/7 với những lời khuyên phù hợp 
+              Đội ngũ chuyên gia dinh dưỡng và sức khỏe sẽ hỗ trợ bạn 24/7 với những lời khuyên phù hợp
               cho từng thành viên trong gia đình
             </p>
-            <Button 
-              size="lg" 
+            <Button
+              size="lg"
               className="hover:opacity-90 hover:scale-105 text-white font-semibold px-8 py-4 h-auto shadow-card group transform transition-all duration-300"
               style={{ background: 'linear-gradient(135deg, hsl(134 61% 51%), hsl(158 64% 58%))' }}
             >
