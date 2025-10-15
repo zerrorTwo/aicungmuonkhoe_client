@@ -1,81 +1,83 @@
 // User API endpoints using RTK Query
-import { baseApi } from './baseApi';
-import type { AuthUser } from './authApi';
+import { baseApi } from "./baseApi";
+import type { AuthUser } from "./authApi";
 
 // Types based on backend DTOs
 export interface CreateUserRequest {
-    email: string;
-    password: string;
-    full_name?: string;
-    phone_number?: string;
-    date_of_birth?: string;
-    gender_id?: number;
+  email: string;
+  password: string;
+  full_name?: string;
+  phone_number?: string;
+  date_of_birth?: string;
+  gender_id?: number;
 }
 
 export interface UpdateUserRequest {
-    full_name?: string;
-    phone_number?: string;
-    date_of_birth?: string;
-    gender_id?: number;
+  full_name?: string;
+  phone_number?: string;
+  date_of_birth?: string;
+  gender_id?: number;
 }
 
 export interface UserResponse {
-    success: boolean;
-    message: string;
-    data: AuthUser;
+  success: boolean;
+  message: string;
+  data: AuthUser;
 }
 
 export interface UsersListResponse {
-    success: boolean;
-    message: string;
-    data: AuthUser[];
+  success: boolean;
+  message: string;
+  data: AuthUser[];
 }
 
 export interface UserProfileHealthDocument {
-    id: number;
-    height: string;
-    weight: string;
-    healthStatus: string;
-    exerciseFrequency: string;
-    isCompleted: boolean;
+  id: number;
+  height: string;
+  weight: string;
+  healthStatus: string;
+  exerciseFrequency: string;
+  isCompleted: boolean;
 }
 
 export interface UserProfileData {
-    userId: number;
-    fullName: string;
-    email: string;
-    phone: string;
-    birthDate: string;
-    gender: string;
-    address: string;
-    avatar: string;
-    isActive: boolean;
-    isAdmin: boolean;
-    healthDocument: UserProfileHealthDocument;
+  userId: number;
+  fullName: string;
+  email: string;
+  phone: string;
+  birthDate: string;
+  gender: string;
+  address: string | { ID: number } | number;
+  addressId?: number; // Thêm addressId để handle backend response
+  avatar: string;
+  isActive: boolean;
+  isAdmin: boolean;
+  healthDocument: UserProfileHealthDocument;
 }
 
 export interface UserProfileResponse {
-    data: UserProfileData;
-    message: string;
-    status: number;
+  data: UserProfileData;
+  message: string;
+  status: number;
 }
 
 // Update user profile request
 export interface UpdateUserProfileRequest {
-    fullName?: string;
-    phone?: string;
-    birthDate?: string;
-    address?: string;
-    avatar?: string;
-    genderId?: number;
+  fullName?: string;
+  phone?: string;
+  birthDate?: string;
+  address?: string; // Vẫn giữ để hiển thị UI
+  addressId?: number; // Thêm addressId để gửi lên BE
+  avatar?: string;
+  genderId?: number;
 }
 
 export interface UpdateSecuritySettingRequest {
-    NEW_PASSWORD?: string;
-    CURRENT_PASSWORD?: string;
-    PHONE?: string;
-    EMAIL?: string;
-    OTP_CODE?: string;
+  NEW_PASSWORD?: string;
+  CURRENT_PASSWORD?: string;
+  PHONE?: string;
+  EMAIL?: string;
+  OTP_CODE?: string;
 }
 
 // Forgot password request/response types
@@ -101,16 +103,16 @@ export interface ResetPasswordResponse {
 
 // User API slice
 export const userApi = baseApi.injectEndpoints({
-    endpoints: (builder) => ({
-        // Create new user
-        createUser: builder.mutation<UserResponse, CreateUserRequest>({
-            query: (userData) => ({
-                url: '/user',
-                method: 'POST',
-                body: userData,
-            }),
-            invalidatesTags: ['User'],
-        }),
+  endpoints: (builder) => ({
+    // Create new user
+    createUser: builder.mutation<UserResponse, CreateUserRequest>({
+      query: (userData) => ({
+        url: "/user",
+        method: "POST",
+        body: userData,
+      }),
+      invalidatesTags: ["User"],
+    }),
 
         // Get user by ID
         getUserById: builder.query<UserResponse, number>({
@@ -221,3 +223,4 @@ export const {
     useForgotPasswordMutation,
     useResetPasswordMutation,
 } = userApi;
+
