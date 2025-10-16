@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   Tabs,
   TabsContent,
@@ -14,6 +14,20 @@ import ManagementAccountTab from "../components/profile/ManagementAccountTab";
 import { useGetUserProfileQuery } from "../store/api/userApi";
 
 const Profile: React.FC = () => {
+  // State để quản lý tab hiện tại
+  const [activeTab, setActiveTab] = useState("personal");
+  const [resetManagementTab, setResetManagementTab] = useState(0);
+
+  // Handler khi click vào tab management
+  const handleManagementClick = () => {
+    if (activeTab === "management") {
+      // Đang active → reset về danh sách
+      setResetManagementTab((prev) => prev + 1);
+    }
+    // Luôn set active (TabsTrigger sẽ handle)
+    setActiveTab("management");
+  };
+
   // Call API để lấy user profile thay vì từ localStorage
   const {
     data: profileResponse,
@@ -108,7 +122,11 @@ const Profile: React.FC = () => {
 
       <main className="container mx-auto px-4 py-8">
         <div className="mx-auto max-w-6xl">
-          <Tabs defaultValue="personal" className="flex gap-8">
+          <Tabs
+            value={activeTab}
+            onValueChange={setActiveTab}
+            className="flex gap-8"
+          >
             {/* Sidebar Navigation */}
             <div className="w-64 flex-shrink-0">
               <TabsList className="border-border/50 flex h-auto w-full flex-col space-y-1 rounded-xl border bg-white/80 p-4 shadow-lg backdrop-blur-sm">
@@ -126,6 +144,7 @@ const Profile: React.FC = () => {
                 </TabsTrigger>
                 <TabsTrigger
                   value="management"
+                  onClick={handleManagementClick}
                   className="cursor-pointer hover:bg-primary/10 data-[state=active]:from-primary data-[state=active]:to-primary/80 data-[state=active]:text-primary w-full justify-start rounded-lg px-4 py-3 text-left transition-all data-[state=active]:bg-gradient-to-r data-[state=active]:shadow-md data-[state=active]:font-bold"
                 >
                   Thông tin quản lý
@@ -150,7 +169,7 @@ const Profile: React.FC = () => {
               </TabsContent>
 
               <TabsContent value="management" className="mt-0">
-                <ManagementAccountTab />
+                <ManagementAccountTab resetTrigger={resetManagementTab} />
               </TabsContent>
 
               <TabsContent value="notifications" className="mt-0">
