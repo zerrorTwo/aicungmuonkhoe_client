@@ -3,13 +3,10 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Camera } from 'lucide-react';
-
+import type { UserInfo } from '@/types/user.type';
 interface ProfileAvatarProps {
-    userInfo: {
-        name: string;
-        email: string;
-        avatar?: string;
-    };
+    userInfo: UserInfo | null;
+
     isEditing: boolean;
     onAvatarChange?: (file: File | null) => void;
 }
@@ -45,15 +42,15 @@ const ProfileAvatar: React.FC<ProfileAvatarProps> = ({ userInfo, isEditing, onAv
         event.target.value = '';
     };
 
-    const initials = getInitials(userInfo.name, userInfo.email);
+    const initials = getInitials(userInfo?.FULL_NAME || '', userInfo?.EMAIL || '');
     
     return (
         <div className="flex flex-col items-center space-y-4">
             <div className="relative">
                 <Avatar className="w-24 h-24">
-                    {userInfo.avatar ? (
+                    {userInfo?.AVATAR ? (
                         <AvatarImage
-                            src={userInfo.avatar}
+                            src={userInfo.AVATAR}
                             alt="Profile"
                         />
                     ) : (
@@ -87,8 +84,8 @@ const ProfileAvatar: React.FC<ProfileAvatarProps> = ({ userInfo, isEditing, onAv
                 )}
             </div>
             <div className="text-center">
-                <h3 className="text-xl font-semibold">{userInfo.name || "Người dùng"}</h3>
-                <p className="text-muted-foreground">{userInfo.email}</p>
+                <h3 className="text-xl font-semibold">{userInfo?.FULL_NAME || "Người dùng"}</h3>
+                <p className="text-muted-foreground">{userInfo?.EMAIL}</p>
                 <Badge variant="secondary" className="mt-2">Tài khoản đã xác thực</Badge>
             </div>
         </div>

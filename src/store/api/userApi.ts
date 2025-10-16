@@ -32,27 +32,26 @@ export interface UsersListResponse {
 }
 
 export interface UserProfileHealthDocument {
-  id: number;
-  height: string;
-  weight: string;
-  healthStatus: string;
-  exerciseFrequency: string;
-  isCompleted: boolean;
+    ID: number;
+    HEIGHT?: string;
+    WEIGHT?: string;
+    HEALTH_STATUS?: string;
+    EXERCISE_FREQUENCY?: string;
 }
 
 export interface UserProfileData {
-  userId: number;
-  fullName: string;
-  email: string;
-  phone: string;
-  birthDate: string;
-  gender: string;
-  address: string | { ID: number } | number;
-  addressId?: number; // Thêm addressId để handle backend response
-  avatar: string;
-  isActive: boolean;
-  isAdmin: boolean;
-  healthDocument: UserProfileHealthDocument;
+  USER_ID: number;
+  FULL_NAME: string;
+  EMAIL: string;
+  PHONE: string;
+  DOB: string;
+  GENDER: string;
+  PROVINCE: string | null;
+  PROVINCE_ID?: number | null; // Thêm PROVINCE_ID để handle backend response
+  AVATAR?: string;
+  IS_ACTIVE?: boolean;
+  IS_ADMIN?: boolean;
+  HEALTH_DOCUMENT?: UserProfileHealthDocument;
 }
 
 export interface UserProfileResponse {
@@ -63,13 +62,12 @@ export interface UserProfileResponse {
 
 // Update user profile request
 export interface UpdateUserProfileRequest {
-  fullName?: string;
-  phone?: string;
-  birthDate?: string;
-  address?: string; // Vẫn giữ để hiển thị UI
-  addressId?: number; // Thêm addressId để gửi lên BE
-  avatar?: string;
-  genderId?: number;
+  FULL_NAME?: string;
+  PHONE?: string;
+  DOB?: string;
+  PROVINCE?: string; // Vẫn giữ để hiển thị UI
+  PROVINCE_ID?: number; // Thêm addressId để gửi lên BE
+  GENDER_ID?: number;
 }
 
 export interface UpdateSecuritySettingRequest {

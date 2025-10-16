@@ -30,56 +30,15 @@ const Profile: React.FC = () => {
 
   // Call API để lấy user profile thay vì từ localStorage
   const {
-    data: profileResponse,
+    data: userDataResponse,
     isLoading,
     error,
     refetch,
   } = useGetUserProfileQuery();
 
-  console.log("API Profile Response:", profileResponse);
-  console.log("Loading:", isLoading);
-  console.log("Error:", error);
+  const userInfo = userDataResponse?.data || null;
 
-  // Chuyển đổi dữ liệu API response thành format cho PersonalInfoTab
-  const formatUserInfo = (profileData: any) => {
-    if (!profileData || !profileData.data) {
-      console.log("No profile data available");
-      return {
-        name: "",
-        email: "",
-        phone: "",
-        birthDate: "",
-        gender: "",
-        address: "",
-        avatar: "",
-      };
-    }
 
-    const userData = profileData.data;
-    console.log("Raw userData from API:", userData);
-    console.log("userData.address type:", typeof userData.address);
-    console.log("userData.address value:", userData.address);
-
-    const formattedInfo = {
-      name: userData.fullName || userData.email?.split("@")[0] || "Người dùng",
-      email: userData.email || "",
-      phone: userData.phone || "",
-      birthDate: userData.birthDate || "",
-      gender: userData.gender || "",
-      address: userData.address, // Giữ nguyên format từ backend (có thể là string hoặc {ID: number})
-      addressId:
-        userData.address &&
-        typeof userData.address === "object" &&
-        userData.address.ID
-          ? userData.address.ID
-          : userData.addressId, // Extract ID từ address object hoặc dùng addressId field
-      avatar: userData.avatar || "",
-    };
-
-    console.log("Formatted user info:", formattedInfo);
-    console.log("formattedInfo.address:", formattedInfo.address);
-    return formattedInfo;
-  };
 
   // Loading state
   if (isLoading) {
@@ -112,9 +71,6 @@ const Profile: React.FC = () => {
     );
   }
 
-  const userInfo = formatUserInfo(profileResponse);
-
-  console.log("Formatted user info for UI:", userInfo);
 
   return (
     <div className="from-background via-primary/5 to-accent/10 min-h-screen bg-gradient-to-br">

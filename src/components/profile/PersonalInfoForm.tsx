@@ -14,28 +14,28 @@ import {
   useGetAllProvincesQuery,
   type Province,
 } from "../../store/api/provinceApi";
+import type { UserInfo } from "@/types/user.type";
+
+type PersonalInfoFormData = {
+  FULL_NAME: string;
+  PHONE: string;
+  DOB: string;
+  PROVINCE: string;
+  AVATAR: string;
+  GENDER_ID: number;
+  PROVINCE_ID?: number | null;
+};
 
 interface PersonalInfoFormProps {
-  userInfo: {
-    name: string;
-    email: string;
-    phone: string;
-    birthDate: string;
-    gender: string;
-    address: string;
-  };
+  userInfo: UserInfo | null;
+
   isEditing: boolean;
-  formData?: {
-    fullName: string;
-    phone: string;
-    birthDate: string;
-    address: string;
-    avatar: string;
-    genderId: number;
-    addressId?: number;
-  };
+
+  formData?: PersonalInfoFormData;
+
   onFormDataChange?: (data: any) => void;
 }
+
 
 const PersonalInfoForm: React.FC<PersonalInfoFormProps> = ({
   userInfo,
@@ -49,51 +49,53 @@ const PersonalInfoForm: React.FC<PersonalInfoFormProps> = ({
   const provinces = provincesResponse?.data || [];
 
   // console.log("Provinces:", provinces);
-
   // Use parent formData if provided, otherwise fall back to userInfo
   const [localFormData, setLocalFormData] = useState({
-    name: userInfo.name,
-    email: userInfo.email,
-    phone: userInfo.phone,
-    birthDate: userInfo.birthDate,
-    gender: userInfo.gender,
-    address: userInfo.address,
-    addressId: undefined as number | undefined, // Đổi từ provinceId thành addressId
+    FULL_NAME: userInfo?.FULL_NAME || "",
+    EMAIL: userInfo?.EMAIL || "",
+    PHONE: userInfo?.PHONE || "",
+    DOB: userInfo?.DOB || "",
+    GENDER: userInfo?.GENDER || "",
+    PROVINCE: userInfo?.PROVINCE || "",
+    PROVINCE_ID: userInfo?.PROVINCE_ID, // Đổi từ provinceId thành addressId
   });
-
+  
+  console.log("parent info", parentFormData)
+  console.log("user info", userInfo)
+  console.log("local info", localFormData)
   // Debug effect để kiểm tra Select value
   useEffect(() => {
-    if (provinces.length > 0 && localFormData.address) {
+    if (provinces.length > 0 && localFormData.PROVINCE) {
       console.log("=== SELECT DEBUG ===");
-      console.log("localFormData.address:", localFormData.address);
+      console.log("localFormData.PROVINCE:", localFormData.PROVINCE);
       console.log("provinces length:", provinces.length);
       console.log("First province:", provinces[0]);
       const matchingProvince = provinces.find(
-        (p) => p.NAME_WITH_TYPE === localFormData.address
+        (p) => p.NAME_WITH_TYPE === localFormData.PROVINCE
       );
       console.log("Looking for match:", matchingProvince);
       console.log("Exact match found:", !!matchingProvince);
     }
-  }, [localFormData.address, provinces]);
+  }, [localFormData.PROVINCE, provinces]);
 
   // Sync with parent formData khi có
   useEffect(() => {
     if (parentFormData) {
-      console.log("=== PERSONAL INFO FORM SYNC ===");
-      console.log("parentFormData.address:", parentFormData.address);
-      console.log("parentFormData.addressId:", parentFormData.addressId);
+      // console.log("=== PERSONAL INFO FORM SYNC ===");
+      // console.log("parentFormData.address:", parentFormData.address);
+      // console.log("parentFormData.addressId:", parentFormData.addressId);
 
       setLocalFormData((prev) => ({
         ...prev,
-        name: parentFormData.fullName,
-        phone: parentFormData.phone,
-        birthDate: parentFormData.birthDate,
-        address: parentFormData.address,
-        gender: parentFormData.genderId === 2 ? "NỮ" : "NAM",
-        addressId: parentFormData.addressId, // Đổi từ provinceId thành addressId
+        FULL_NAME: parentFormData.FULL_NAME,
+        PHONE: parentFormData.PHONE,
+        DOB: parentFormData.DOB,
+        PROVINCE: parentFormData.PROVINCE,
+        GENDER: parentFormData.GENDER_ID === 2 ? "NỮ" : "NAM",
+        PROVINCE_ID: parentFormData.PROVINCE_ID, // Đổi từ provinceId thành addressId
       }));
 
-      console.log("Updated localFormData.address:", parentFormData.address);
+      console.log("Updated localFormData.PROVINCE:", parentFormData.PROVINCE);
     }
   }, [parentFormData]);
 
@@ -104,13 +106,13 @@ const PersonalInfoForm: React.FC<PersonalInfoFormProps> = ({
     if (onFormDataChange) {
       const updatedData = { ...localFormData, [field]: value };
       onFormDataChange({
-        fullName: updatedData.name,
-        phone: updatedData.phone,
-        birthDate: updatedData.birthDate,
-        address: updatedData.address,
-        avatar: parentFormData?.avatar || "",
-        genderId: updatedData.gender === "NỮ" ? 2 : 1,
-        addressId: updatedData.addressId, // Đổi từ provinceId thành addressId
+        FULL_NAME: updatedData.FULL_NAME,
+        PHONE: updatedData.PHONE,
+        DOB: updatedData.DOB,
+        PROVINCE: updatedData.PROVINCE,
+        AVATAR: parentFormData?.AVATAR || "",
+        GENDER_ID: updatedData?.GENDER === "NỮ" ? 2 : 1,
+        PROVINCE_ID: updatedData?.PROVINCE_ID, 
       });
     }
   };
@@ -130,22 +132,22 @@ const PersonalInfoForm: React.FC<PersonalInfoFormProps> = ({
     // Notify parent component với addressId
     if (onFormDataChange) {
       onFormDataChange({
-        fullName: localFormData.name,
-        phone: localFormData.phone,
-        birthDate: localFormData.birthDate,
-        address: provinceNameWithType,
-        avatar: parentFormData?.avatar || "",
-        genderId: localFormData.gender === "NỮ" ? 2 : 1,
-        addressId: selectedProvince?.PROVINCE_ID, // Gửi addressId lên parent
+        FULL_NAME: localFormData.FULL_NAME,
+        PHONE: localFormData.PHONE,
+        DOB: localFormData.DOB,
+        PROVINCE: provinceNameWithType,
+        AVATAR: parentFormData?.AVATAR || "",
+        GENDER_ID: localFormData.GENDER === "NỮ" ? 2 : 1,
+        PROVINCE_ID: selectedProvince?.PROVINCE_ID, // Gửi addressId lên parent
       });
     }
   };
   const handleDateChange = (date: string) => {
-    handleInputChange("birthDate", date);
+    handleInputChange("DOB", date);
   };
 
   const handleGenderChange = (gender: string) => {
-    handleInputChange("gender", gender);
+    handleInputChange("GENDER", gender);
   };
 
   const handleProvinceDropdownOpen = () => {
@@ -161,8 +163,8 @@ const PersonalInfoForm: React.FC<PersonalInfoFormProps> = ({
           <User className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
           <Input
             id="fullName"
-            value={localFormData.name}
-            onChange={(e) => handleInputChange("name", e.target.value)}
+            value={localFormData.FULL_NAME}
+            onChange={(e) => handleInputChange("FULL_NAME", e.target.value)}
             className="pl-10"
             disabled={!isEditing}
           />
@@ -176,7 +178,7 @@ const PersonalInfoForm: React.FC<PersonalInfoFormProps> = ({
           <Input
             id="email"
             type="email"
-            defaultValue={userInfo.email}
+            defaultValue={localFormData?.EMAIL}
             className="pl-10"
             disabled={true}
           />
@@ -189,8 +191,8 @@ const PersonalInfoForm: React.FC<PersonalInfoFormProps> = ({
           <Phone className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
           <Input
             id="phone"
-            value={localFormData.phone}
-            onChange={(e) => handleInputChange("phone", e.target.value)}
+            value={localFormData.PHONE}
+            onChange={(e) => handleInputChange("PHONE", e.target.value)}
             className="pl-10"
             disabled={!isEditing}
           />
@@ -203,7 +205,7 @@ const PersonalInfoForm: React.FC<PersonalInfoFormProps> = ({
           <Calendar className="absolute left-3 top-3 h-4 w-4 text-muted-foreground z-10" />
           <DatePicker
             placeholder="Chọn ngày sinh"
-            value={localFormData.birthDate}
+            value={localFormData.DOB}
             onChange={handleDateChange}
             disabled={!isEditing}
             format="YYYY-MM-DD"
@@ -216,7 +218,7 @@ const PersonalInfoForm: React.FC<PersonalInfoFormProps> = ({
         <Label htmlFor="gender">Giới tính</Label>
         <Select
           disabled={!isEditing}
-          value={localFormData.gender}
+          value={localFormData.GENDER}
           onValueChange={handleGenderChange}
         >
           <SelectTrigger>
@@ -236,7 +238,7 @@ const PersonalInfoForm: React.FC<PersonalInfoFormProps> = ({
           <MapPin className="absolute left-3 top-3 h-4 w-4 text-muted-foreground z-10" />
           <Select
             disabled={!isEditing}
-            value={localFormData.address || ""} // Đảm bảo value không bị undefined
+            value={localFormData.PROVINCE || ""} // Đảm bảo value không bị undefined
             onValueChange={handleProvinceChange} // Sử dụng handleProvinceChange
             onOpenChange={(open) => {
               if (open) {
@@ -247,7 +249,7 @@ const PersonalInfoForm: React.FC<PersonalInfoFormProps> = ({
             <SelectTrigger className="pl-10">
               <SelectValue placeholder="Chọn tỉnh/thành phố" />
             </SelectTrigger>
-            <SelectContent>
+            <SelectContent className="bg-white  border-gray-200 shadow-lg">
               {loading && (
                 <SelectItem value="loading" disabled>
                   Đang tải...
