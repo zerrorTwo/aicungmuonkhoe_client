@@ -13,34 +13,27 @@ import {
   useUpdateUserProfileMutation,
   useUploadUserAvatarMutation,
   useGetUserProfileQuery,
+  type UpdateUserProfileRequest,
 } from "@/store/api/userApi";
 import { useGetAllProvincesQuery } from "@/store/api/provinceApi";
 import ProfileAvatar from "./ProfileAvatar";
 import PersonalInfoForm from "./PersonalInfoForm";
+import type { UserInfo } from '@/types/user.type';
 
 interface PersonalInfoTabProps {
-  userInfo: {
-    name: string;
-    email: string;
-    phone: string;
-    birthDate: string;
-    gender: string;
-    address: string | { ID: number } | any; // Support both string and object format
-    addressId?: number; // Optional explicit addressId from backend
-    avatar?: string;
-  };
+  userInfo: UserInfo | null;
 }
 
 const PersonalInfoTab: React.FC<PersonalInfoTabProps> = ({ userInfo }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState({
-    fullName: "",
-    phone: "",
-    birthDate: "",
-    address: "",
-    avatar: "",
-    genderId: 1,
-    addressId: undefined as number | undefined, // Thêm addressId
+    FULL_NAME: "",
+    PHONE: "",
+    DOB: "",
+    PROVINCE: "",
+    AVATAR: "",
+    GENDER_ID: 1,
+    PROVINCE_ID: userInfo?.PROVINCE_ID, // Thêm PROVINCE_ID
   });
   const [avatarPreview, setAvatarPreview] = useState<string>("");
   const [cachedProvinces, setCachedProvinces] = useState<any[]>([]); // Cache provinces locally
@@ -59,69 +52,45 @@ const PersonalInfoTab: React.FC<PersonalInfoTabProps> = ({ userInfo }) => {
   React.useEffect(() => {
     if (provincesResponse?.data && provincesResponse.data.length > 0) {
       setCachedProvinces(provincesResponse.data);
-      console.log("=== PROVINCES CACHED ===");
-      console.log("Cached provinces count:", provincesResponse.data.length);
     }
   }, [provincesResponse]);
 
-  // Debug provinces data
-  React.useEffect(() => {
-    if (provinces.length > 0) {
-      console.log("=== PROVINCES AVAILABLE ===");
-      console.log("First province:", provinces[0]);
-      console.log("Total provinces:", provinces.length);
-      console.log("Source:", provincesResponse?.data ? "RTK Query" : "Cached");
-    }
-  }, [provinces, provincesResponse]);
 
   // Helper function để convert address ID thành tên province
   const getAddressDisplayName = (
     address: string | { ID: number } | any,
-    fallbackId?: number
+    fallbackId?: number | null | undefined
   ): string => {
-    console.log("=== getAddressDisplayName ===");
-    console.log("Input address:", address);
-    console.log("Provinces available:", provinces.length);
-
     if (typeof address === "string" && address) {
-      console.log("Address is string, returning:", address);
       return address; // Nếu đã là string thì return luôn
     }
 
     if (address && typeof address === "object" && address.ID) {
       // Nếu là object có ID, tìm province name
-      console.log("Looking for province with ID:", address.ID);
       const province = provinces.find((p) => p.PROVINCE_ID === address.ID);
-      console.log("Found province:", province);
       const result = province ? province.NAME_WITH_TYPE : "";
-      console.log("Returning:", result);
       return result;
     }
 
     // If address is numeric ID
     if (typeof address === "number") {
-      console.log("Address is numeric ID, looking up:", address);
       const province = provinces.find((p) => p.PROVINCE_ID === address);
       const result = province ? province.NAME_WITH_TYPE : "";
-      console.log("Returning via numeric ID:", result);
       return result;
     }
 
     if (fallbackId) {
-      console.log("Using fallbackId to resolve province name:", fallbackId);
       const province = provinces.find((p) => p.PROVINCE_ID === fallbackId);
       const result = province ? province.NAME_WITH_TYPE : "";
-      console.log("Returning via fallbackId:", result);
       return result;
     }
 
-    console.log("No match, returning empty string");
     return "";
   };
 
-  const getAddressId = (
+  const getprovinceId = (
     address: string | { ID: number } | any,
-    fallbackId?: number
+    fallbackId?: number | null | undefined
   ): number | undefined => {
     // Case 1: Backend returned object with ID
     if (address && typeof address === "object" && address.ID) {
@@ -148,119 +117,81 @@ const PersonalInfoTab: React.FC<PersonalInfoTabProps> = ({ userInfo }) => {
   React.useEffect(() => {
     // Đợi cả userInfo và có provinces (từ RTK Query hoặc cache)
     if (userInfo && provinces.length > 0) {
-      console.log("=== INITIALIZING FORM DATA ===");
-      console.log("userInfo.address:", userInfo.address);
-      console.log("userInfo.addressId:", userInfo.addressId);
-
-      // QUAN TRỌNG: Không reset formData nếu userInfo.address rỗng nhưng formData.address đã có
+      // QUAN TRỌNG: Không reset formData nếu userInfo.PROVINCE rỗng nhưng formData.PROVINCE đã có
       const currentHasAddress =
-        formData.address && formData.address.trim() !== "";
-      const userInfoIsEmpty = !userInfo.address || userInfo.address === "";
+        formData.PROVINCE && formData.PROVINCE.trim() !== "";
+      const userInfoIsEmpty = !userInfo.PROVINCE || userInfo.PROVINCE === "";
 
       if (currentHasAddress && userInfoIsEmpty) {
-        console.log(
-          "Skipping init because formData already has address and userInfo is empty"
-        );
-        console.log("Keeping current formData.address:", formData.address);
         return; // Không reset formData
       }
 
       // LOGIC ĐƠN GIẢN: Nếu localStorage có address là số (như 3), dùng số đó làm ID
-      let addressId = userInfo.addressId;
+      let provinceId = userInfo.PROVINCE_ID;
       let addressDisplayName = "";
 
-      // Case 1: userInfo.address là số (từ localStorage)
-      if (typeof userInfo.address === "number") {
-        console.log("Address is numeric from localStorage:", userInfo.address);
-        addressId = userInfo.address;
+      // Case 1: userInfo.PROVINCE là số (từ localStorage)
+      if (typeof userInfo.PROVINCE === "number") {
+        provinceId = userInfo.PROVINCE;
         const province = provinces.find(
-          (p) => p.PROVINCE_ID === userInfo.address
+          (p) => p.PROVINCE_ID === userInfo.PROVINCE
         );
         addressDisplayName = province ? province.NAME_WITH_TYPE : "";
         console.log(
           "Found province for ID",
-          userInfo.address,
+          userInfo.PROVINCE,
           ":",
           province?.NAME_WITH_TYPE
         );
       }
-      // Case 2: userInfo.address là object {ID: X}
-      else if (
-        userInfo.address &&
-        typeof userInfo.address === "object" &&
-        userInfo.address.ID
-      ) {
-        console.log("Address is object with ID:", userInfo.address.ID);
-        addressId = userInfo.address.ID;
+      // Case 2: userInfo.PROVINCE là object {ID: X}
+     
+      // Case 3: userInfo.PROVINCE là string (tên tỉnh)
+      else if (typeof userInfo.PROVINCE === "string" && userInfo.PROVINCE) {
+        addressDisplayName = userInfo.PROVINCE;
         const province = provinces.find(
-          (p) => p.PROVINCE_ID === userInfo.address.ID
+          (p) => p.NAME_WITH_TYPE === userInfo.PROVINCE
         );
-        addressDisplayName = province ? province.NAME_WITH_TYPE : "";
-        console.log(
-          "Found province for ID",
-          userInfo.address.ID,
-          ":",
-          province?.NAME_WITH_TYPE
-        );
+        provinceId = province ? province.PROVINCE_ID : undefined;
       }
-      // Case 3: userInfo.address là string (tên tỉnh)
-      else if (typeof userInfo.address === "string" && userInfo.address) {
-        console.log("Address is string:", userInfo.address);
-        addressDisplayName = userInfo.address;
+      // Case 4: Dùng provinceId fallback
+      else if (userInfo.PROVINCE_ID) {
+        provinceId = userInfo.PROVINCE_ID;
         const province = provinces.find(
-          (p) => p.NAME_WITH_TYPE === userInfo.address
-        );
-        addressId = province ? province.PROVINCE_ID : undefined;
-      }
-      // Case 4: Dùng addressId fallback
-      else if (userInfo.addressId) {
-        console.log("Using fallback addressId:", userInfo.addressId);
-        addressId = userInfo.addressId;
-        const province = provinces.find(
-          (p) => p.PROVINCE_ID === userInfo.addressId
+          (p) => p.PROVINCE_ID === userInfo.PROVINCE_ID
         );
         addressDisplayName = province ? province.NAME_WITH_TYPE : "";
       }
-
-      console.log("Final addressDisplayName:", addressDisplayName);
-      console.log("Final addressId:", addressId);
 
       setFormData({
-        fullName: userInfo.name || "",
-        phone: userInfo.phone || "",
-        birthDate: userInfo.birthDate || "",
-        address: addressDisplayName || "", // Tên tỉnh để hiển thị
-        avatar: userInfo.avatar || "",
-        genderId: userInfo.gender === "NỮ" ? 2 : 1,
-        addressId: addressId, // ID để gửi lên backend
+        FULL_NAME: userInfo.FULL_NAME || "",
+        PHONE: userInfo.PHONE || "",
+        DOB: userInfo.DOB || "",
+        PROVINCE: addressDisplayName || "", // Tên tỉnh để hiển thị
+        AVATAR: userInfo.AVATAR || "",
+        GENDER_ID: userInfo.GENDER === "NỮ" ? 2 : 1,
+        PROVINCE_ID: provinceId, // ID để gửi lên backend
       });
-      setAvatarPreview(userInfo.avatar || "");
+      setAvatarPreview(userInfo.AVATAR || "");
     }
   }, [userInfo, provinces]); // Dependency trên provinces (bao gồm cả cached)
 
   // Effect xử lý update result khi provinces ready
   React.useEffect(() => {
-    if (lastUpdateResult?.data?.address && provinces.length > 0) {
-      console.log("=== PROCESSING SAVED UPDATE RESULT ===");
-      console.log("address from saved result:", lastUpdateResult.data.address);
-      console.log("provinces available for lookup:", provinces.length);
-
+    if (lastUpdateResult?.data?.PROVINCE && provinces.length > 0) {
       const newAddressDisplayName = getAddressDisplayName(
-        lastUpdateResult.data.address
+        lastUpdateResult.data.PROVINCE
       );
-      const newAddressId = getAddressId(lastUpdateResult.data.address);
-      console.log("New address display name:", newAddressDisplayName);
-      console.log("New address ID:", newAddressId);
+      const newprovinceId = getprovinceId(lastUpdateResult.data.PROVINCE);
 
       // LUÔN CẬP NHẬT FORMDATA, KHÔNG CẦN CHECK newAddressDisplayName
       setFormData((prev) => {
         console.log("Updating formData from saved result...");
         const updated = {
           ...prev,
-          address: newAddressDisplayName || `ID: ${newAddressId}`, // Fallback hiển thị ID nếu không tìm được tên
-          addressId: newAddressId,
+          PROVINCE: newAddressDisplayName || `ID: ${newprovinceId}`, // Fallback hiển thị ID nếu không tìm được tên
+          PROVINCE_ID: newprovinceId,
         };
-        console.log("Updated formData:", updated);
         return updated;
       });
 
@@ -272,7 +203,7 @@ const PersonalInfoTab: React.FC<PersonalInfoTabProps> = ({ userInfo }) => {
   // Handle avatar file selection
   const handleAvatarChange = async (file: File | null) => {
     if (!file) {
-      setAvatarPreview(userInfo.avatar || "");
+      setAvatarPreview(userInfo?.AVATAR || "");
       return;
     }
 
@@ -301,9 +232,9 @@ const PersonalInfoTab: React.FC<PersonalInfoTabProps> = ({ userInfo }) => {
       const formData = new FormData();
       formData.append("avatar", file);
 
-      // Check if FormData has avatar
-      const hasAvatar = formData.has("avatar");
-      console.log("FormData has avatar:", hasAvatar);
+      // // Check if FormData has avatar
+      // const hasAvatar = formData.has("avatar");
+      // console.log("FormData has avatar:", hasAvatar);
 
       const result = await toastPromise(uploadUserAvatar(formData).unwrap(), {
         loading: "Đang upload ảnh đại diện...",
@@ -318,12 +249,7 @@ const PersonalInfoTab: React.FC<PersonalInfoTabProps> = ({ userInfo }) => {
           const userData = JSON.parse(currentUser);
           const updatedUserData = {
             ...userData,
-            avatar: result.data.avatar,
-            fullName: result.data.fullName || userData.fullName,
-            phone: result.data.phone || userData.phone,
-            birthDate: result.data.birthDate || userData.birthDate,
-            address: result.data.address || userData.address,
-            gender: result.data.gender || userData.gender,
+            FACE_IMAGE: result.data.AVATAR
           };
           localStorage.setItem("user", JSON.stringify(updatedUserData));
           console.log(
@@ -335,34 +261,24 @@ const PersonalInfoTab: React.FC<PersonalInfoTabProps> = ({ userInfo }) => {
     } catch (error) {
       console.error("Avatar upload failed:", error);
       // Revert preview on error
-      setAvatarPreview(userInfo.avatar || "");
+      setAvatarPreview(userInfo?.AVATAR || "");
     }
   };
 
   const handleSave = async () => {
     try {
-      console.log("=== HANDLE SAVE ===");
-      console.log("formData:", formData);
-      console.log("userInfo:", userInfo);
       // Check if there are any text field changes
       const currentAddressDisplayName = getAddressDisplayName(
-        userInfo.address,
-        userInfo.addressId
+        userInfo?.PROVINCE,
+        userInfo?.PROVINCE_ID
       );
 
-      console.log("=== COMPARING FOR CHANGES ===");
-      console.log("formData.address:", formData.address);
-      console.log("currentAddressDisplayName:", currentAddressDisplayName);
-      console.log("userInfo.address:", userInfo.address);
-
       const hasTextChanges =
-        formData.fullName !== userInfo.name ||
-        formData.phone !== userInfo.phone ||
-        formData.birthDate !== userInfo.birthDate ||
-        formData.address !== currentAddressDisplayName ||
-        formData.genderId !== (userInfo.gender === "NỮ" ? 2 : 1);
-
-      console.log("hasTextChanges:", hasTextChanges);
+        formData.FULL_NAME !== userInfo?.FULL_NAME ||
+        formData.PHONE !== userInfo?.PHONE ||
+        formData.DOB !== userInfo?.DOB ||
+        formData.PROVINCE !== currentAddressDisplayName ||
+        formData.GENDER_ID !== (userInfo?.GENDER === "NỮ" ? 2 : 1);
 
       if (!hasTextChanges) {
         showToast.info("Không có thay đổi nào để lưu");
@@ -371,47 +287,46 @@ const PersonalInfoTab: React.FC<PersonalInfoTabProps> = ({ userInfo }) => {
       }
 
       // Prepare JSON data for profile update (text fields only)
-      const updateData: any = {};
+      const updateData: UpdateUserProfileRequest = {};
 
-      if (formData.fullName !== userInfo.name) {
-        updateData.fullName = formData.fullName;
+      if (formData.FULL_NAME !== userInfo?.FULL_NAME) {
+        updateData.FULL_NAME = formData.FULL_NAME;
       }
-      if (formData.phone !== userInfo.phone) {
-        updateData.phone = formData.phone;
+      if (formData.PHONE !== userInfo?.PHONE) {
+        updateData.PHONE = formData.PHONE;
       }
-      if (formData.birthDate !== userInfo.birthDate) {
-        updateData.birthDate = formData.birthDate;
+      if (formData.DOB !== userInfo?.DOB) {
+        updateData.DOB = formData.DOB;
       }
-      if (formData.address !== currentAddressDisplayName) {
-        // Ensure we have an addressId; if missing, derive from address string
-        let addrId = formData.addressId;
+      if (formData.PROVINCE !== currentAddressDisplayName) {
+        // Ensure we have an PROVINCE_ID; if missing, derive from address string
+        let addrId = formData.PROVINCE_ID;
         if (!addrId) {
-          addrId = getAddressId(formData.address, userInfo.addressId);
+          addrId = getprovinceId(formData.PROVINCE, userInfo?.PROVINCE_ID);
         }
-        console.log("Address changed, sending addressId:", addrId);
-        updateData.addressId = addrId; // Gửi addressId thay vì address
+        updateData.PROVINCE_ID = addrId; // Gửi provinceId thay vì address
       }
 
       // SPECIAL CASE: Nếu user chọn tỉnh lần đầu (từ rỗng sang có value)
       if (
         !currentAddressDisplayName &&
-        formData.address &&
-        formData.addressId
+        formData.PROVINCE &&
+        formData.PROVINCE_ID
       ) {
         console.log(
-          "First time selecting province, sending addressId:",
-          formData.addressId
+          "First time selecting province, sending provinceId:",
+          formData.PROVINCE_ID
         );
-        updateData.addressId = formData.addressId;
+        updateData.PROVINCE_ID = formData.PROVINCE_ID;
       }
 
-      const currentGenderId = userInfo.gender === "NỮ" ? 2 : 1;
-      if (formData.genderId !== currentGenderId) {
-        updateData.genderId = formData.genderId;
+      const currentGenderId = userInfo?.GENDER === "NỮ" ? 2 : 1;
+      if (formData.GENDER_ID !== currentGenderId) {
+        updateData.GENDER_ID = formData.GENDER_ID;
       }
 
-      console.log("Update data:", updateData);
-      console.log("addressId trong updateData:", updateData.addressId);
+      // console.log("Update data:", updateData);
+      // console.log("provinceId trong updateData:", updateData.PROVINCE_ID);
 
       // Call API with JSON data
       const result = await toastPromise(
@@ -422,7 +337,7 @@ const PersonalInfoTab: React.FC<PersonalInfoTabProps> = ({ userInfo }) => {
           error: "Có lỗi xảy ra khi cập nhật thông tin!",
         }
       );
-      console.log("Update result:", result);
+      // console.log("Update result:", result);
 
       // Lưu result để xử lý sau khi provinces ready
       setLastUpdateResult(result);
@@ -434,34 +349,31 @@ const PersonalInfoTab: React.FC<PersonalInfoTabProps> = ({ userInfo }) => {
           const userData = JSON.parse(currentUser);
 
           // Handle address from backend response (string | { ID } | number)
-          let updatedAddress = userData.address;
-          if (result.data.address !== undefined) {
-            console.log("=== UPDATING LOCALSTORAGE ADDRESS ===");
-            console.log("result.data.address:", result.data.address);
-
-            // Bạn đã sửa đúng: lấy ID từ object
-            if (
-              result.data.address &&
-              typeof result.data.address === "object" &&
-              "ID" in result.data.address
-            ) {
-              updatedAddress = result.data.address.ID; // Lưu ID số vào localStorage
-              console.log("Saved ID to localStorage:", updatedAddress);
-            } else {
-              const numericId = getAddressId(result.data.address);
-              updatedAddress =
-                numericId !== undefined ? numericId : result.data.address;
-              console.log("Fallback address saved:", updatedAddress);
-            }
-          }
+          // let updatedAddress = userData.address;
+          // if (result.data.address !== undefined) {
+          //   // Bạn đã sửa đúng: lấy ID từ object
+          //   if (
+          //     result.data.address &&
+          //     typeof result.data.address === "object" &&
+          //     "ID" in result.data.address
+          //   ) {
+          //     updatedAddress = result.data.address.ID; // Lưu ID số vào localStorage
+          //     console.log("Saved ID to localStorage:", updatedAddress);
+          //   } else {
+          //     const numericId = getprovinceId(result.data.address);
+          //     updatedAddress =
+          //       numericId !== undefined ? numericId : result.data.address;
+          //     console.log("Fallback address saved:", updatedAddress);
+          //   }
+          // }
           const updatedUserData = {
             ...userData,
-            fullName: result.data.fullName || userData.fullName,
-            phone: result.data.phone || userData.phone,
-            birthDate: result.data.birthDate || userData.birthDate,
-            address: updatedAddress, // Sử dụng address đã được convert
-            gender: result.data.gender || userData.gender,
-            avatar: result.data.avatar || userData.avatar,
+            //fullName: result.data.fullName || userData.fullName,
+            PHONE: result.data.PHONE || userData.PHONE,
+            //birthDate: result.data.birthDate || userData.birthDate,
+            // address: updatedAddress, // Sử dụng address đã được convert
+
+            //FACE_IMAGE: result.data.AVATAR || userData.FACE_IMAGE,
           };
           localStorage.setItem("user", JSON.stringify(updatedUserData));
           console.log(
@@ -481,48 +393,48 @@ const PersonalInfoTab: React.FC<PersonalInfoTabProps> = ({ userInfo }) => {
   };
 
   // Đảm bảo userInfo có đầy đủ properties với default values
-  const safeUserInfo = {
-    name: userInfo?.name || "Người dùng",
-    email: userInfo?.email || "",
-    phone: userInfo?.phone || "",
-    birthDate: userInfo?.birthDate || "",
-    gender: userInfo?.gender || "",
-    // LUÔN ƯU TIÊN formData.address, NẾU KHÔNG CÓ THÌ MAPPING TỪ ID
-    address: (() => {
-      console.log("=== BUILDING SAFE USER INFO ADDRESS ===");
-      console.log("formData.address:", formData.address);
-      console.log("userInfo.address:", userInfo?.address);
-      console.log("userInfo.addressId:", userInfo?.addressId);
+  // const safeUserInfo = {
+  //   FULL_NAME: userInfo?.FULL_NAME || "Người dùng",
+  //   EMAIL: userInfo?.EMAIL || "",
+  //   PHONE: userInfo?.PHONE || "",
+  //   DOB: userInfo?.DOB || "",
+  //   GENDER: userInfo?.GENDER || "",
+  //   // LUÔN ƯU TIÊN formData.address, NẾU KHÔNG CÓ THÌ MAPPING TỪ ID
+  //   address: (() => {
+  //     console.log("=== BUILDING SAFE USER INFO ADDRESS ===");
+  //     console.log("formData.address:", formData.address);
+  //     console.log("userInfo.address:", userInfo?.address);
+  //     console.log("userInfo.provinceId:", userInfo?.provinceId);
 
-      // Ưu tiên formData.address (đã được process)
-      if (formData.address && formData.address.trim() !== "") {
-        console.log("Using formData.address:", formData.address);
-        return formData.address;
-      }
+  //     // Ưu tiên formData.address (đã được process)
+  //     if (formData.address && formData.address.trim() !== "") {
+  //       console.log("Using formData.address:", formData.address);
+  //       return formData.address;
+  //     }
 
-      // Backup: Nếu userInfo.address là số (từ localStorage), map trực tiếp
-      if (typeof userInfo?.address === "number" && provinces.length > 0) {
-        const province = provinces.find(
-          (p) => p.PROVINCE_ID === userInfo.address
-        );
-        const provinceName = province
-          ? province.NAME_WITH_TYPE
-          : `ID: ${userInfo.address}`;
-        console.log("Mapped from numeric address:", provinceName);
-        return provinceName;
-      }
+  //     // Backup: Nếu userInfo.address là số (từ localStorage), map trực tiếp
+  //     if (typeof userInfo?.address === "number" && provinces.length > 0) {
+  //       const province = provinces.find(
+  //         (p) => p.PROVINCE_ID === userInfo.address
+  //       );
+  //       const provinceName = province
+  //         ? province.NAME_WITH_TYPE
+  //         : `ID: ${userInfo.address}`;
+  //       console.log("Mapped from numeric address:", provinceName);
+  //       return provinceName;
+  //     }
 
-      // Backup: Dùng helper functions
-      const mapped = getAddressDisplayName(
-        userInfo?.address,
-        userInfo?.addressId
-      );
-      console.log("Mapped address:", mapped);
+  //     // Backup: Dùng helper functions
+  //     const mapped = getAddressDisplayName(
+  //       userInfo?.address,
+  //       userInfo?.provinceId
+  //     );
+  //     console.log("Mapped address:", mapped);
 
-      return mapped || "";
-    })(),
-    avatar: avatarPreview || userInfo?.avatar || "", // Use preview if available
-  };
+  //     return mapped || "";
+  //   })(),
+  //   avatar: avatarPreview || userInfo?.avatar || "", // Use preview if available
+  // };
 
   return (
     <Card className="shadow-weather animate-scale-in">
@@ -548,12 +460,12 @@ const PersonalInfoTab: React.FC<PersonalInfoTabProps> = ({ userInfo }) => {
 
       <CardContent className="space-y-6">
         <ProfileAvatar
-          userInfo={safeUserInfo}
+          userInfo={userInfo}
           isEditing={isEditing}
           onAvatarChange={handleAvatarChange}
         />
         <PersonalInfoForm
-          userInfo={safeUserInfo}
+          userInfo={userInfo}
           isEditing={isEditing}
           formData={formData}
           onFormDataChange={setFormData}
