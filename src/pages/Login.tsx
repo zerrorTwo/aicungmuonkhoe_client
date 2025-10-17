@@ -9,12 +9,14 @@ import { Eye, EyeOff, Mail, Lock, User, Shield } from 'lucide-react';
 import Logo from '@/components/ui/Logo';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
-import { useLoginMutation, useSignupMutation } from '../store/api/authApi';
+import { useLoginMutation, useSignupMutation, useVerifyEmailMutation } from '../store/api/authApi';
 import { useForgotPasswordMutation, useResetPasswordMutation } from '../store/api/userApi';
 import { useAppDispatch } from '@/store/hooks';
 import { loginStart, loginSuccess, loginFailure } from '@/store/slices/authSlice';
 import { handleApiError } from '@/utils/api';
 import { useAuth } from '@/hooks/useAuth';
+import { useSendOtpMutation } from '@/store/api/mailApi';
+import { OTP_TYPE } from '@/utils/constans';
 
 const Login: React.FC = () => {
     const navigate = useNavigate();
@@ -22,11 +24,20 @@ const Login: React.FC = () => {
     const { isAuthenticated } = useAuth();
     const [login, { isLoading: isLoginLoading }] = useLoginMutation();
     const [signup] = useSignupMutation();
+    const [verifyEmail, { isLoading: isVerifyEmailLoading }] = useVerifyEmailMutation();
+    const [sendOtp] = useSendOtpMutation();
     const [forgotPassword, { isLoading: isForgotPasswordLoading }] = useForgotPasswordMutation();
     const [resetPassword, { isLoading: isResetPasswordLoading }] = useResetPasswordMutation();
 
     const [showPassword, setShowPassword] = useState(false);
     const [error, setError] = useState<string>('');
+    
+    // Verify email flow state for registration
+    const [verifyEmailStep, setVerifyEmailStep] = useState<'register' | 'verify' | null>(null);
+    const [verifyEmailData, setVerifyEmailData] = useState({
+        email: '',
+        otp: ''
+    });
     
     // Forgot password flow state
     const [forgotPasswordStep, setForgotPasswordStep] = useState<'email' | 'reset' | null>(null);
@@ -77,6 +88,7 @@ const Login: React.FC = () => {
             }).unwrap();
 
             console.log('Login result:', result);
+            
 
             if (result.status === 200) {
                 console.log('Login successful, user data:', result.data.user);
@@ -101,11 +113,25 @@ const Login: React.FC = () => {
                 setError(result.message || 'Đăng nhập thất bại');
             }
         } catch (err: any) {
+            // xử lý trường hợp tài khoản chưa xác thực email
+            if (err.status === 403) {
+
+                // tiến hành gửi lại otp xác thực email
+                await sendOtp({ EMAIL: loginData.email, OTP_TYPE: OTP_TYPE.SIGN_UP }).unwrap();
+                // Save email for verification and move to verify step
+                setVerifyEmailData({
+                    email: loginData.email,
+                    otp: ''
+                });
+                setVerifyEmailStep('verify');
+                setError(''); // Clear any previous errors
+            } else {
             console.log('Login error caught:', err);
             const errorMessage = handleApiError(err);
             setError(errorMessage);
             dispatch(loginFailure());
             // Don't navigate on error - stay on login page
+            }
         }
     };
 
@@ -143,21 +169,15 @@ const Login: React.FC = () => {
             console.log('Register result:', result);
 
             if (result.status === 200) {
-                console.log('Register successful, user data:', result.data.user);
-
-                // Auto login after successful registration - Save to Redux
-                dispatch(loginSuccess({
-                    user: result.data.user,
-                    token: result.data.access_token,
-                }));
-
-                // Save to localStorage
-                localStorage.setItem('access_token', result.data.access_token);
-                localStorage.setItem('user', JSON.stringify(result.data.user));
-
-                console.log('Register successful, navigating to home page...');
-                // Navigate to home page - only on success
-                navigate('/', { replace: true });
+                console.log('Register successful, moving to verify email step');
+                
+                // Save email for verification and move to verify step
+                setVerifyEmailData({
+                    email: registerData.email,
+                    otp: ''
+                });
+                setVerifyEmailStep('verify');
+                setError(''); // Clear any previous errors
             } else {
                 // Register failed - don't navigate
                 console.log('Register failed with status:', result.status);
@@ -185,6 +205,105 @@ const Login: React.FC = () => {
             ...prev,
             [name]: value
         }));
+    };
+
+    // Verify email handlers
+    const handleVerifyEmailInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const { name, value } = e.target;
+        setVerifyEmailData(prev => ({
+            ...prev,
+            [name]: value
+        }));
+    };
+
+    const handleVerifyEmail = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setError('');
+
+        if (!verifyEmailData.otp) {
+            setError('Vui lòng nhập mã OTP');
+            return;
+        }
+
+        if (verifyEmailData.otp.length !== 6) {
+            setError('Mã OTP phải có 6 số');
+            return;
+        }
+
+        try {
+            console.log('Verifying email with OTP:', verifyEmailData.otp);
+            
+            const result = await verifyEmail({
+                EMAIL: verifyEmailData.email,
+                OTP_CODE: verifyEmailData.otp
+            }).unwrap();
+
+            console.log('Verify email result:', result);
+            
+            if (result.status === 200) {
+                // Email verified successfully, now login the user
+                console.log('Email verified successfully, logging in user...');
+                
+                // Auto login after successful verification
+                const loginResult = await login({
+                    EMAIL: verifyEmailData.email,
+                    PASSWORD: registerData.password // Use the password from registration
+                }).unwrap();
+
+                if (loginResult.status === 200) {
+                    // Save to Redux
+                    dispatch(loginSuccess({
+                        user: loginResult.data.user,
+                        token: loginResult.data.access_token,
+                    }));
+
+                    // Save to localStorage
+                    localStorage.setItem('access_token', loginResult.data.access_token);
+                    localStorage.setItem('user', JSON.stringify(loginResult.data.user));
+
+                    console.log('Auto login successful after verification, navigating to home page...');
+                    navigate('/', { replace: true });
+                } else {
+                    setError('Xác thực thành công nhưng không thể đăng nhập tự động. Vui lòng đăng nhập thủ công.');
+                    handleBackToLoginFromVerify();
+                }
+            } else {
+                setError(result.message || 'Xác thực email thất bại');
+            }
+        } catch (err: any) {
+            console.log('Verify email error:', err);
+            const errorMessage = handleApiError(err);
+            setError(errorMessage);
+        }
+    };
+
+    const handleBackToLoginFromVerify = () => {
+        setVerifyEmailStep(null);
+        setVerifyEmailData({ email: '', otp: '' });
+        setError('');
+    };
+
+    const handleResendVerificationOTP = async () => {
+        setVerifyEmailData(prev => ({ ...prev, otp: '' }));
+        setError('');
+        
+        try {
+            console.log('Resending verification OTP to:', verifyEmailData.email);
+            
+            // Re-signup to trigger new OTP
+            const result = await signup({
+                EMAIL: verifyEmailData.email,
+                PASSWORD: registerData.password,
+                PHONE: registerData.phone,
+            }).unwrap();
+
+            console.log('Resend verification OTP result:', result);
+            
+        } catch (err: any) {
+            console.log('Resend verification OTP error:', err);
+            const errorMessage = handleApiError(err);
+            setError(errorMessage);
+        }
     };
 
     // Forgot password handlers
@@ -337,8 +456,8 @@ const Login: React.FC = () => {
                                 {/* Auth Form */}
                                 <Card className="rounded-lg border-0 bg-white text-slate-900 shadow-[0_0_8px_rgba(0,0,0,0.2)]">
                                     <CardContent className="p-6">
-                                        {/* Show Login/Register tabs only when not in forgot password mode */}
-                                        {forgotPasswordStep === null ? (
+                                        {/* Show Login/Register tabs only when not in forgot password or verify email mode */}
+                                        {forgotPasswordStep === null && verifyEmailStep === null ? (
                                             <Tabs defaultValue="login" className="w-full">
                                                 <TabsList className="grid w-full grid-cols-2 mb-6">
                                                     <TabsTrigger value="login" className="text-sm font-medium">
@@ -567,6 +686,86 @@ const Login: React.FC = () => {
                                                 </TabsContent>
                                             </div>{/* End of fixed height container */}
                                         </Tabs>
+                                        ) : verifyEmailStep !== null ? (
+                                            /* Verify Email Flow */
+                                            <div className="w-full">
+                                                {/* Error Message for Verify Email */}
+                                                {error && (
+                                                    <div className="mb-4 p-3 text-red-600 text-sm bg-red-50 border border-red-200 rounded-lg">
+                                                        {error}
+                                                    </div>
+                                                )}
+
+                                                {/* Verify Email Step */}
+                                                {verifyEmailStep === 'verify' && (
+                                                    <div>
+                                                        <div className="mb-6">
+                                                            <h3 className="text-xl font-semibold text-gray-900 mb-1">
+                                                                Xác thực email
+                                                            </h3>
+                                                            <p className="text-sm text-gray-600">
+                                                                Nhập mã OTP đã được gửi đến: <span className="font-medium">{verifyEmailData.email}</span>
+                                                            </p>
+                                                        </div>
+
+                                                        <form onSubmit={handleVerifyEmail} className="space-y-4">
+                                                            <div className="space-y-2">
+                                                                <Label className="text-sm font-medium text-gray-700">
+                                                                    Mã OTP
+                                                                </Label>
+                                                                <div className="relative">
+                                                                    <Shield className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                                                                    <Input
+                                                                        name="otp"
+                                                                        type="text"
+                                                                        required
+                                                                        maxLength={6}
+                                                                        value={verifyEmailData.otp}
+                                                                        onChange={handleVerifyEmailInputChange}
+                                                                        className="pl-10 h-11 border-gray-300 focus:border-emerald-500 focus:ring-emerald-500 text-center tracking-wider font-mono"
+                                                                        placeholder="000000"
+                                                                    />
+                                                                </div>
+                                                            </div>
+
+                                                            <div className="flex space-x-3 pt-2">
+                                                                <Button
+                                                                    type="button"
+                                                                    variant="outline"
+                                                                    onClick={handleBackToLoginFromVerify}
+                                                                    className="flex-1"
+                                                                >
+                                                                    Quay lại
+                                                                </Button>
+                                                                <Button
+                                                                    type="submit"
+                                                                    disabled={isVerifyEmailLoading}
+                                                                    className="flex-1 bg-emerald-600 hover:bg-emerald-700"
+                                                                >
+                                                                    {isVerifyEmailLoading ? (
+                                                                        <>
+                                                                            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                                                                            Đang xác thực...
+                                                                        </>
+                                                                    ) : (
+                                                                        'Xác thực'
+                                                                    )}
+                                                                </Button>
+                                                            </div>
+
+                                                            <div className="text-center pt-4">
+                                                                <button
+                                                                    type="button"
+                                                                    onClick={handleResendVerificationOTP}
+                                                                    className="text-sm text-emerald-600 hover:text-emerald-700 hover:underline"
+                                                                >
+                                                                    Không nhận được mã? Gửi lại
+                                                                </button>
+                                                            </div>
+                                                        </form>
+                                                    </div>
+                                                )}
+                                            </div>
                                         ) : (
                                             /* Forgot Password Flow */
                                             <div className="w-full">

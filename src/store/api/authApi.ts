@@ -37,6 +37,17 @@ export interface AuthUser {
     UPDATED_AT?: string;
 }
 
+export interface VerifyEmailRequest {
+    EMAIL: string;
+    OTP_CODE: string;
+}
+
+export interface VerifyEmailResponse {
+    status: number;
+    message: string;
+}
+
+
 // Auth API slice
 export const authApi = baseApi.injectEndpoints({
     endpoints: (builder) => ({
@@ -56,6 +67,16 @@ export const authApi = baseApi.injectEndpoints({
                 url: '/auth/signup',
                 method: 'POST',
                 body: userData,
+            }),
+            invalidatesTags: ['Auth'],
+        }),
+
+        // Verify email mutation
+        verifyEmail: builder.mutation<VerifyEmailResponse, VerifyEmailRequest>({
+            query: (data) => ({
+                url: '/auth/verify-email',
+                method: 'POST',
+                body: data,
             }),
             invalidatesTags: ['Auth'],
         }),
@@ -90,6 +111,7 @@ export const authApi = baseApi.injectEndpoints({
 export const {
     useLoginMutation,
     useSignupMutation,
+    useVerifyEmailMutation,
     useLogoutMutation,
     useGetProfileQuery,
     useRefreshTokenMutation,
