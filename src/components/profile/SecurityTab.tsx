@@ -5,9 +5,10 @@ import { Input } from '../ui/input';
 import { Label } from '../ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/tabs';
 import { Shield, Lock, Phone, Mail, Eye, EyeOff, Loader2, Check } from 'lucide-react';
-import { useUpdateSecuritySettingMutation, useSendOtpMutation } from '@/store/api/userApi';
+import { useUpdateSecuritySettingMutation } from '@/store/api/userApi';
+import { useSendOtpMutation } from '@/store/api/mailApi';
 import { toastPromise } from '@/utils/toast';
-
+import { OTP_TYPE } from '@/utils/constans';
 const SecurityTab: React.FC = () => {
     const [showCurrentPassword, setShowCurrentPassword] = useState(false);
     const [showNewPassword, setShowNewPassword] = useState(false);
@@ -264,7 +265,7 @@ const SecurityTab: React.FC = () => {
         setOtpState({ loading: true, success: false, error: '' });
         
         try {
-            const payload = type === 'email' ? { email: value } : { phone: value };
+            const payload = type === 'email' ? { USER_ID: currentUser.USER_ID.toString(), EMAIL: value, OTP_TYPE: OTP_TYPE.UPDATE_EMAIL } : { USER_ID: currentUser.USER_ID.toString(), PHONE: value, OTP_TYPE: OTP_TYPE.UPDATE_PHONE };
             
             await toastPromise(
                 sendOtp(payload).unwrap(),

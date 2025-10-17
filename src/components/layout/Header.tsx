@@ -60,8 +60,8 @@ const Header: React.FC = () => {
     };
 
     const getUserAvatar = () => {
-        if (user?.avatar) {
-            return user.avatar;
+        if (user?.FACE_IMAGE) {
+            return user.FACE_IMAGE;
         }
         return null;
     };

@@ -178,14 +178,6 @@ export const userApi = baseApi.injectEndpoints({
             invalidatesTags: ['User'],
         }),
 
-        sendOtp: builder.mutation<{ success: boolean; message: string }, { email?: string; phone?: string }>({
-            query: (data) => ({
-                url: '/mail/send-verification',
-                method: 'POST',
-                body: data,
-            }),
-        }),
-
         // Forgot password - Send OTP to email
         forgotPassword: builder.mutation<ForgotPasswordResponse, ForgotPasswordRequest>({
             query: (data) => ({
@@ -217,7 +209,6 @@ export const {
     useUpdateUserProfileMutation,
     useUploadUserAvatarMutation,
     useUpdateSecuritySettingMutation,
-    useSendOtpMutation,
     useForgotPasswordMutation,
     useResetPasswordMutation,
 } = userApi;
