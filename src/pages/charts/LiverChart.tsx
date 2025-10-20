@@ -2,12 +2,21 @@ import React from 'react';
 import ReactECharts from 'echarts-for-react';
 import type { HealthDataPoint } from '../types/healthTypes';
 
+type LiverVariant = 'ALT' | 'AST';
+
 interface LiverChartProps {
     data: HealthDataPoint[];
+    variant?: LiverVariant;
 }
 
-export const LiverChart: React.FC<LiverChartProps> = ({ data }) => {
+export const LiverChart: React.FC<LiverChartProps> = ({ data, variant = 'ALT' }) => {
+    const title = variant === 'ALT' ? 'Chức năng gan (ALT)' : 'Chức năng gan (AST)';
     const option = {
+        title: {
+            text: title,
+            left: 'center',
+            textStyle: { fontSize: 16, fontWeight: 'bold', color: '#1f2937' }
+        },
         tooltip: {
             trigger: 'axis',
             formatter: (params: any) => {

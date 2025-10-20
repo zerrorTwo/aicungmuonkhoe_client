@@ -1,30 +1,21 @@
 import React, { useState, useEffect } from "react";
+import { toast } from "react-toastify";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
 import { Label } from "../ui/label";
 import ModalOverlay from "./ModalOverlay";
 import { calculateAge } from "@/utils/age";
-import PhysicalMeasuresSection from "../healthForm/PhysicalMeasuresSection";
-import ActivityLevelSlider from "../healthForm/ActivityLevelSlider";
-import HealthStatusDropdown from "../healthForm/HealthStatusDropdown";
-import JobInputSection from "../healthForm/JobInputSection";
-import ExerciseFrequencySlider from "../healthForm/ExerciseFrequencySlider";
-import ExerciseTimeInputs from "../healthForm/ExerciseTimeInputs";
 import { User, Calendar, Users } from "lucide-react";
+import DatePicker from '@/components/ui/date-picker';
+import dayjs from 'dayjs';
+import { useGetAllGendersQuery } from '@/store/api/genderApi';
+import { useCreateHealthDocumentMutation } from '@/store/api/healthDocumentApi';
 
 interface HealthDocument {
   ID?: number;
   FULL_NAME?: string;
   DOB?: string;
   GENDER_ID?: number;
-  HEIGHT?: string;
-  WEIGHT?: string;
-  HEALTH_STATUS?: string;
-  JOB?: string;
-  EXERCISE_INTENSITY?: number;
-  EXERCISE_FREQUENCY?: string; // Backend expects string
-  DATE_WORKDAY?: number; // Backend expects number (minutes)
-  DATE_OFF?: number; // Backend expects number (minutes)
   IS_MYSELF?: boolean;
   AVATAR?: string;
 }
@@ -39,21 +30,12 @@ interface HealthInfoModalProps {
 const HealthInfoModal: React.FC<HealthInfoModalProps> = ({
   isOpen,
   onClose,
-  onSubmit,
   initialData,
 }) => {
   const [formData, setFormData] = useState<HealthDocument>({
     FULL_NAME: "",
     DOB: "",
-    GENDER_ID: 1,
-    HEIGHT: "",
-    WEIGHT: "",
-    HEALTH_STATUS: "healthy",
-    JOB: "",
-    EXERCISE_INTENSITY: 2, // Default: Trung Bình
-    EXERCISE_FREQUENCY: "1-3 lần/tuần", // String default
-    DATE_WORKDAY: 0, // Number (minutes)
-    DATE_OFF: 0, // Number (minutes)
+    GENDER_ID: undefined,
   });
 
   const [age, setAge] = useState<number>(0);
@@ -62,25 +44,18 @@ const HealthInfoModal: React.FC<HealthInfoModalProps> = ({
   // Load initial data
   useEffect(() => {
     if (initialData) {
-      console.log("Loading initial data:", initialData);
       setFormData({
-        ...formData,
-        ...initialData,
+        FULL_NAME: initialData.FULL_NAME || "",
+        DOB: initialData.DOB || "",
+        GENDER_ID: initialData.GENDER_ID,
+        IS_MYSELF: initialData.IS_MYSELF,
+        AVATAR: initialData.AVATAR
       });
     } else {
-      // Reset form if no initial data
       setFormData({
         FULL_NAME: "",
         DOB: "",
-        GENDER_ID: 1,
-        HEIGHT: "",
-        WEIGHT: "",
-        HEALTH_STATUS: "",
-        JOB: "",
-        EXERCISE_INTENSITY: 2,
-        EXERCISE_FREQUENCY: "1-3 lần/tuần",
-        DATE_WORKDAY: 0,
-        DATE_OFF: 0,
+        GENDER_ID: undefined,
       });
     }
   }, [initialData]);
@@ -90,25 +65,45 @@ const HealthInfoModal: React.FC<HealthInfoModalProps> = ({
     if (formData.DOB) {
       const calculatedAge = calculateAge(formData.DOB);
       setAge(calculatedAge);
-      console.log("Age calculated:", calculatedAge);
+    } else {
+      setAge(0);
     }
   }, [formData.DOB]);
 
-  const handleSubmit = () => {
+  const { data: gendersResponse, isLoading: gendersLoading, isError: gendersIsError } = useGetAllGendersQuery();
+  // Normalize genders to { id, name } so component works with different API shapes
+  const rawGenders = gendersResponse?.data || [];
+  const genders = rawGenders.map((g: any) => ({
+    id: Number(g.ID ?? g.id ?? 0),
+    name: String(g.NAME ?? g.name ?? g.NAME ?? ""),
+  }));
+
+
+  const [createHealthDocument, { isLoading: isCreating }] = useCreateHealthDocumentMutation();
+
+  const handleSubmit = async () => {
     // Basic validation
-    if (
-      !formData.FULL_NAME ||
-      !formData.DOB ||
-      !formData.HEIGHT ||
-      !formData.WEIGHT
-    ) {
-      alert("Vui lòng điền đầy đủ thông tin bắt buộc!");
+    if (!formData.FULL_NAME || !formData.DOB || !formData.GENDER_ID) {
+      toast.error("Vui lòng điền họ tên, ngày sinh và chọn giới tính!");
       return;
     }
-
-    console.log("Submitting health document:", formData);
-    onSubmit(formData);
-    onClose();
+    // Check if DOB is in the future
+    if (dayjs(formData.DOB).isAfter(dayjs(), 'day')) {
+      toast.error("Ngày sinh không được lớn hơn ngày hiện tại!");
+      return;
+    }
+    try {
+      await createHealthDocument({
+        FULL_NAME: formData.FULL_NAME,
+        DOB: formData.DOB,
+        GENDER_ID: formData.GENDER_ID,
+      }).unwrap();
+      toast.success("Cập nhật thành công");
+      onClose();
+    } catch (err) {
+      console.log(err);
+      toast.error("Tạo hồ sơ sức khỏe thất bại!");
+    }
   };
 
   const handleCancel = () => {
@@ -117,7 +112,7 @@ const HealthInfoModal: React.FC<HealthInfoModalProps> = ({
 
   return (
     <ModalOverlay isOpen={isOpen} onClose={onClose}>
-      <div className="p-6 max-h-[80vh] overflow-y-auto">
+      <div className="p-6 max-h-[80vh] overflow-y-auto" style={{ overflow: 'visible' }}>
         <h2 className="text-xl font-bold text-[hsl(158,64%,52%)] mb-6">
           Hồ sơ sức khỏe
           {age > 0 && (
@@ -155,19 +150,20 @@ const HealthInfoModal: React.FC<HealthInfoModalProps> = ({
             />
           </div>
 
-          <div>
+          <div style={{ position: 'relative', zIndex: 10000 }}>
             <Label className="text-sm font-medium flex items-center">
               <Calendar className="w-4 h-4 mr-1" />
               Ngày sinh <span className="text-red-500 ml-1">*</span>
             </Label>
-            <Input
-              type="date"
-              value={formData.DOB}
-              onChange={(e) =>
-                setFormData({ ...formData, DOB: e.target.value })
-              }
-              className="mt-1"
-            />
+            <div className="mt-1" style={{ overflow: 'visible', position: 'relative' }}>
+              <DatePicker
+                value={formData.DOB || ''}
+                onChange={(val) => setFormData({ ...formData, DOB: val })}
+                format="YYYY-MM-DD"
+                disabledDate={dayjs()}
+                disabledType="max"
+              />
+            </div>
           </div>
 
           {/* Warning for under 5 years old */}
@@ -194,85 +190,26 @@ const HealthInfoModal: React.FC<HealthInfoModalProps> = ({
             </Label>
             <select
               className="w-full mt-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[hsl(158,64%,52%)]"
-              value={formData.GENDER_ID}
-              onChange={(e) =>
-                setFormData({ ...formData, GENDER_ID: Number(e.target.value) })
-              }
+              value={formData.GENDER_ID ?? ''}
+              onChange={(e) => {
+                const val = e.target.value;
+                setFormData({ ...formData, GENDER_ID: val ? Number(val) : undefined });
+              }}
             >
-              <option value={1}>Nam</option>
-              <option value={2}>Nữ</option>
+              <option value="" disabled>Chọn giới tính</option>
+              {gendersLoading && <option>Đang tải...</option>}
+              {gendersIsError && <option>Không tải được giới tính</option>}
+              {!gendersLoading && !gendersIsError && genders.length === 0 && (
+                <>
+                  <option value={1}>Nam</option>
+                  <option value={2}>Nữ</option>
+                </>
+              )}
+              {!gendersLoading && genders.map((g: any) => (
+                <option key={g.id} value={g.id}>{g.name}</option>
+              ))}
             </select>
           </div>
-
-          {/* Physical Measures - Always shown */}
-          <PhysicalMeasuresSection
-            height={formData.HEIGHT || ""}
-            weight={formData.WEIGHT || ""}
-            onHeightChange={(value) =>
-              setFormData({ ...formData, HEIGHT: value })
-            }
-            onWeightChange={(value) =>
-              setFormData({ ...formData, WEIGHT: value })
-            }
-          />
-
-          {/* Activity Level - Always shown, disabled for under 5 */}
-          <ActivityLevelSlider
-            value={formData.EXERCISE_INTENSITY || 2}
-            onChange={(value) =>
-              setFormData({ ...formData, EXERCISE_INTENSITY: value })
-            }
-            disabled={isUnderFive}
-          />
-
-          {/* Age >= 5: Show additional fields */}
-          {!isUnderFive && age >= 5 && (
-            <>
-              <HealthStatusDropdown
-                value={formData.HEALTH_STATUS || "healthy"}
-                onChange={(value) =>
-                  setFormData({ ...formData, HEALTH_STATUS: value })
-                }
-              />
-
-              <JobInputSection
-                value={formData.JOB || ""}
-                onChange={(value) => setFormData({ ...formData, JOB: value })}
-              />
-
-              <ExerciseFrequencySlider
-                value={
-                  typeof formData.EXERCISE_FREQUENCY === "string"
-                    ? 2
-                    : formData.EXERCISE_FREQUENCY || 2
-                }
-                onChange={(value) => {
-                  // Convert number to string label for backend
-                  const labels = [
-                    "Rất ít/không",
-                    "1-3 lần/tuần",
-                    "4-5 lần/tuần",
-                    "Hằng ngày",
-                  ];
-                  setFormData({
-                    ...formData,
-                    EXERCISE_FREQUENCY: labels[value - 1] || labels[1],
-                  });
-                }}
-              />
-
-              <ExerciseTimeInputs
-                workdayTime={formData.DATE_WORKDAY || 0}
-                weekendTime={formData.DATE_OFF || 0}
-                onWorkdayChange={(value) =>
-                  setFormData({ ...formData, DATE_WORKDAY: value })
-                }
-                onWeekendChange={(value) =>
-                  setFormData({ ...formData, DATE_OFF: value })
-                }
-              />
-            </>
-          )}
         </div>
 
         {/* Action Buttons */}
@@ -286,9 +223,10 @@ const HealthInfoModal: React.FC<HealthInfoModalProps> = ({
           </Button>
           <Button
             onClick={handleSubmit}
-            className="flex-1 bg-[hsl(158,64%,52%)] hover:bg-[hsl(158,64%,45%)] text-white"
+            className="flex-1 bg-[hsl(158,64%,52%)] hover:bg-[hsl(158,64%,45%)] text-white curp"
+            disabled={isCreating}
           >
-            Lưu
+            {isCreating ? 'Đang lưu...' : 'Lưu'}
           </Button>
         </div>
       </div>

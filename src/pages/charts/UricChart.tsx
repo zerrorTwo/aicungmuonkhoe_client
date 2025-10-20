@@ -2,12 +2,20 @@ import React from 'react';
 import ReactECharts from 'echarts-for-react';
 import type { HealthDataPoint } from '../types/healthTypes';
 
+type UricVariant = 'general';
+
 interface UricChartProps {
     data: HealthDataPoint[];
+    variant?: UricVariant;
 }
 
 export const UricChart: React.FC<UricChartProps> = ({ data }) => {
     const option = {
+        title: {
+            text: 'Acid Uric',
+            left: 'center',
+            textStyle: { fontSize: 16, fontWeight: 'bold', color: '#1f2937' }
+        },
         tooltip: {
             trigger: 'axis',
             formatter: (params: any) => {

@@ -1,0 +1,7 @@
+export { default as BMIUpdateModal } from "./BMIUpdateModal"
+export { default as BloodPressureUpdateModal } from "./BloodPressureUpdateModal"
+export { default as BloodSugarUpdateModal } from "./BloodSugarUpdateModal"
+export { default as UricUpdateModal } from "./UricUpdateModal"
+export { default as LiverUpdateModal } from "./LiverUpdateModal"
+export { default as KidneyUpdateModal } from "./KidneyUpdateModal"
+export { default as LipidUpdateModal } from "./LipidUpdateModal"

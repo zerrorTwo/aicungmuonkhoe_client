@@ -2,12 +2,26 @@ import React from 'react';
 import ReactECharts from 'echarts-for-react';
 import type { HealthDataPoint } from '../types/healthTypes';
 
+type LipidVariant = 'total' | 'ldl' | 'hdl' | 'triglyceride';
+
 interface CholesterolChartProps {
     data: HealthDataPoint[];
+    variant?: LipidVariant;
 }
 
-export const CholesterolChart: React.FC<CholesterolChartProps> = ({ data }) => {
+export const CholesterolChart: React.FC<CholesterolChartProps> = ({ data, variant = 'total' }) => {
+    const titleMap: Record<LipidVariant, string> = {
+        total: 'Mỡ máu (Cholesterol toàn phần)',
+        ldl: 'Mỡ máu (LDL)',
+        hdl: 'Mỡ máu (HDL)',
+        triglyceride: 'Mỡ máu (Triglyceride)'
+    };
     const option = {
+        title: {
+            text: titleMap[variant],
+            left: 'center',
+            textStyle: { fontSize: 16, fontWeight: 'bold', color: '#1f2937' }
+        },
         tooltip: {
             trigger: 'axis',
             formatter: (params: any) => {
