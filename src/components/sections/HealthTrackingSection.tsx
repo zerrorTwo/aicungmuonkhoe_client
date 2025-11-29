@@ -1,9 +1,35 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Baby, User, Users2, ArrowRight } from 'lucide-react';
+import { ConclusionModal } from "../modals";
+import type { HealthConclusion } from "../modals/ConclusionModal";
+import ChartCard from "../ui/chart-card";
 
 const HealthTrackingSection: React.FC = () => {
+  const [isConclusionOpen, setConclusionOpen] = useState(false);
+  const [editingConclusion, setEditingConclusion] = useState<HealthConclusion | null>(null);
+
+  const handleCreateConclusion = () => {
+    setEditingConclusion(null);
+    setConclusionOpen(true);
+  };
+
+  const handleEditConclusion = (data: HealthConclusion) => {
+    setEditingConclusion(data);
+    setConclusionOpen(true);
+  };
+
+  const submitConclusion = async (payload: HealthConclusion) => {
+    // TODO: integrate API. Placeholder local persist or callback.
+    // For now, just log. Replace with your service, e.g., conclusionService.create/update
+    if (editingConclusion?.id) {
+      console.log("Update conclusion", payload);
+    } else {
+      console.log("Create conclusion", payload);
+    }
+  };
+
   const trackingCategories = [
     {
       icon: Baby,
@@ -93,15 +119,65 @@ const HealthTrackingSection: React.FC = () => {
           ))}
         </div>
 
-        <div className="text-center">
+        {/* Chart placeholders with Add buttons */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-10">
+          <ChartCard title="BMI">
+            <div className="h-48 flex items-center justify-center text-muted-foreground">
+              Khu vực biểu đồ BMI (placeholder)
+            </div>
+          </ChartCard>
+          <ChartCard title="Huyết áp" onAdd={handleCreateConclusion} addLabel="Thêm">
+            <div className="h-48 flex items-center justify-center text-muted-foreground">
+              Khu vực biểu đồ Huyết áp (placeholder)
+            </div>
+          </ChartCard>
+          <ChartCard title="Đường huyết" onAdd={handleCreateConclusion} addLabel="Thêm">
+            <div className="h-48 flex items-center justify-center text-muted-foreground">
+              Khu vực biểu đồ Đường huyết (placeholder)
+            </div>
+          </ChartCard>
+          <ChartCard title="Mỡ máu" onAdd={handleCreateConclusion} addLabel="Thêm">
+            <div className="h-48 flex items-center justify-center text-muted-foreground">
+              Khu vực biểu đồ Mỡ máu (placeholder)
+            </div>
+          </ChartCard>
+        </div>
+
+        <div className="flex items-center justify-center gap-3 flex-wrap">
           <Button
             size="lg"
             className="bg-gradient-primary hover:opacity-90 hover:scale-105 text-primary-foreground font-semibold px-8 py-4 h-auto shadow-card group transform transition-all duration-300"
+            onClick={handleCreateConclusion}
           >
-            Xem chi tiết
+            Tạo kết luận
             <ArrowRight className="w-5 h-5 ml-2 transition-transform group-hover:translate-x-1" />
           </Button>
+          <Button
+            variant="outline"
+            size="lg"
+            className="font-semibold px-8 py-4 h-auto"
+            onClick={() =>
+              handleEditConclusion({
+                id: 1,
+                title: "Kết luận gần nhất",
+                conclusion: "Các chỉ số trong ngưỡng bình thường. Tiếp tục duy trì chế độ hiện tại.",
+                recommendation: "Tăng cường rau xanh, uống đủ nước, vận động 150 phút/tuần.",
+                severity: "low",
+                date: new Date().toISOString().slice(0, 10),
+                author: "BS. A",
+              })
+            }
+          >
+            Cập nhật kết luận
+          </Button>
         </div>
+
+        <ConclusionModal
+          isOpen={isConclusionOpen}
+          onClose={() => setConclusionOpen(false)}
+          onSubmit={submitConclusion}
+          initialData={editingConclusion || undefined}
+        />
       </div>
     </section>
   );

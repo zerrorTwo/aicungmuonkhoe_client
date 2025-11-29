@@ -2,6 +2,7 @@ import React, { useEffect, type ReactNode } from 'react';
 import { useAppSelector, useAppDispatch } from '@/store/hooks';
 import { useGetMyHealthDocumentQuery, useCreateHealthDocumentMutation } from '@/store/api/healthDocumentApi';
 import { setHealthDocument, setShowHealthInfoModal, setHasHealthDocument } from '@/store/slices/healthDocumentSlice';
+import { showToast } from '@/utils/toast';
 import { HealthInfoModal } from '@/components/modals';
 import { useNavigate } from 'react-router-dom';
 
@@ -14,27 +15,30 @@ interface HealthDocumentGuardProps {
 const HealthDocumentGuard: React.FC<HealthDocumentGuardProps> = ({
     children,
     shouldCheck = true,
-    excludePaths = ['/login', '/register', '/']
+    // excludePaths = ['/login', '/register', '/']
 }) => {
     const dispatch = useAppDispatch();
     const navigate = useNavigate();
-    
+
     // Auth state
     const { isAuthenticated } = useAppSelector(state => state.auth);
-    
+
     // Health document state
     const { showHealthInfoModal, hasHealthDocument, currentHealthDocument } = useAppSelector(state => state.healthDocument);
-    
+
     // API hooks
     const { data: healthDocData, isLoading, error } = useGetMyHealthDocumentQuery(undefined, {
         skip: !isAuthenticated || !shouldCheck
     });
-    
+
     const [createHealthDocument] = useCreateHealthDocumentMutation();
 
-    // Check current path
+
+    // Define protected routes (can add more in the future)
+    const protectedRoutes = ['/health-tracking'];
     const currentPath = window.location.pathname;
-    const shouldSkipCheck = excludePaths.includes(currentPath) || !shouldCheck || !isAuthenticated;
+    const isProtectedRoute = protectedRoutes.includes(currentPath);
+    const shouldSkipCheck = !isProtectedRoute || !shouldCheck || !isAuthenticated;
 
     useEffect(() => {
         if (shouldSkipCheck) {
@@ -57,12 +61,22 @@ const HealthDocumentGuard: React.FC<HealthDocumentGuardProps> = ({
             dispatch(setHealthDocument(healthDocData.data));
             dispatch(setHasHealthDocument(true));
             dispatch(setShowHealthInfoModal(false));
-        } 
+        }
         // Nếu API trả về lỗi hoặc không có data (user chưa có health document)
         else if (error || (healthDocData?.status !== 200 || !healthDocData?.data)) {
             console.log('No health document found, showing modal');
-            dispatch(setHasHealthDocument(false));
-            dispatch(setShowHealthInfoModal(true));
+            // Nếu đang ở trang theo dõi sức khỏe thì chuyển về trang chủ và hiện modal + toast
+            if (window.location.pathname === '/health-tracking') {
+                navigate('/');
+                setTimeout(() => {
+                    dispatch(setHasHealthDocument(false));
+                    dispatch(setShowHealthInfoModal(true));
+                    showToast.error('Vui lòng cập nhật để xem chi tiết');
+                }, 100); // Đảm bảo modal hiện sau khi về trang chủ
+            } else {
+                dispatch(setHasHealthDocument(false));
+                dispatch(setShowHealthInfoModal(true));
+            }
         }
     }, [
         shouldSkipCheck,
@@ -71,23 +85,24 @@ const HealthDocumentGuard: React.FC<HealthDocumentGuardProps> = ({
         healthDocData,
         isLoading,
         error,
-        dispatch
+        dispatch,
+        navigate
     ]);
 
     // Handle save health document
-    const handleHealthInfoSave = async (healthData: any) => {
-        try {
-            const result = await createHealthDocument(healthData).unwrap();
-            if (result.message === 'Tạo thành công!') {
-                dispatch(setHealthDocument(result.data));
-                dispatch(setHasHealthDocument(true));
-                dispatch(setShowHealthInfoModal(false));
-                console.log('Health document created successfully');
-            }
-        } catch (err: any) {
-            console.error('Failed to save health info:', err);
-        }
-    };
+    // const handleHealthInfoSave = async (healthData: any) => {
+    //     try {
+    //         const result = await createHealthDocument(healthData).unwrap();
+    //         if (result.message === 'Tạo thành công!') {
+    //             dispatch(setHealthDocument(result.data));
+    //             dispatch(setHasHealthDocument(true));
+    //             dispatch(setShowHealthInfoModal(false));
+    //             console.log('Health document created successfully');
+    //         }
+    //     } catch (err: any) {
+    //         console.error('Failed to save health info:', err);
+    //     }
+    // };
 
     // Handle save and navigate
     const handleHealthInfoSaveAndNavigate = async (healthData: any) => {
@@ -114,13 +129,12 @@ const HealthDocumentGuard: React.FC<HealthDocumentGuardProps> = ({
     return (
         <>
             {children}
-            
+
             {/* Health Info Modal */}
             <HealthInfoModal
                 isOpen={showHealthInfoModal}
                 onClose={handleHealthInfoClose}
-                onSave={handleHealthInfoSave}
-                onSaveAndNavigate={handleHealthInfoSaveAndNavigate}
+                onSubmit={handleHealthInfoSaveAndNavigate}
             />
         </>
     );

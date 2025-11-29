@@ -2,12 +2,15 @@ import { useMemo } from 'react';
 import ReactECharts, { type EChartsOption } from 'echarts-for-react';
 import type { HealthDataPoint } from '../types/healthTypes';
 
+type BloodPressureVariant = 'home' | 'facility';
+
 interface BloodPressureChartProps {
     data: HealthDataPoint[];
     loading?: boolean;
+    variant?: BloodPressureVariant; // đo tại nhà vs cơ sở y tế
 }
 
-export function BloodPressureChart({ data, loading = false }: BloodPressureChartProps) {
+export function BloodPressureChart({ data, loading = false, variant = 'home' }: BloodPressureChartProps) {
     const option: EChartsOption = useMemo(() => {
         const xAxisData = data.map(d => {
             const date = new Date(d.date);
@@ -18,9 +21,32 @@ export function BloodPressureChart({ data, loading = false }: BloodPressureChart
         const systolicData = data.map(d => d.value); // Main value as systolic
         const diastolicData = data.map(d => Math.round(d.value * 0.6)); // Mock diastolic as 60% of systolic
 
+        // Add thin vertical connecting lines for each data point
+        let connectingSeries = [];
+        for (let i = 0; i < data.length; i++) {
+            connectingSeries.push({
+                name: `Nối ${i + 1}`,
+                type: 'line',
+                data: [
+                    [i, systolicData[i]],
+                    [i, diastolicData[i]]
+                ],
+                xAxisIndex: 0,
+                yAxisIndex: 0,
+                lineStyle: { color: '#374151', type: 'solid', width: 1, cap: 'round' },
+                symbol: 'none',
+                showSymbol: false,
+                z: 20,
+                tooltip: { show: false },
+                connectNulls: true,
+            });
+        }
+
+        const titleText = variant === 'home' ? 'Huyết áp (Đo tại nhà)' : 'Huyết áp (Cơ sở y tế)';
+
         return {
             title: {
-                text: 'Huyết áp',
+                text: titleText,
                 left: 'center',
                 textStyle: {
                     fontSize: 16,
@@ -33,7 +59,8 @@ export function BloodPressureChart({ data, loading = false }: BloodPressureChart
                 formatter: function (params: any) {
                     const systolic = params[0];
                     const diastolic = params[1];
-                    return `${systolic.axisValue}<br/>Tâm thu: ${systolic.value} mmHg<br/>Tâm trương: ${diastolic.value} mmHg`;
+                    const formatValue = (val: number) => typeof val === 'number' ? val.toFixed(2) : val;
+                    return `${systolic.axisValue}<br/>Tâm thu: ${formatValue(systolic.value)} mmHg<br/>Tâm trương: ${formatValue(diastolic.value)} mmHg`;
                 }
             },
             legend: {
@@ -124,27 +151,20 @@ export function BloodPressureChart({ data, loading = false }: BloodPressureChart
                             { yAxis: 80, name: 'Bình thường', lineStyle: { color: '#10b981', type: 'dashed' } }
                         ]
                     }
-                }
+                },
+                ...connectingSeries
             ]
         };
-    }, [data]);
-
-    if (loading) {
-        return (
-            <div className="w-full h-full flex items-center justify-center">
-                <div className="text-gray-500">Đang tải...</div>
-            </div>
-        );
-    }
+    }, [data, variant]);
 
     return (
-        <div className="w-full h-full">
+        <div className="w-full h-full" >
             <ReactECharts
                 option={option}
                 style={{ height: '100%', width: '100%' }}
                 opts={{ renderer: 'canvas' }}
                 showLoading={loading}
             />
-        </div>
+        </div >
     );
 }

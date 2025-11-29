@@ -2,12 +2,21 @@ import React from 'react';
 import ReactECharts from 'echarts-for-react';
 import type { HealthDataPoint } from '../types/healthTypes';
 
+type KidneyVariant = 'creatinine' | 'urea';
+
 interface KidneyChartProps {
     data: HealthDataPoint[];
+    variant?: KidneyVariant;
 }
 
-export const KidneyChart: React.FC<KidneyChartProps> = ({ data }) => {
+export const KidneyChart: React.FC<KidneyChartProps> = ({ data, variant = 'creatinine' }) => {
+    const title = variant === 'creatinine' ? 'Chức năng thận (Creatinine)' : 'Chức năng thận (Urea)';
     const option = {
+        title: {
+            text: title,
+            left: 'center',
+            textStyle: { fontSize: 16, fontWeight: 'bold', color: '#1f2937' }
+        },
         tooltip: {
             trigger: 'axis',
             formatter: (params: any) => {

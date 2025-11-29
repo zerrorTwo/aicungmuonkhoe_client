@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import ReactECharts, { type EChartsOption } from 'echarts-for-react';
 import type { HealthDataPoint } from '../types/healthTypes';
+import { useLazyGetConclusionsRangeQuery } from '@/store/api/conclusionApi';
 
 // Constants following PMS structure
 const BMIAgeRange = {
@@ -14,7 +15,6 @@ const BMIAgeRange = {
 const BMIChildrenTabs = {
     Weight: 'WEIGHT',
     Height: 'HEIGHT',
-    WeightHeight: 'WEIGHT_HEIGHT',
     BMI: 'BMI'
 } as const;
 
@@ -77,24 +77,119 @@ const WHO_PERCENTILES = {
 
 interface BMIChartProps {
     loading?: boolean;
-    data: HealthDataPoint[];
     ageRange: BMIAgeRangeType;
     activeTab: BMIChildrenTabsType;
     age: number;
+    healthDocumentId: string;
+    startTime?: string;
+    endTime?: string;
+    dob?: string;
+    onDataLoaded?: (data: any) => void; // Callback to send data to parent
+    refreshTrigger?: number; // Add trigger to force refresh
 }
 
 export default function BMIChart({
     loading = false,
-    data,
     activeTab,
-    age
+    age,
+    healthDocumentId,
+    startTime,
+    endTime,
+    ageRange,
+    dob,
+    onDataLoaded,
+    refreshTrigger = 0
 }: BMIChartProps) {
     const eChartsRef = useRef<ReactECharts | null>(null);
     const [chartOption, setChartOption] = useState<EChartsOption>({});
+    console.log(age);
+
+    const [fetchConclusionsRange, { data: rangeData }] = useLazyGetConclusionsRangeQuery();
+
+    useEffect(() => {
+        if (!healthDocumentId) {
+            console.error('Health document ID is undefined');
+            return;
+        }
+
+        if (ageRange === 'FROM_0_LESS_THAN_5') {
+            if (!dob) {
+                console.error('Date of birth is undefined for health document ID:', healthDocumentId);
+                return;
+            }
+            const birth = new Date(dob);
+            if (isNaN(birth.getTime())) {
+                console.error('Invalid date of birth for health document ID:', healthDocumentId);
+                return;
+            }
+
+            const startDate = new Date(birth);
+            const endDate = new Date(birth);
+            endDate.setFullYear(birth.getFullYear() + 5);
+
+            const formatDate = (date: Date) => {
+                const year = date.getFullYear();
+                const month = String(date.getMonth() + 1).padStart(2, '0');
+                const day = String(date.getDate()).padStart(2, '0');
+                return `${year}-${month}-${day}`;
+            };
+
+            fetchConclusionsRange({
+                MODEL: 'BMI',
+                START_TIME: formatDate(startDate),
+                END_TIME: formatDate(endDate),
+                ID: healthDocumentId,
+                AGE_TYPE: ageRange,
+                ACTIVE_TAB: activeTab,
+                SORT: 'ASC',
+                OFFSET: '0',
+                LIMIT: '12'
+            });
+        } else {
+            fetchConclusionsRange({
+                MODEL: 'BMI',
+                START_TIME: startTime,
+                END_TIME: endTime,
+                ID: healthDocumentId,
+                AGE_TYPE: ageRange,
+                ACTIVE_TAB: activeTab,
+                SORT: 'ASC',
+                OFFSET: '0',
+                LIMIT: '12'
+            });
+        }
+    }, [ageRange, fetchConclusionsRange, startTime, endTime, healthDocumentId, activeTab, dob, refreshTrigger]);
+
+    // Send data to parent component when rangeData changes
+    useEffect(() => {
+        if (rangeData?.data?.listData && onDataLoaded) {
+            onDataLoaded(rangeData.data.listData[0]);
+        }
+    }, [rangeData, onDataLoaded]);
+
+    // Updated styles and configurations for PMS alignment
+    const PMS_CHART_COLOR = ['#00A9F0CC', '#33C3FFCC', '#99E18CCC', '#FAA781CC', '#EB5447CC'];
+    const PMS_LINE_COLOR = ['#1AA8E3', '#FD9602', '#4CCA35', '#F5540A', '#E52A1A'];
+
+    const PMS_WHO_PERCENTILES = {
+        WEIGHT_0_5: [
+            { name: '-3SD', values: [2.5, 3.4, 4.2, 5.0, 5.7, 6.4] },
+            { name: '-2SD', values: [2.9, 3.9, 4.9, 5.8, 6.7, 7.5] },
+            { name: 'Median', values: [3.3, 4.5, 5.6, 6.7, 7.8, 8.9] },
+            { name: '+2SD', values: [3.8, 5.1, 6.4, 7.7, 9.1, 10.5] },
+            { name: '+3SD', values: [4.2, 5.7, 7.1, 8.6, 10.2, 11.8] }
+        ],
+        HEIGHT_0_5: [
+            { name: '-3SD', values: [44.2, 49.8, 54.4, 58.4, 61.8, 65.0] },
+            { name: '-2SD', values: [46.1, 52.0, 57.1, 61.4, 65.0, 68.6] },
+            { name: 'Median', values: [49.9, 56.7, 62.9, 68.0, 72.8, 77.2] },
+            { name: '+2SD', values: [53.7, 61.4, 68.6, 74.5, 80.5, 85.7] },
+            { name: '+3SD', values: [55.6, 63.4, 70.6, 76.9, 83.2, 88.9] }
+        ]
+    };
 
     const chartConfig = useMemo(() => {
-        // For children under 5 - different charts based on active tab
-        if (age < 5) {
+        if (ageRange === BMIAgeRange.FROM_0_LESS_THAN_5) {
             switch (activeTab) {
                 case BMIChildrenTabs.Weight:
                     return {
@@ -103,7 +198,7 @@ export default function BMIChart({
                         yMin: 2,
                         yMax: 15,
                         unit: 'kg',
-                        referenceLines: WHO_PERCENTILES.WEIGHT_0_5
+                        referenceLines: PMS_WHO_PERCENTILES.WEIGHT_0_5
                     };
                 case BMIChildrenTabs.Height:
                     return {
@@ -112,114 +207,57 @@ export default function BMIChart({
                         yMin: 40,
                         yMax: 95,
                         unit: 'cm',
-                        referenceLines: WHO_PERCENTILES.HEIGHT_0_5
-                    };
-                case BMIChildrenTabs.WeightHeight:
-                    return {
-                        title: 'Cân nặng theo chiều cao (WHO 2006)',
-                        yAxisName: 'Cân nặng (kg)',
-                        yMin: 2,
-                        yMax: 15,
-                        unit: 'kg',
-                        referenceLines: WHO_PERCENTILES.WEIGHT_0_5
+                        referenceLines: PMS_WHO_PERCENTILES.HEIGHT_0_5
                     };
                 default:
-                    return {
-                        title: 'BMI theo tuổi (WHO 2007)',
-                        yAxisName: 'BMI',
-                        yMin: 10,
-                        yMax: 30,
-                        unit: '',
-                        referenceLines: WHO_PERCENTILES.BMI_5_19
-                    };
+                    return null;
             }
         }
+        return null;
+    }, [ageRange, activeTab]);
 
-        // For children 5-19 - only BMI
-        if (age < 19) {
-            return {
-                title: 'BMI theo tuổi (WHO 2007)',
-                yAxisName: 'BMI',
-                yMin: 10,
-                yMax: 35,
-                unit: '',
-                referenceLines: WHO_PERCENTILES.BMI_5_19
-            };
-        }
-
-        // For adults 19+ - standard BMI
-        return {
-            title: 'Chỉ số BMI',
-            yAxisName: 'BMI',
-            yMin: 15,
-            yMax: 40,
-            unit: '',
-            referenceLines: WHO_PERCENTILES.BMI_ADULT
-        };
-    }, [age, activeTab]);
-
+    // Ensure markLines is always an array to avoid TypeError
     const option: EChartsOption = useMemo(() => {
-        const xAxisData = data.map(d => {
-            const date = new Date(d.date);
+        // Prepare chart data from API range
+        const chartData = rangeData?.data?.listData || [];
+
+        // Create x-axis data from dates
+        const xAxisData = chartData.map((item: any) => {
+            const date = new Date(item.DATE);
             return `${date.getDate()}/${date.getMonth() + 1}`;
         });
 
-        const seriesData = data.map(d => d.value);
+        // Create series data based on active tab
+        const seriesData = chartData.map((item: any) => {
+            if (activeTab === BMIChildrenTabs.Weight) {
+                return item.VALUE_WEIGHT;
+            } else if (activeTab === BMIChildrenTabs.Height) {
+                return item.VALUE_HEIGHT;
+            }
+            return item.VALUE;
+        });
 
-        // Create reference lines
-        const markLines: any[] = [];
-
-        if (age >= 19) {
-            // Adult BMI reference lines
-            chartConfig.referenceLines.forEach((ref: any, index: number) => {
-                markLines.push({
-                    yAxis: ref.value,
-                    name: ref.name,
-                    lineStyle: {
-                        color: BMI_LINE_COLOR[index] || '#666',
-                        type: 'dashed',
-                        width: 2
-                    },
-                    label: {
-                        position: 'end',
-                        fontSize: 10,
-                        color: BMI_LINE_COLOR[index] || '#666',
-                        backgroundColor: 'rgba(255, 255, 255, 0.8)',
-                        padding: [2, 4],
-                        borderRadius: 2
-                    }
-                });
-            });
-        } else {
-            // Children WHO percentile lines
-            chartConfig.referenceLines.forEach((ref: any, index: number) => {
-                if (ref.values) {
-                    // Use median value for now (more complex logic needed for age-specific values)
-                    const medianValue = ref.values[Math.floor(ref.values.length / 2)];
-                    markLines.push({
-                        yAxis: medianValue,
-                        name: ref.name,
-                        lineStyle: {
-                            color: BMI_LINE_COLOR[index] || '#666',
-                            type: 'dashed',
-                            width: 1
-                        },
-                        label: {
-                            position: 'end',
-                            fontSize: 10,
-                            color: BMI_LINE_COLOR[index] || '#666',
-                            backgroundColor: 'rgba(255, 255, 255, 0.8)',
-                            padding: [2, 4],
-                            borderRadius: 2
-                        }
-                    });
-                }
-            });
-        }
+        const markLines = chartConfig?.referenceLines?.map((ref, index) => ({
+            yAxis: ref.values[2], // Median value
+            name: ref.name,
+            lineStyle: {
+                color: PMS_LINE_COLOR[index],
+                type: 'dashed',
+                width: 1
+            },
+            label: {
+                position: 'end',
+                fontSize: 10,
+                color: PMS_LINE_COLOR[index],
+                backgroundColor: 'rgba(255, 255, 255, 0.8)',
+                padding: [2, 4],
+                borderRadius: 2
+            }
+        })) || []; // Default to an empty array if undefined
 
         return {
             title: {
-                text: chartConfig.title,
+                text: chartConfig?.title,
                 left: 'center',
                 textStyle: {
                     fontSize: 16,
@@ -228,42 +266,48 @@ export default function BMIChart({
                 }
             },
             tooltip: {
-                trigger: 'axis',
+                trigger: 'item',
                 formatter: function (params: any) {
-                    const point = params[0];
-                    return `${point.axisValue}<br/>${chartConfig.yAxisName}: ${point.value}${chartConfig.unit}`;
+                    const dataItem = chartData[params.dataIndex];
+                    if (!dataItem) return '';
+
+                    const value = activeTab === BMIChildrenTabs.Weight
+                        ? dataItem.VALUE_WEIGHT
+                        : dataItem.VALUE_HEIGHT;
+                    const unit = activeTab === BMIChildrenTabs.Weight ? 'kg' : 'cm';
+
+                    return `
+                        <div style="padding: 8px;">
+                            <div><strong>Ngày:</strong> ${new Date(dataItem.DATE).toLocaleDateString('vi-VN')}</div>
+                            <div><strong>${chartConfig?.yAxisName}:</strong> ${value} ${unit}</div>
+                            <div style="color: ${dataItem.COLOR}"><strong>Trạng thái:</strong> ${dataItem.TYPE}</div>
+                        </div>
+                    `;
                 }
-            },
-            grid: {
-                left: '8%',
-                right: '4%',
-                bottom: '15%',
-                top: '20%',
-                containLabel: true
             },
             xAxis: {
                 type: 'category',
                 data: xAxisData,
+                axisLabel: {
+                    rotate: 45,
+                    fontSize: 11,
+                    color: '#6b7280'
+                },
                 axisLine: {
                     lineStyle: {
                         color: '#e5e7eb'
                     }
-                },
-                axisLabel: {
-                    color: '#6b7280',
-                    fontSize: 11,
-                    rotate: 45
                 }
             },
             yAxis: {
                 type: 'value',
-                name: chartConfig.yAxisName,
+                name: chartConfig?.yAxisName,
+                min: chartConfig?.yMin,
+                max: chartConfig?.yMax,
                 nameTextStyle: {
                     color: '#6b7280',
                     fontSize: 12
                 },
-                min: chartConfig.yMin,
-                max: chartConfig.yMax,
                 axisLine: {
                     lineStyle: {
                         color: '#e5e7eb'
@@ -280,42 +324,48 @@ export default function BMIChart({
                     }
                 }
             },
-            series: [
-                {
-                    name: chartConfig.yAxisName,
-                    type: 'line',
-                    data: seriesData,
+            grid: {
+                left: '8%',
+                right: '4%',
+                bottom: '15%',
+                top: '20%',
+                containLabel: true
+            },
+            series: [{
+                data: seriesData.map((value: number, index: number) => ({
+                    value: value,
                     itemStyle: {
-                        color: '#3b82f6',
+                        color: chartData[index]?.COLOR || '#3b82f6',
                         borderWidth: 2,
                         borderColor: '#ffffff'
-                    },
-                    lineStyle: {
-                        color: '#3b82f6',
-                        width: 3
-                    },
-                    symbol: 'circle',
-                    symbolSize: 8,
-                    smooth: true,
-                    areaStyle: {
-                        color: {
-                            type: 'linear',
-                            x: 0, y: 0, x2: 0, y2: 1,
-                            colorStops: [
-                                { offset: 0, color: 'rgba(59, 130, 246, 0.3)' },
-                                { offset: 1, color: 'rgba(59, 130, 246, 0.05)' }
-                            ]
-                        }
-                    },
-                    markLine: {
-                        silent: true,
-                        symbol: 'none',
-                        data: markLines
                     }
+                })),
+                type: 'line',
+                smooth: true,
+                symbol: 'circle',
+                symbolSize: 8,
+                lineStyle: {
+                    color: '#9747ff',
+                    width: 2
+                },
+                label: {
+                    show: true,
+                    position: 'top',
+                    fontSize: 10,
+                    fontWeight: 'bold',
+                    color: '#000',
+                    formatter: function (params: any) {
+                        return params.value;
+                    }
+                },
+                markLine: {
+                    silent: true,
+                    symbol: 'none',
+                    data: markLines
                 }
-            ]
+            }]
         };
-    }, [data, chartConfig, age]);
+    }, [rangeData, chartConfig, activeTab]);
 
     useEffect(() => {
         setChartOption(option);

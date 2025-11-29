@@ -1,5 +1,6 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import dayjs, { Dayjs } from 'dayjs';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { Input } from './input';
@@ -16,19 +17,23 @@ type DatePickerProps = {
     onBlur?: () => void;
     disabled?: boolean;
     className?: string;
+    offsetX?: number;
+    offsetY?: number;
+    getPosition?: () => DOMRect;
+    containerRef?: React.RefObject<HTMLElement>;
 };
 
 export default function DatePicker({
     placeholder = "Chọn ngày",
     disabledDate,
     disabledType = 'max',
-    value,
+    value = new Date().toISOString().slice(0, 10),
     format = 'YYYY-MM-DD',
     onChange,
     onFocus,
     onBlur,
     disabled = false,
-    className
+    className,
 }: DatePickerProps) {
     const pickerRef = useRef<HTMLDivElement>(null);
     const yearRef = useRef<HTMLDivElement>(null);
@@ -50,7 +55,6 @@ export default function DatePicker({
             day: dateValue.date()
         };
     });
-
 
     const years = useMemo(() => {
         return Array.from({ length: 201 }, (_, i) => currentYear - 100 + i);
@@ -107,7 +111,8 @@ export default function DatePicker({
 
     const handleYearClick = (year: number) => {
         setSelectedDate((prev) => ({ ...prev, year }));
-        updateYearScrollPosition();
+        // scroll đến year vừa click (an toàn)
+        requestAnimationFrame(() => updateYearScrollPosition());
     };
 
     const handleDateClick = (
@@ -153,35 +158,36 @@ export default function DatePicker({
     };
 
     const updateYearScrollPosition = useCallback(() => {
-        if (yearRef.current) {
-            const itemHeight = 36;
-            const index = years.indexOf(selectedDate.year);
-            const containerHeight = 300;
-            const scrollPosition =
-                index * itemHeight - containerHeight / 2 + itemHeight / 2;
-            yearRef.current.scrollTo({
+        const container = yearRef.current;
+        if (!container) return;
+
+        // đo chiều cao vùng chứa
+        const containerHeight = container.clientHeight || container.getBoundingClientRect().height || 0;
+
+        // tìm item đầu tiên (mảng years render các <div> trực tiếp)
+        const firstItem = container.firstElementChild as HTMLElement | null;
+        // nếu firstItem null thì không làm gì
+        const itemHeight = firstItem
+            ? firstItem.getBoundingClientRect().height
+            : 36; // fallback cứng
+
+        // tìm index của năm được chọn, nếu không thấy thì dùng năm hiện tại
+        const index = years.indexOf(selectedDate.year);
+        const validIndex = index !== -1 ? index : Math.max(0, years.indexOf(currentYear));
+
+        // tính vị trí scroll sao cho item nằm giữa container
+        const scrollPosition = validIndex * itemHeight - (containerHeight / 2) + (itemHeight / 2);
+
+        // dùng requestAnimationFrame để chắc DOM đã layout xong
+        requestAnimationFrame(() => {
+            container.scrollTo({
                 top: Math.max(0, scrollPosition),
                 behavior: 'smooth'
             });
-        }
-    }, [selectedDate.year, years]);
+        });
+    }, [selectedDate.year, years, currentYear]);
 
-    const updateCalendarPosition = useCallback(() => {
-        if (!showPicker) return;
-        updateYearScrollPosition();
-    }, [showPicker, updateYearScrollPosition]);
-
-    useEffect(() => {
-        if (value) {
-            const dateValue = dayjs(value);
-            setSelectedDate({
-                year: dateValue.year(),
-                month: dateValue.month(),
-                day: dateValue.date()
-            });
-        }
-    }, [value]);
-
+    // Khi mở picker, gọi scroll — dùng small timeout để chắc chắn list đã mount
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
             if (
@@ -196,13 +202,28 @@ export default function DatePicker({
 
         if (showPicker) {
             document.addEventListener('mousedown', handleClickOutside);
-            updateCalendarPosition();
+
+            // gọi update sau khi mount; setTimeout 0 + rAF trong fn giúp ổn định across browsers
+            setTimeout(() => {
+                updateYearScrollPosition();
+            }, 0);
         }
 
         return () => {
             document.removeEventListener('mousedown', handleClickOutside);
         };
-    }, [showPicker, updateCalendarPosition]);
+    }, [showPicker, updateYearScrollPosition]);
+
+    useEffect(() => {
+        if (value) {
+            const dateValue = dayjs(value);
+            setSelectedDate({
+                year: dateValue.year(),
+                month: dateValue.month(),
+                day: dateValue.date()
+            });
+        }
+    }, [value]);
 
     const displayValue = value ? dayjs(value).format('DD/MM/YYYY') : '';
 
@@ -211,6 +232,7 @@ export default function DatePicker({
             <div ref={inputRef}>
                 <Input
                     readOnly
+                    autoFocus
                     placeholder={placeholder}
                     value={displayValue}
                     onClick={() => !disabled && setShowPicker(!showPicker)}
@@ -221,14 +243,41 @@ export default function DatePicker({
                 />
             </div>
 
-            {showPicker && (
+            {showPicker && createPortal(
                 <div
                     ref={pickerRef}
-                    className="absolute top-full left-0 z-[9999] bg-white border border-border rounded-lg shadow-xl mt-1"
-                    style={{
-                        width: '320px',
-                        maxHeight: '350px'
-                    }}
+                    className="z-[10000] bg-white border border-border rounded-lg shadow-xl"
+                    style={(() => {
+                        const rect = inputRef.current?.getBoundingClientRect();
+                        let top = 100, left = 100;
+                        if (rect) {
+                            const { top: inputTop, left: inputLeft, height: inputHeight } = rect;
+                            const viewportHeight = window.innerHeight;
+                            const pickerHeight = 350; // Approximate height of the picker
+
+                            // Calculate top position
+                            if (inputTop + inputHeight + pickerHeight > viewportHeight) {
+                                top = inputTop - pickerHeight - 8; // Place above the input
+                            } else {
+                                top = inputTop + inputHeight + 8; // Place below the input
+                            }
+
+                            // Calculate left position
+                            const pickerWidth = 320; // Fixed width of the picker
+                            if (inputLeft + pickerWidth > window.innerWidth) {
+                                left = window.innerWidth - pickerWidth - 8; // Align to the right edge
+                            } else {
+                                left = inputLeft; // Align to the left edge
+                            }
+                        }
+                        return {
+                            width: '320px',
+                            maxHeight: '350px',
+                            position: 'fixed',
+                            top,
+                            left
+                        };
+                    })()}
                 >
                     <div className="flex">
                         {/* Year Selection */}
@@ -275,7 +324,9 @@ export default function DatePicker({
                                 >
                                     <ChevronRight className="w-3 h-3 text-muted-foreground" />
                                 </button>
-                            </div>                            {/* Weekdays */}
+                            </div>
+
+                            {/* Weekdays */}
                             <div className="grid grid-cols-7 gap-0.5 mb-1">
                                 {['T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'CN'].map((day) => (
                                     <div key={day} className="text-center text-xs font-medium text-muted-foreground p-1">
@@ -318,7 +369,9 @@ export default function DatePicker({
                                             {day}
                                         </button>
                                     )
-                                )}                                {/* Next month days */}
+                                )}
+
+                                {/* Next month days */}
                                 {Array.from({ length: 42 - firstDay - daysInMonth }, (_, i) => i + 1).map(
                                     (day) => (
                                         <button
@@ -336,7 +389,8 @@ export default function DatePicker({
                             </div>
                         </div>
                     </div>
-                </div>
+                </div>,
+                document.body
             )}
         </div>
     );

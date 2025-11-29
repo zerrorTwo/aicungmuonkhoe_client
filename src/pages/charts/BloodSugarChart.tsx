@@ -2,12 +2,27 @@ import React from 'react';
 import ReactECharts from 'echarts-for-react';
 import type { HealthDataPoint } from '../types/healthTypes';
 
+type SugarVariant = 'fasting' | 'twoHours' | 'hba1c';
+
 interface BloodSugarChartProps {
     data: HealthDataPoint[];
+    variant?: SugarVariant;
 }
 
-export const BloodSugarChart: React.FC<BloodSugarChartProps> = ({ data }) => {
+export const BloodSugarChart: React.FC<BloodSugarChartProps> = ({ data, variant = 'fasting' }) => {
+    const title =
+        variant === 'fasting'
+            ? 'Đường huyết (Lúc đói)'
+            : variant === 'twoHours'
+                ? 'Đường huyết (Sau 2 giờ uống)'
+                : 'HbA1c';
+    const unit = variant === 'hba1c' ? '%' : 'mg/dL';
     const option = {
+        title: {
+            text: title,
+            left: 'center',
+            textStyle: { fontSize: 16, fontWeight: 'bold', color: '#1f2937' }
+        },
         tooltip: {
             trigger: 'axis',
             formatter: (params: any) => {
@@ -15,7 +30,7 @@ export const BloodSugarChart: React.FC<BloodSugarChartProps> = ({ data }) => {
                 return `
           <div style="padding: 8px;">
             <div style="font-weight: bold; margin-bottom: 4px;">${point.axisValue}</div>
-            <div style="color: #666;">Đường huyết: ${point.value} mg/dL</div>
+            <div style="color: #666;">${title}: ${point.value} ${unit}</div>
           </div>
         `;
             },
@@ -46,11 +61,11 @@ export const BloodSugarChart: React.FC<BloodSugarChartProps> = ({ data }) => {
                 data: data.map(item => item.value),
                 smooth: true,
                 lineStyle: {
-                    color: '#f59e0b',
+                    color: variant === 'hba1c' ? '#8b5cf6' : variant === 'twoHours' ? '#ef4444' : '#f59e0b',
                     width: 2,
                 },
                 itemStyle: {
-                    color: '#f59e0b',
+                    color: variant === 'hba1c' ? '#8b5cf6' : variant === 'twoHours' ? '#ef4444' : '#f59e0b',
                 },
             },
         ],
