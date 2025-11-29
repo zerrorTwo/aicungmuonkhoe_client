@@ -5,40 +5,40 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent } from '@/components/ui/card';
-import { Eye, EyeOff, Mail, Lock, User, Shield } from 'lucide-react';
+import { Mail, Lock, Shield } from 'lucide-react';
 import Logo from '@/components/ui/Logo';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
-import { useLoginMutation, useSignupMutation, useVerifyEmailMutation } from '../store/api/authApi';
+import { useLoginMutation, useVerifyEmailMutation } from '../store/api/authApi';
 import { useForgotPasswordMutation, useResetPasswordMutation } from '../store/api/userApi';
 import { useAppDispatch } from '@/store/hooks';
-import { loginStart, loginSuccess, loginFailure } from '@/store/slices/authSlice';
+import { loginSuccess } from '@/store/slices/authSlice';
 import { handleApiError } from '@/utils/api';
 import { useAuth } from '@/hooks/useAuth';
 import { useSendOtpMutation } from '@/store/api/mailApi';
+import LoginForm from '@/components/auth/LoginForm';
+import RegisterForm from '@/components/auth/RegisterForm';
 import { OTP_TYPE } from '@/utils/constans';
 
 const Login: React.FC = () => {
     const navigate = useNavigate();
     const dispatch = useAppDispatch();
     const { isAuthenticated } = useAuth();
-    const [login, { isLoading: isLoginLoading }] = useLoginMutation();
-    const [signup] = useSignupMutation();
+    const [login] = useLoginMutation();
     const [verifyEmail, { isLoading: isVerifyEmailLoading }] = useVerifyEmailMutation();
     const [sendOtp] = useSendOtpMutation();
     const [forgotPassword, { isLoading: isForgotPasswordLoading }] = useForgotPasswordMutation();
     const [resetPassword, { isLoading: isResetPasswordLoading }] = useResetPasswordMutation();
 
-    const [showPassword, setShowPassword] = useState(false);
     const [error, setError] = useState<string>('');
-    
+
     // Verify email flow state for registration
     const [verifyEmailStep, setVerifyEmailStep] = useState<'register' | 'verify' | null>(null);
     const [verifyEmailData, setVerifyEmailData] = useState({
         email: '',
         otp: ''
     });
-    
+
     // Forgot password flow state
     const [forgotPasswordStep, setForgotPasswordStep] = useState<'email' | 'reset' | null>(null);
     const [forgotPasswordData, setForgotPasswordData] = useState({
@@ -48,19 +48,8 @@ const Login: React.FC = () => {
         confirmPassword: ''
     });
 
-    // Login form state
-    const [loginData, setLoginData] = useState({
-        email: '',
-        password: ''
-    });
-
-    // Register form state
-    const [registerData, setRegisterData] = useState({
-        email: '',
-        phone: '',
-        password: '',
-        confirmPassword: ''
-    });
+    // Temporary password storage for auto-login after verification
+    const [tempPassword, setTempPassword] = useState('');
 
     // Check if user is already authenticated and redirect to home
     useEffect(() => {
@@ -69,143 +58,6 @@ const Login: React.FC = () => {
             navigate('/', { replace: true });
         }
     }, [isAuthenticated, navigate]);
-
-    const handleLogin = async (e: React.FormEvent) => {
-        e.preventDefault();
-        setError('');
-
-        if (!loginData.email || !loginData.password) {
-            setError('Vui lòng điền đầy đủ thông tin');
-            return;
-        }
-
-        try {
-            dispatch(loginStart());
-
-            const result = await login({
-                EMAIL: loginData.email,
-                PASSWORD: loginData.password
-            }).unwrap();
-
-            console.log('Login result:', result);
-            
-
-            if (result.status === 200) {
-                console.log('Login successful, user data:', result.data.user);
-
-                // Save to Redux
-                dispatch(loginSuccess({
-                    user: result.data.user,
-                    token: result.data.access_token,
-                }));
-
-                // Save to localStorage
-                localStorage.setItem('access_token', result.data.access_token);
-                localStorage.setItem('user', JSON.stringify(result.data.user));
-
-                console.log('Login successful, navigating to home page...');
-                // Navigate to home page - only on success
-                navigate('/', { replace: true });
-            } else {
-                // Login failed - don't navigate
-                console.log('Login failed with status:', result.status);
-                dispatch(loginFailure());
-                setError(result.message || 'Đăng nhập thất bại');
-            }
-        } catch (err: any) {
-            // xử lý trường hợp tài khoản chưa xác thực email
-            if (err.status === 403) {
-
-                // tiến hành gửi lại otp xác thực email
-                await sendOtp({ EMAIL: loginData.email, OTP_TYPE: OTP_TYPE.SIGN_UP }).unwrap();
-                // Save email for verification and move to verify step
-                setVerifyEmailData({
-                    email: loginData.email,
-                    otp: ''
-                });
-                setVerifyEmailStep('verify');
-                setError(''); // Clear any previous errors
-            } else {
-            console.log('Login error caught:', err);
-            const errorMessage = handleApiError(err);
-            setError(errorMessage);
-            dispatch(loginFailure());
-            // Don't navigate on error - stay on login page
-            }
-        }
-    };
-
-    const handleRegister = async (e: React.FormEvent) => {
-        e.preventDefault();
-        setError('');
-
-        if (!registerData.email || !registerData.password || !registerData.confirmPassword) {
-            setError('Vui lòng điền đầy đủ thông tin');
-            return;
-        }
-
-        if (!registerData.phone) {
-            setError('Vui lòng nhập số điện thoại');
-            return;
-        }
-
-        if (registerData.password !== registerData.confirmPassword) {
-            setError('Mật khẩu và nhập lại mật khẩu không khớp');
-            return;
-        }
-
-        if (registerData.password.length < 6) {
-            setError('Mật khẩu phải có ít nhất 6 ký tự');
-            return;
-        }
-
-        try {
-            const result = await signup({
-                EMAIL: registerData.email,
-                PASSWORD: registerData.password,
-                PHONE: registerData.phone,
-            }).unwrap();
-
-            console.log('Register result:', result);
-
-            if (result.status === 200) {
-                console.log('Register successful, moving to verify email step');
-                
-                // Save email for verification and move to verify step
-                setVerifyEmailData({
-                    email: registerData.email,
-                    otp: ''
-                });
-                setVerifyEmailStep('verify');
-                setError(''); // Clear any previous errors
-            } else {
-                // Register failed - don't navigate
-                console.log('Register failed with status:', result.status);
-                setError(result.message || 'Đăng ký thất bại');
-            }
-        } catch (err: any) {
-            console.log('Register error caught:', err);
-            const errorMessage = handleApiError(err);
-            setError(errorMessage);
-            // Don't navigate on error - stay on login page
-        }
-    };
-
-    const handleLoginInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const { name, value } = e.target;
-        setLoginData(prev => ({
-            ...prev,
-            [name]: value
-        }));
-    };
-
-    const handleRegisterInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const { name, value } = e.target;
-        setRegisterData(prev => ({
-            ...prev,
-            [name]: value
-        }));
-    };
 
     // Verify email handlers
     const handleVerifyEmailInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -232,40 +84,46 @@ const Login: React.FC = () => {
 
         try {
             console.log('Verifying email with OTP:', verifyEmailData.otp);
-            
+
             const result = await verifyEmail({
                 EMAIL: verifyEmailData.email,
                 OTP_CODE: verifyEmailData.otp
             }).unwrap();
 
             console.log('Verify email result:', result);
-            
+
             if (result.status === 200) {
                 // Email verified successfully, now login the user
                 console.log('Email verified successfully, logging in user...');
-                
+
                 // Auto login after successful verification
-                const loginResult = await login({
-                    EMAIL: verifyEmailData.email,
-                    PASSWORD: registerData.password // Use the password from registration
-                }).unwrap();
+                if (tempPassword) {
+                    const loginResult = await login({
+                        EMAIL: verifyEmailData.email,
+                        PASSWORD: tempPassword
+                    }).unwrap();
 
-                if (loginResult.status === 200) {
-                    // Save to Redux
-                    dispatch(loginSuccess({
-                        user: loginResult.data.user,
-                        token: loginResult.data.access_token,
-                    }));
+                    if (loginResult.status === 200) {
+                        // Save to Redux
+                        dispatch(loginSuccess({
+                            user: loginResult.data.user,
+                            token: loginResult.data.access_token,
+                        }));
 
-                    // Save to localStorage
-                    localStorage.setItem('access_token', loginResult.data.access_token);
-                    localStorage.setItem('user', JSON.stringify(loginResult.data.user));
+                        // Save to localStorage
+                        localStorage.setItem('access_token', loginResult.data.access_token);
+                        localStorage.setItem('user', JSON.stringify(loginResult.data.user));
 
-                    console.log('Auto login successful after verification, navigating to home page...');
-                    navigate('/', { replace: true });
+                        console.log('Auto login successful after verification, navigating to home page...');
+                        navigate('/', { replace: true });
+                    } else {
+                        setError('Xác thực thành công nhưng không thể đăng nhập tự động. Vui lòng đăng nhập thủ công.');
+                        handleBackToLoginFromVerify();
+                    }
                 } else {
-                    setError('Xác thực thành công nhưng không thể đăng nhập tự động. Vui lòng đăng nhập thủ công.');
                     handleBackToLoginFromVerify();
+                    // Optional: Show success message
+                    // alert('Xác thực thành công! Vui lòng đăng nhập.');
                 }
             } else {
                 setError(result.message || 'Xác thực email thất bại');
@@ -280,25 +138,17 @@ const Login: React.FC = () => {
     const handleBackToLoginFromVerify = () => {
         setVerifyEmailStep(null);
         setVerifyEmailData({ email: '', otp: '' });
+        setTempPassword('');
         setError('');
     };
 
     const handleResendVerificationOTP = async () => {
         setVerifyEmailData(prev => ({ ...prev, otp: '' }));
         setError('');
-        
+
         try {
             console.log('Resending verification OTP to:', verifyEmailData.email);
-            
-            // Re-signup to trigger new OTP
-            const result = await signup({
-                EMAIL: verifyEmailData.email,
-                PASSWORD: registerData.password,
-                PHONE: registerData.phone,
-            }).unwrap();
-
-            console.log('Resend verification OTP result:', result);
-            
+            await sendOtp({ EMAIL: verifyEmailData.email, OTP_TYPE: OTP_TYPE.SIGN_UP }).unwrap();
         } catch (err: any) {
             console.log('Resend verification OTP error:', err);
             const errorMessage = handleApiError(err);
@@ -326,17 +176,17 @@ const Login: React.FC = () => {
 
         try {
             console.log('Sending OTP to:', forgotPasswordData.email);
-            
+
             // Call API to send OTP
             const result = await forgotPassword({
                 EMAIL: forgotPasswordData.email
             }).unwrap();
 
             console.log('Send OTP result:', result);
-            
+
             // Move to OTP verification step
             setForgotPasswordStep('reset');
-            
+
         } catch (err: any) {
             console.log('Send OTP error:', err);
             const errorMessage = handleApiError(err);
@@ -365,7 +215,7 @@ const Login: React.FC = () => {
 
         try {
             console.log('Resetting password with OTP:', forgotPasswordData.otp);
-            
+
             // Call API to reset password
             const result = await resetPassword({
                 EMAIL: forgotPasswordData.email,
@@ -374,14 +224,12 @@ const Login: React.FC = () => {
             }).unwrap();
 
             console.log('Reset password result:', result);
-            
+
             // Reset state and show success
             setForgotPasswordStep(null);
             setForgotPasswordData({ email: '', otp: '', newPassword: '', confirmPassword: '' });
             setError('');
-            
-            
-            
+
         } catch (err: any) {
             console.log('Reset password error:', err);
             const errorMessage = handleApiError(err);
@@ -398,17 +246,17 @@ const Login: React.FC = () => {
     const handleResendOTP = async () => {
         setForgotPasswordData(prev => ({ ...prev, otp: '' }));
         setError('');
-        
+
         try {
             console.log('Resending OTP to:', forgotPasswordData.email);
-            
+
             // Call API to resend OTP
             const result = await forgotPassword({
                 EMAIL: forgotPasswordData.email
             }).unwrap();
 
             console.log('Resend OTP result:', result);
-            
+
         } catch (err: any) {
             console.log('Resend OTP error:', err);
             const errorMessage = handleApiError(err);
@@ -428,15 +276,15 @@ const Login: React.FC = () => {
                         {/* Left Side - Background Image */}
                         <div className="hidden lg:flex lg:w-[calc(50%+50px)] relative">
                             <img
-                                src="/auth-background2.jpeg"
+                                src="/auth-background.png"
                                 alt="Login Background"
                                 className="object-cover w-full h-full rounded-xl shadow-lg"
                             />
                         </div>
 
                         {/* Right Side - Login Form */}
-                        <div className="rounded-xl shadow-lg w-full lg:w-[calc(50%-50px)] flex items-center justify-center bg-white p-5">
-                            <div className="w-full max-w-md space-y-8">
+                        <div className="max-h-[calc(700px)] overflow-y-auto rounded-xl shadow-lg w-full lg:w-[calc(50%-50px)] flex items-center justify-center bg-white p-5">
+                            <div className="w-full h-full max-w-md space-y-8">
                                 {/* Logo/Header */}
                                 <div className="text-center">
                                     <Link
@@ -468,224 +316,30 @@ const Login: React.FC = () => {
                                                     </TabsTrigger>
                                                 </TabsList>
 
-                                                {/* Error Message */}
-                                                {error && (
-                                                    <div className="mb-4 p-3 text-red-600 text-sm bg-red-50 border border-red-200 rounded-lg">
-                                                        {error}
-                                                    </div>
-                                                )}
+                                                {/* Form Container with Fixed Height */}
+                                                <div className="min-h-[300px]">
+                                                    {/* Login Tab */}
+                                                    <TabsContent value="login" className="space-y-4">
+                                                        <LoginForm
+                                                            onForgotPassword={() => setForgotPasswordStep('email')}
+                                                            onNeedVerification={(email) => {
+                                                                setVerifyEmailData({ email, otp: '' });
+                                                                setVerifyEmailStep('verify');
+                                                            }}
+                                                        />
+                                                    </TabsContent>
 
-                                            {/* Form Container with Fixed Height */}
-                                            <div className="min-h-[300px]">{/* Fixed height container */}
-
-                                                {/* Login Tab */}
-                                                <TabsContent value="login" className="space-y-4">
-                                                    <form onSubmit={handleLogin} className="space-y-4">
-                                                        <div className="space-y-2">
-                                                            <Label
-                                                                htmlFor="email"
-                                                                className="text-sm font-medium text-gray-700"
-                                                            >
-                                                                Email
-                                                            </Label>
-                                                            <div className="relative">
-                                                                <Mail className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-                                                                <Input
-                                                                    id="email"
-                                                                    name="email"
-                                                                    type="email"
-                                                                    placeholder="email@example.com"
-                                                                    className="pl-10 h-11 border-gray-300 focus:border-emerald-500 focus:ring-emerald-500"
-                                                                    value={loginData.email}
-                                                                    onChange={handleLoginInputChange}
-                                                                    required
-                                                                />
-                                                            </div>
-                                                        </div>
-
-                                                        <div className="space-y-2">
-                                                            <Label
-                                                                htmlFor="password"
-                                                                className="text-sm font-medium text-gray-700"
-                                                            >
-                                                                Mật khẩu
-                                                            </Label>
-                                                            <div className="relative">
-                                                                <Lock className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-                                                                <Input
-                                                                    id="password"
-                                                                    name="password"
-                                                                    type={showPassword ? "text" : "password"}
-                                                                    placeholder="••••••••"
-                                                                    className="pl-10 pr-10 h-11 border-gray-300 focus:border-emerald-500 focus:ring-emerald-500"
-                                                                    value={loginData.password}
-                                                                    onChange={handleLoginInputChange}
-                                                                    required
-                                                                />
-                                                                <Button
-                                                                    type="button"
-                                                                    variant="ghost"
-                                                                    size="sm"
-                                                                    className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
-                                                                    onClick={() => setShowPassword(!showPassword)}
-                                                                >
-                                                                    {showPassword ? (
-                                                                        <EyeOff className="h-4 w-4" />
-                                                                    ) : (
-                                                                        <Eye className="h-4 w-4" />
-                                                                    )}
-                                                                </Button>
-                                                            </div>
-                                                        </div>
-
-                                        <div className="flex items-center justify-between">
-                                            <button
-                                                type="button"
-                                                onClick={() => setForgotPasswordStep('email')}
-                                                className="text-sm text-emerald-600 hover:text-emerald-700 hover:underline font-medium"
-                                            >
-                                                Quên mật khẩu?
-                                            </button>
-                                        </div>                                                        <Button
-                                                            type="submit"
-                                                            className="w-full h-11 bg-emerald-600 hover:bg-emerald-700 text-white font-medium"
-                                                            disabled={isLoginLoading}
-                                                        >
-                                                            {isLoginLoading ? (
-                                                                <div className="flex items-center">
-                                                                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                                                                    Đang đăng nhập...
-                                                                </div>
-                                                            ) : (
-                                                                "Đăng nhập"
-                                                            )}
-                                                        </Button>
-                                                    </form>
-                                                </TabsContent>
-
-                                                {/* Register Tab */}
-                                                <TabsContent value="register" className="space-y-4">
-                                                    <form onSubmit={handleRegister} className="space-y-4">
-                                                        <div className="space-y-2">
-                                                            <Label
-                                                                htmlFor="regEmail"
-                                                                className="text-sm font-medium text-gray-700"
-                                                            >
-                                                                Email
-                                                            </Label>
-                                                            <div className="relative">
-                                                                <Mail className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-                                                                <Input
-                                                                    id="regEmail"
-                                                                    name="email"
-                                                                    type="email"
-                                                                    placeholder="email@gmail.com"
-                                                                    className="pl-10 h-11 border-gray-300 focus:border-emerald-500 focus:ring-emerald-500"
-                                                                    value={registerData.email}
-                                                                    onChange={handleRegisterInputChange}
-                                                                    required
-                                                                />
-                                                            </div>
-                                                        </div>
-
-                                                        <div className="space-y-2">
-                                                            <Label
-                                                                htmlFor="regPhone"
-                                                                className="text-sm font-medium text-gray-700"
-                                                            >
-                                                                Số điện thoại
-                                                            </Label>
-                                                            <div className="relative">
-                                                                <Mail className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-                                                                <Input
-                                                                    id="regPhone"
-                                                                    name="phone"
-                                                                    type="tel"
-                                                                    placeholder="0123456789"
-                                                                    className="pl-10 h-11 border-gray-300 focus:border-emerald-500 focus:ring-emerald-500"
-                                                                    value={registerData.phone}
-                                                                    onChange={handleRegisterInputChange}
-                                                                    required
-                                                                />
-                                                            </div>
-                                                        </div>
-
-                                                        <div className="space-y-2">
-                                                            <Label
-                                                                htmlFor="regPassword"
-                                                                className="text-sm font-medium text-gray-700"
-                                                            >
-                                                                Mật khẩu
-                                                            </Label>
-                                                            <div className="relative">
-                                                                <Lock className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-                                                                <Input
-                                                                    id="regPassword"
-                                                                    name="password"
-                                                                    type={showPassword ? "text" : "password"}
-                                                                    placeholder="••••••••"
-                                                                    className="pl-10 pr-10 h-11 border-gray-300 focus:border-emerald-500 focus:ring-emerald-500"
-                                                                    value={registerData.password}
-                                                                    onChange={handleRegisterInputChange}
-                                                                    required
-                                                                    minLength={6}
-                                                                />
-                                                                <Button
-                                                                    type="button"
-                                                                    variant="ghost"
-                                                                    size="sm"
-                                                                    className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
-                                                                    onClick={() => setShowPassword(!showPassword)}
-                                                                >
-                                                                    {showPassword ? (
-                                                                        <EyeOff className="h-4 w-4" />
-                                                                    ) : (
-                                                                        <Eye className="h-4 w-4" />
-                                                                    )}
-                                                                </Button>
-                                                            </div>
-                                                        </div>
-
-                                                        <div className="space-y-2">
-                                                            <Label
-                                                                htmlFor="confirmPassword"
-                                                                className="text-sm font-medium text-gray-700"
-                                                            >
-                                                                Nhập lại mật khẩu
-                                                            </Label>
-                                                            <div className="relative">
-                                                                <Lock className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-                                                                <Input
-                                                                    id="confirmPassword"
-                                                                    name="confirmPassword"
-                                                                    type={showPassword ? "text" : "password"}
-                                                                    placeholder="••••••••"
-                                                                    className="pl-10 h-11 border-gray-300 focus:border-emerald-500 focus:ring-emerald-500"
-                                                                    value={registerData.confirmPassword}
-                                                                    onChange={handleRegisterInputChange}
-                                                                    required
-                                                                />
-                                                            </div>
-                                                        </div>
-
-                                                        <Button
-                                                            type="submit"
-                                                            className="w-full h-11 bg-emerald-600 hover:bg-emerald-700 text-white font-medium"
-                                                            disabled={isLoginLoading}
-                                                        >
-                                                            {isLoginLoading ? (
-                                                                <div className="flex items-center">
-                                                                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                                                                    Đang đăng ký...
-                                                                </div>
-                                                            ) : (
-                                                                "Đăng ký"
-                                                            )}
-                                                        </Button>
-                                                    </form>
-                                                </TabsContent>
-                                            </div>{/* End of fixed height container */}
-                                        </Tabs>
+                                                    {/* Register Tab */}
+                                                    <TabsContent value="register" className="space-y-4">
+                                                        <RegisterForm
+                                                            onSuccess={(email) => {
+                                                                setVerifyEmailData({ email, otp: '' });
+                                                                setVerifyEmailStep('verify');
+                                                            }}
+                                                        />
+                                                    </TabsContent>
+                                                </div>
+                                            </Tabs>
                                         ) : verifyEmailStep !== null ? (
                                             /* Verify Email Flow */
                                             <div className="w-full">
@@ -965,7 +619,7 @@ const Login: React.FC = () => {
                                 </Card>
 
                                 {/* Footer */}
-                                <div className="text-center text-sm text-gray-500">
+                                <div className="text-center text-sm text-gray-500 pb-5">
                                     © 2025 Ai cũng muốn khỏe. Tất cả quyền được bảo lưu.
                                 </div>
                             </div>
@@ -973,7 +627,6 @@ const Login: React.FC = () => {
                     </div>
 
                 </div>
-
             </div>
 
             {/* Footer */}

@@ -59,10 +59,7 @@ const PersonalInfoForm: React.FC<PersonalInfoFormProps> = ({
     PROVINCE: userInfo?.PROVINCE || "",
     PROVINCE_ID: userInfo?.PROVINCE_ID, // Đổi từ provinceId thành addressId
   });
-  
-  console.log("parent info", parentFormData)
-  console.log("user info", userInfo)
-  console.log("local info", localFormData)
+
   // Debug effect để kiểm tra Select value
   useEffect(() => {
     if (provinces.length > 0 && localFormData.PROVINCE) {
@@ -112,7 +109,7 @@ const PersonalInfoForm: React.FC<PersonalInfoFormProps> = ({
         PROVINCE: updatedData.PROVINCE,
         AVATAR: parentFormData?.AVATAR || "",
         GENDER_ID: updatedData?.GENDER === "NỮ" ? 2 : 1,
-        PROVINCE_ID: updatedData?.PROVINCE_ID, 
+        PROVINCE_ID: updatedData?.PROVINCE_ID,
       });
     }
   };
