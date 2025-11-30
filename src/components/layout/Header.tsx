@@ -77,7 +77,7 @@ const Header: React.FC = () => {
     const navigationItems = [
         { label: 'Trang chủ', href: '/' },
         { label: 'Theo dõi sức khỏe', href: '/health-tracking' },
-        { label: 'Thông tin sức khỏe', href: '/health-info' },
+        { label: 'Tư vấn sức khỏe', href: '/health-consulting' },
         { label: 'Liên kết tài khoản', href: '/account-linking' },
         { label: 'Hồ sơ cá nhân', href: '/profile' },
     ];
