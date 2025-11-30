@@ -9,6 +9,7 @@ import Profile from './pages/Profile';
 import HealthDocumentGuard from '@/components/auth/HealthDocumentGuard';
 import './App.css';
 import AuthGuard from './components/auth/AuthGuard';
+import About from './pages/About';
 
 function App() {
   return (
@@ -19,6 +20,7 @@ function App() {
             <Route path="/" element={<Home />} />
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Login />} />
+            <Route path="/about" element={<About />} />
             <Route path="/profile" element={<AuthGuard><Profile /></AuthGuard>} />
             <Route path="/health-tracking" element={<AuthGuard><HealthTracking /></AuthGuard>} />
             {/* Add more routes as needed */}

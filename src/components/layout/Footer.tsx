@@ -11,37 +11,38 @@ import {
     MessageCircle
 } from 'lucide-react';
 import Logo from '@/components/ui/Logo';
+import { Link } from 'react-router-dom';
 
 const Footer: React.FC = () => {
     const footerSections = [
         {
             title: 'Dịch vụ',
             links: [
-                'Theo dõi sức khỏe',
-                'Tư vấn trực tuyến',
-                'Kết hoạch dinh dưỡng',
-                'Nhật ký sức khỏe',
-                'Mục tiêu cá nhân'
+                { text: 'Theo dõi sức khỏe', href: '/health-tracking' },
+                { text: 'Tư vấn y tế trực tuyến', href: '/online-consultation' },
+                { text: 'Kết hoạch dinh dưỡng', href: '/meal-planning' },
+                { text: 'Nhật ký sức khỏe', href: '/health-journal' },
+                { text: 'Mục tiêu cá nhân', href: '/personal-goals' }
             ]
         },
         {
             title: 'Hỗ trợ',
             links: [
-                'Trung tâm trợ giúp',
-                'Liên hệ',
-                'Câu hỏi thường gặp',
-                'Hướng dẫn sử dụng',
-                'Báo cáo lỗi'
+                { text: 'Trung tâm trợ giúp', href: '/help' },
+                { text: 'Liên hệ', href: '/contact' },
+                { text: 'Câu hỏi thường gặp', href: '/faq' },
+                { text: 'Hướng dẫn sử dụng', href: '/guides' },
+                { text: 'Báo cáo lỗi', href: '/report' }
             ]
         },
         {
             title: 'Công ty',
             links: [
-                'Giới thiệu',
-                'Tin tức',
-                'Tuyển dụng',
-                'Đối tác',
-                'Chính sách bảo mật'
+                { text: 'Giới thiệu', href: '/about' },
+                { text: 'Tin tức', href: '/news' },
+                { text: 'Tuyển dụng', href: '/careers' },
+                { text: 'Đối tác', href: '/partners' },
+                { text: 'Chính sách bảo mật', href: '/privacy' }
             ]
         }
     ];
@@ -107,12 +108,13 @@ const Footer: React.FC = () => {
                                 <ul className="space-y-3">
                                     {section.links.map((link, linkIndex) => (
                                         <li key={linkIndex}>
-                                            <Button
-                                                variant="ghost"
-                                                className="p-0 h-auto text-slate-600 hover:text-emerald-600 justify-start font-normal"
+                                            <Link
+                                                to={link.href}
+                                                onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+                                                className="p-0 h-auto text-slate-600 hover:text-emerald-600 justify-start font-normal cursor-pointer"
                                             >
-                                                {link}
-                                            </Button>
+                                                {link.text}
+                                            </Link>
                                         </li>
                                     ))}
                                 </ul>
@@ -176,13 +178,25 @@ const Footer: React.FC = () => {
                             © 2024 Sức khỏe gia đình Việt. Tất cả quyền được bảo lưu.
                         </p>
                         <div className="flex space-x-6 text-sm">
-                            <Button variant="ghost" className="p-0 h-auto text-slate-600 hover:text-emerald-600">
+                            <Button 
+                                variant="ghost" 
+                                className="p-0 h-auto text-slate-600 hover:text-emerald-600"
+                                onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+                            >
                                 Điều khoản sử dụng
                             </Button>
-                            <Button variant="ghost" className="p-0 h-auto text-slate-600 hover:text-emerald-600">
+                            <Button 
+                                variant="ghost" 
+                                className="p-0 h-auto text-slate-600 hover:text-emerald-600"
+                                onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+                            >
                                 Chính sách bảo mật
                             </Button>
-                            <Button variant="ghost" className="p-0 h-auto text-slate-600 hover:text-emerald-600">
+                            <Button 
+                                variant="ghost" 
+                                className="p-0 h-auto text-slate-600 hover:text-emerald-600"
+                                onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+                            >
                                 Cookie
                             </Button>
                         </div>
