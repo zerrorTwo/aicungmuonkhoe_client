@@ -1,5 +1,9 @@
-import React, { useState } from 'react';
-import { Layout, Select, Button, Card, Typography } from 'antd';
+import React, { useState, useMemo, useEffect } from 'react';
+import { useGetAllHealthDocumentsOfUserQuery, useUpdateHealthDocumentMutation } from '@/store/api/healthDocumentApi';
+import { Layout, Select, Button, Card, Typography, message } from 'antd';
+import { HealthProfileModal } from './components/HealthProfileModal';
+import { UpdateHealthProfileModal } from './components/UpdateHealthProfileModal';
+import dayjs from 'dayjs';
 import { 
   Utensils, 
   Moon, 
@@ -18,6 +22,7 @@ import {
 } from 'lucide-react';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
+import { toastPromise } from '@/utils/toast';
 
 const { Title, Text } = Typography;
 const {  Content } = Layout;
@@ -68,6 +73,120 @@ const RECOMMENDATIONS = [
 
 const HealthConsultingPage: React.FC = () => {
   const [activeTab, setActiveTab] = useState('eating');
+  const [selectedAccountId, setSelectedAccountId] = useState<string>('');
+  const [isProfileModalOpen, setProfileModalOpen] = useState(false);
+  const [isUpdateModalOpen, setUpdateModalOpen] = useState(false); // State cho modal update
+
+  const { data: accountsData, isLoading } = useGetAllHealthDocumentsOfUserQuery();
+  const [updateHealthDocument, { isLoading: isUpdating }] = useUpdateHealthDocumentMutation();
+
+  const accounts = useMemo(() => {
+    if (!accountsData?.data) return [];
+    return accountsData.data.map((doc: any) => ({
+      value: String(doc.ID),
+      label: doc.IS_MYSELF ? `Bản thân (${doc.FULL_NAME})` : doc.FULL_NAME,
+      original: doc
+    }));
+  }, [accountsData]);
+
+  useEffect(() => {
+    if (accounts.length > 0 && !selectedAccountId) {
+      const self = accounts.find((a: any) => a.original.IS_MYSELF);
+      setSelectedAccountId(self ? self.value : accounts[0].value);
+    }
+  }, [accounts, selectedAccountId]);
+
+  const currentAccount = useMemo(() => {
+    return accounts.find((a: any) => a.value === selectedAccountId)?.original;
+  }, [accounts, selectedAccountId]);
+
+  const age = useMemo(() => {
+    if (!currentAccount?.DOB) return 'N/A';
+    const birthDate = new Date(currentAccount.DOB);
+    const ageDifMs = Date.now() - birthDate.getTime();
+    const ageDate = new Date(ageDifMs);
+    return Math.abs(ageDate.getUTCFullYear() - 1970);
+  }, [currentAccount]);
+
+  const bmi = useMemo(() => {
+    if (!currentAccount?.HEIGHT || !currentAccount?.WEIGHT) return 'N/A';
+    const h = parseFloat(currentAccount.HEIGHT) / 100;
+    const w = parseFloat(currentAccount.WEIGHT);
+    if (isNaN(h) || isNaN(w) || h === 0) return 'N/A';
+    return (w / (h * h)).toFixed(1);
+  }, [currentAccount]);
+
+  // Hàm xử lý khi user nhấn nút Cập nhật trong modal Xem chi tiết (HealthProfileModal)
+  const handleOpenUpdateFromDetail = () => {
+     setProfileModalOpen(false); // Đóng modal xem chi tiết
+     setUpdateModalOpen(true);   // Mở modal update
+  }
+
+  // Hàm xử lý submit update
+  const handleUpdateProfile = async (values: any) => {
+     // 1. Find the account being updated (it might be different from selectedAccountId if user changed it in modal)
+     const targetAccount = accounts.find((a: any) => a.value === values.healthId)?.original;
+
+     if (!targetAccount) {
+        message.error('Không tìm thấy hồ sơ cần cập nhật');
+        return;
+     }
+
+     // 2. Prepare data for comparison
+     const formattedDOB = values.DOB ? values.DOB.format('YYYY-MM-DD') : null;
+     const currentDOB = targetAccount.DOB ? new Date(targetAccount.DOB).toISOString().split('T')[0] : null;
+
+     // Helper to get gender ID from name or code
+     const getGenderId = (name?: string) => {
+        if (!name) return 3; // Default to Other
+        const upper = name.toUpperCase();
+        if (upper === 'NAM' || upper === 'MALE') return 1;
+        if (upper === 'NỮ' || upper === 'FEMALE') return 2;
+        return 3;
+     };
+     const currentGenderId = getGenderId(targetAccount.GENDER?.NAME);
+
+     // Check for changes
+     const isChanged = 
+        values.fullName !== targetAccount.FULL_NAME ||
+        formattedDOB !== currentDOB ||
+        Number(values.gender) !== currentGenderId ||
+        String(values.height) !== String(targetAccount.HEIGHT || '') ||
+        String(values.weight) !== String(targetAccount.WEIGHT || '') ||
+        values.job !== targetAccount.JOB ||
+        values.exerciseFreq !== targetAccount.EXERCISE_FREQUENCY ||
+        values.durationWorkday !== targetAccount.DATE_WORKDAY ||
+        values.durationRestday !== targetAccount.DATE_OFF;
+
+     if (!isChanged) {
+        message.info('Thông tin không có thay đổi');
+        return;
+     }
+
+     // 3. Call API
+     try {
+        const payload = {
+            FULL_NAME: values.fullName,
+            DOB: formattedDOB,
+            GENDER_ID: Number(values.gender),
+            HEIGHT: String(values.height),
+            WEIGHT: String(values.weight),
+            JOB: values.job,
+            EXERCISE_FREQUENCY: values.exerciseFreq,
+            DATE_WORKDAY: values.durationWorkday,
+            DATE_OFF: values.durationRestday,
+        };
+        await toastPromise(
+          updateHealthDocument({ id: Number(values.healthId), data: payload }).unwrap(),
+          { loading: 'Đang cập nhật...', success: 'Cập nhật hồ sơ thành công', error: 'Cập nhật hồ sơ thất bại' }
+        );
+        setUpdateModalOpen(false);
+        
+     } catch (error) {
+        console.error('Update failed:', error);
+        message.error('Cập nhật thất bại, vui lòng thử lại');
+     }
+  }
 
   return (
     <div>
@@ -119,26 +238,49 @@ const HealthConsultingPage: React.FC = () => {
                 <div className="bg-emerald-50 p-6 md:w-1/4 flex flex-col justify-center border-b md:border-b-0 md:border-r border-emerald-100">
                     <Text className="text-emerald-800 font-medium mb-2 block">Hồ sơ đang xem</Text>
                     <Select 
-                        defaultValue="self" 
+                        value={selectedAccountId}
+                        onChange={setSelectedAccountId}
                         size="large"
                         className="w-full font-medium"
-                        options={[
-                            { value: 'self', label: 'Bản thân (Nguyễn An)' },
-                            { value: 'mom', label: 'Mẹ' },
-                            { value: 'dad', label: 'Bố' },
-                        ]}
+                        loading={isLoading}
+                        options={accounts}
                     />
-                     <Button type="link" className="mt-2 p-0 text-emerald-600 hover:text-emerald-700 flex items-center gap-1 self-start">
+                     <Button 
+                        type="link" 
+                        className="mt-2 p-0 text-emerald-600 hover:text-emerald-700 flex items-center gap-1 self-start"
+                        onClick={() => setProfileModalOpen(true)}
+                     >
                         Xem chi tiết hồ sơ <ChevronRight size={16}/>
                     </Button>
                 </div>
 
                 {/* Right Side: Stats Grid */}
                 <div className="p-6 md:w-3/4 grid grid-cols-2 md:grid-cols-4 gap-6 items-center">
-                    <StatItem icon={<Calendar size={20} />} label="Ngày sinh" value="15/10/2004" sub="20 tuổi" />
-                    <StatItem icon={<User size={20} />} label="Giới tính" value="Nữ" sub="Gen Z" />
-                    <StatItem icon={<Ruler size={20} />} label="Chiều cao" value="175 cm" sub="Trên trung bình" />
-                    <StatItem icon={<Weight size={20} />} label="Cân nặng" value="80 kg" sub="BMI: 26.1" highlight />
+                    <StatItem 
+                        icon={<Calendar size={20} />} 
+                        label="Ngày sinh" 
+                        value={currentAccount?.DOB ? new Date(currentAccount.DOB).toLocaleDateString('vi-VN') : 'N/A'} 
+                        sub={`${age} tuổi`} 
+                    />
+                    <StatItem 
+                        icon={<User size={20} />} 
+                        label="Giới tính" 
+                        value={currentAccount?.GENDER?.NAME || 'N/A'} 
+                        sub="-" 
+                    />
+                    <StatItem 
+                        icon={<Ruler size={20} />} 
+                        label="Chiều cao" 
+                        value={currentAccount?.HEIGHT ? `${currentAccount.HEIGHT} cm` : 'N/A'} 
+                        sub="-" 
+                    />
+                    <StatItem 
+                        icon={<Weight size={20} />} 
+                        label="Cân nặng" 
+                        value={currentAccount?.WEIGHT ? `${currentAccount.WEIGHT} kg` : 'N/A'} 
+                        sub={`BMI: ${bmi}`} 
+                        highlight 
+                    />
                 </div>
             </div>
         </Card>
@@ -185,6 +327,38 @@ const HealthConsultingPage: React.FC = () => {
       </Content>
       {/* 6. Footer */}
       <Footer />
+
+      {/* Modal Xem chi tiết hồ sơ */}
+      <HealthProfileModal 
+        isOpen={isProfileModalOpen}
+        onClose={() => setProfileModalOpen(false)}
+        account={currentAccount}
+        bmi={bmi}
+        accounts={accounts}
+        selectedAccountId={selectedAccountId}
+        onAccountChange={setSelectedAccountId}
+        onUpdate={handleOpenUpdateFromDetail} // Chuyển hướng sang modal update
+      />
+
+      {/* Modal Cập nhật mới */}
+        <UpdateHealthProfileModal 
+            isOpen={isUpdateModalOpen}
+            onClose={() => setUpdateModalOpen(false)}
+            onUpdate={handleUpdateProfile}
+            accounts={accounts} // Truyền list accounts vào để select dropdown
+            initialData={{
+                healthId: selectedAccountId,
+                fullName: currentAccount?.FULL_NAME,
+                DOB: currentAccount?.DOB,
+                gender: currentAccount?.GENDER?.NAME === 'NAM' ? '1' : (currentAccount?.GENDER?.NAME === 'NỮ' ? '2' : '3'),
+                height: currentAccount?.HEIGHT,
+                weight: currentAccount?.WEIGHT,
+                job: currentAccount?.JOB,
+                exerciseFreq: currentAccount?.EXERCISE_FREQUENCY,
+                durationWorkday: currentAccount?.DATE_WORKDAY,
+                durationRestday: currentAccount?.DATE_OFF
+            }}
+        />
     </div>
   );
 };
