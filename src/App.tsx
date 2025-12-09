@@ -10,7 +10,7 @@ import HealthDocumentGuard from '@/components/auth/HealthDocumentGuard';
 import './App.css';
 import AuthGuard from './components/auth/AuthGuard';
 import About from './pages/About';
-import HealthConsultingPage from './pages/HealthConsulting';
+import HealthConsultingPage from './pages/HealthConsulting/HealthConsulting';
 
 function App() {
   return (

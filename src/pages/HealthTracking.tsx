@@ -123,6 +123,7 @@ export default function HealthTracking() {
 
     // Fetch accounts from API
     const { data: accountsData, isLoading: accountsLoading } = useGetAllHealthDocumentsOfUserQuery();
+
     const accounts: Account[] = useMemo(() => {
         if (!accountsData?.data) return [];
         return accountsData.data.map((doc) => ({

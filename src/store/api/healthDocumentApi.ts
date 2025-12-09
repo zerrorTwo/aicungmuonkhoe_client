@@ -65,7 +65,6 @@ export interface CreateHealthDocumentRequest {
 
 export interface UpdateHealthDocumentRequest
   extends CreateHealthDocumentRequest {
-  id: number;
 }
 
 export interface HealthDocumentResponse {
