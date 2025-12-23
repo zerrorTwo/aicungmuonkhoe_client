@@ -3,26 +3,25 @@ import Header from '@/components/layout/Header';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Calendar, Clock, Download, Pin, Share2 } from 'lucide-react';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { Select, SelectItem } from '@/components/ui/select';
+import { TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useGetAllHealthDocumentsOfUserQuery } from '@/store/api/healthDocumentApi';
+import { Calendar, Clock, Download, Info, Pin, Share2 } from 'lucide-react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 // import { ConclusionModal } from '@/components/modals';
-import { BMIUpdateModal, BloodPressureUpdateModal, BloodSugarUpdateModal, UricUpdateModal, LiverUpdateModal, KidneyUpdateModal, LipidUpdateModal } from '@/components/modals/health';
+import { BMIUpdateModal, BloodPressureUpdateModal, BloodSugarUpdateModal, KidneyUpdateModal, LipidUpdateModal, LiverUpdateModal, UricUpdateModal, ChartInstructionModal } from '@/components/modals/health';
+import { useHealthConclusions } from '@/hooks/useHealthConclusions';
 import { toast } from 'react-toastify';
 
-// Import chart components following PMS structure
-import BMIChart from './charts/BMIChart';
-import { BloodPressureChart } from './charts/BloodPressureChart';
-import { BloodSugarChart } from './charts/BloodSugarChart';
-import { CholesterolChart } from './charts/CholesterolChart';
-import { KidneyChart } from './charts/KidneyChart';
-import { LiverChart } from './charts/LiverChart';
-import { UricChart } from './charts/UricChart';
+// Import advanced chart components with WHO standards
+import AcidUricChart from '@/components/health/charts/acid-uric.chart';
+import BloodLipidChart from '@/components/health/charts/blood-lipid.chart';
+import BloodPressureChart from '@/components/health/charts/blood-pressure.chart';
+import BloodSugarChart from '@/components/health/charts/blood-sugar.chart';
+import BMIChart from '@/components/health/charts/bmi.chart';
+import KidneyFunctionChart from '@/components/health/charts/kidney-function.chart';
+import LiverFunctionChart from '@/components/health/charts/liver-function.chart';
 
-import { mockHealthData } from './data/mockHealthData';
-import type { HealthDataPoint } from './types/healthTypes';
 
 // Constants following PMS structure
 const HealthIndex = {
@@ -35,23 +34,10 @@ const HealthIndex = {
     BloodLipid: 'BloodLipid'
 } as const;
 
-const BMIAgeRange = {
-    FROM_0_LESS_THAN_5: 'FROM_0_LESS_THAN_5',
-    FROM_5_LESS_THAN_12: 'FROM_5_LESS_THAN_12',
-    FROM_12_LESS_THAN_20: 'FROM_12_LESS_THAN_20',
-    FROM_20_LESS_THEN_70: 'FROM_20_LESS_THEN_70',
-    EQUAL_MORE_THAN_70: 'EQUAL_MORE_THAN_70'
-} as const;
-
-const BMIChildrenTabs = {
-    Weight: 'WEIGHT',
-    Height: 'HEIGHT',
-    BMI: 'BMI' // Removed WeightHeight for ages 0-5
-} as const;
+// Import actual enums from health.ts
+import { BMIAgeRange as BMIAgeRangeEnum, BMIChildrenTabs as BMIChildrenTabsEnum } from '@/enum/health';
 
 type HealthIndexType = typeof HealthIndex[keyof typeof HealthIndex];
-type BMIAgeRangeType = typeof BMIAgeRange[keyof typeof BMIAgeRange];
-type BMIChildrenTabsType = typeof BMIChildrenTabs[keyof typeof BMIChildrenTabs];
 
 // Constants following PMS structure
 const TRACKING_OPTIONS = [
@@ -104,12 +90,13 @@ export default function HealthTracking() {
     // States following PMS structure
     const [selectedAccount, setSelectedAccount] = useState<string>('');
     const [selectedIndex, setSelectedIndex] = useState<HealthIndexType>(HealthIndex.BMI);
-    const [activeTab, setActiveTab] = useState<BMIChildrenTabsType>(BMIChildrenTabs.Weight);
-    const [ageRange, setAgeRange] = useState<BMIAgeRangeType>(BMIAgeRange.FROM_20_LESS_THEN_70);
+    const [activeTab, setActiveTab] = useState<BMIChildrenTabsEnum>(BMIChildrenTabsEnum.Weight);
+    const [ageRange, setAgeRange] = useState<BMIAgeRangeEnum>(BMIAgeRangeEnum.FROM_20_LESS_THEN_70);
     const [pinTab, setPinTab] = useState<HealthIndexType | null>(null);
     // const [isConclusionOpen, setConclusionOpen] = useState(false);
     // const [editingConclusion, setEditingConclusion] = useState<HealthConclusion | null>(null);
     const [isUpdateOpen, setUpdateOpen] = useState(false);
+    const [isInstructionOpen, setInstructionOpen] = useState(false);
     const [bpVariant, setBpVariant] = useState<'home' | 'facility'>('home');
     const [sugarVariant, setSugarVariant] = useState<'fasting' | 'twoHours' | 'hba1c'>('fasting');
     const [lipidVariant, setLipidVariant] = useState<'total' | 'ldl' | 'hdl' | 'triglyceride'>('total');
@@ -117,8 +104,8 @@ export default function HealthTracking() {
     const [kidneyVariant, setKidneyVariant] = useState<'creatinine' | 'urea'>('creatinine');
 
     // State to hold current chart data (from API range)
-    const [currentChartData, setCurrentChartData] = useState<any>(null);
-    const [refreshTrigger, setRefreshTrigger] = useState(0);
+    // const [currentChartData, setCurrentChartData] = useState<any>(null);
+    // const [refreshTrigger, setRefreshTrigger] = useState(0);
 
 
     // Fetch accounts from API
@@ -176,12 +163,12 @@ export default function HealthTracking() {
     const getBMITabsForAge = useCallback((age: number) => {
         if (age < 5) {
             return [
-                { label: 'Cân nặng', value: BMIChildrenTabs.Weight },
-                { label: 'Chiều cao', value: BMIChildrenTabs.Height }
+                { label: 'Cân nặng', value: BMIChildrenTabsEnum.Weight },
+                { label: 'Chiều cao', value: BMIChildrenTabsEnum.Height }
             ];
         } else {
             return [
-                { label: 'BMI', value: BMIChildrenTabs.BMI }
+                { label: 'BMI', value: BMIChildrenTabsEnum.BMI }
             ];
         }
     }, []);
@@ -192,12 +179,12 @@ export default function HealthTracking() {
     }, [currentAccount, getBMITabsForAge]);
 
     // Get age range based on current age
-    const getAgeRangeForAge = useCallback((age: number): BMIAgeRangeType => {
-        if (age < 5) return BMIAgeRange.FROM_0_LESS_THAN_5;
-        if (age < 12) return BMIAgeRange.FROM_5_LESS_THAN_12;
-        if (age < 20) return BMIAgeRange.FROM_12_LESS_THAN_20;
-        if (age < 70) return BMIAgeRange.FROM_20_LESS_THEN_70;
-        return BMIAgeRange.EQUAL_MORE_THAN_70;
+    const getAgeRangeForAge = useCallback((age: number): BMIAgeRangeEnum => {
+        if (age < 5) return BMIAgeRangeEnum.FROM_0_LESS_THAN_5;
+        if (age < 12) return BMIAgeRangeEnum.FROM_5_LESS_THAN_12;
+        if (age < 20) return BMIAgeRangeEnum.FROM_12_LESS_THAN_20;
+        if (age < 70) return BMIAgeRangeEnum.FROM_20_LESS_THEN_70;
+        return BMIAgeRangeEnum.EQUAL_MORE_THAN_70;
     }, []);
 
     // Update states when account changes: chỉ reset tab khi chuyển nhóm tuổi (<19 <-> >=19)
@@ -215,7 +202,7 @@ export default function HealthTracking() {
             if (availableOptions.length > 0) {
                 setSelectedIndex(availableOptions[0].type);
             }
-            setActiveTab(currentAccount.age < 5 ? BMIChildrenTabs.Weight : BMIChildrenTabs.BMI);
+            setActiveTab(currentAccount.age < 5 ? BMIChildrenTabsEnum.Weight : BMIChildrenTabsEnum.BMI);
         } else if (prevAgeGroup.current !== ageGroup) {
             // Chuyển nhóm tuổi, reset tab
             prevAgeGroup.current = ageGroup;
@@ -223,12 +210,13 @@ export default function HealthTracking() {
             if (availableOptions.length > 0) {
                 setSelectedIndex(availableOptions[0].type);
             }
-            setActiveTab(currentAccount.age < 5 ? BMIChildrenTabs.Weight : BMIChildrenTabs.BMI);
+            setActiveTab(currentAccount.age < 5 ? BMIChildrenTabsEnum.Weight : BMIChildrenTabsEnum.BMI);
         }
         // Nếu chỉ đổi account cùng nhóm tuổi, giữ nguyên tab
     }, [currentAccount, getAgeRangeForAge, getTrackingOptionsForAge]);
 
-    // Get chart data
+    // Get chart data - kept for backward compatibility but not used
+    /*
     const getCurrentData = useCallback((): HealthDataPoint[] => {
         switch (selectedIndex) {
             case HealthIndex.BMI:
@@ -249,41 +237,47 @@ export default function HealthTracking() {
                 return mockHealthData.bmi;
         }
     }, [selectedIndex]);
+    */
+
+
+    // Fetch health data based on selected index
+    const { conclusions, isLoading: dataLoading, refetch } = useHealthConclusions({
+        healthDocumentId: selectedAccount,
+        model: selectedIndex,
+        enabled: !!selectedAccount && !!selectedIndex
+    });
 
     // Render chart component
     const renderChart = useCallback(() => {
         if (selectedIndex === HealthIndex.BMI) {
             return (
                 <BMIChart
+                    loading={dataLoading}
                     ageRange={ageRange}
                     activeTab={activeTab}
                     age={currentAccount?.age ?? 0}
-                    healthDocumentId={selectedAccount}
-                    dob={currentAccount?.dob ?? ''}
-                    onDataLoaded={(data) => setCurrentChartData(data)}
-                    refreshTrigger={refreshTrigger}
+                    conclusionList={conclusions}
                 />
             );
         }
-        const data = getCurrentData();
 
         switch (selectedIndex) {
             case HealthIndex.BloodPressure:
-                return <BloodPressureChart data={data} variant={bpVariant} />;
+                return <BloodPressureChart loading={dataLoading} conclusionList={conclusions} type={bpVariant === 'home' ? 'HOME' as any : 'HOSPITAL' as any} />;
             case HealthIndex.BloodSugar:
-                return <BloodSugarChart data={data} variant={sugarVariant} />;
+                return <BloodSugarChart loading={dataLoading} conclusionList={conclusions} type={sugarVariant === 'fasting' ? 'HUNGRY' as any : sugarVariant === 'twoHours' ? 'AFTER_2H' as any : 'HBA1C' as any} />;
             case HealthIndex.AcidUric:
-                return <UricChart data={data} />;
+                return <AcidUricChart loading={dataLoading} conclusionList={conclusions} gender='nam' />;
             case HealthIndex.LiverFunction:
-                return <LiverChart data={data} variant={liverVariant} />;
+                return <LiverFunctionChart loading={dataLoading} conclusionList={conclusions} type={liverVariant as any} />;
             case HealthIndex.KidneyFunction:
-                return <KidneyChart data={data} variant={kidneyVariant} />;
+                return <KidneyFunctionChart loading={dataLoading} conclusionList={conclusions} type={kidneyVariant as any} />;
             case HealthIndex.BloodLipid:
-                return <CholesterolChart data={data} variant={lipidVariant} />;
+                return <BloodLipidChart loading={dataLoading} conclusionList={conclusions} type={lipidVariant as any} />;
             default:
-                return <BMIChart ageRange={ageRange} activeTab={activeTab} age={currentAccount?.age ?? 0} healthDocumentId={selectedAccount} dob={currentAccount?.dob ?? ''} refreshTrigger={refreshTrigger} />;
+                return <BMIChart loading={dataLoading} ageRange={ageRange} activeTab={activeTab} age={currentAccount?.age ?? 0} conclusionList={conclusions} />;
         }
-    }, [selectedIndex, getCurrentData, ageRange, activeTab, currentAccount?.age, bpVariant, sugarVariant, lipidVariant, liverVariant, kidneyVariant, selectedAccount, currentAccount?.dob, refreshTrigger]);
+    }, [selectedIndex, ageRange, activeTab, currentAccount?.age, bpVariant, sugarVariant, lipidVariant, liverVariant, kidneyVariant, conclusions, dataLoading]);
 
     const handleAddClick = () => {
         // Open specific update modal depending on selectedIndex
@@ -294,8 +288,8 @@ export default function HealthTracking() {
     const handleUpdateSuccess = () => {
         toast.success('Đã cập nhật chỉ số thành công!');
         setUpdateOpen(false);
-        // Trigger chart refresh
-        setRefreshTrigger(prev => prev + 1);
+        // Trigger chart refresh by refetching data
+        refetch();
     };
 
     // const submitConclusion = async (payload: HealthConclusion) => {
@@ -323,28 +317,26 @@ export default function HealthTracking() {
 
                         <div className="flex flex-col sm:flex-row gap-3">
                             {/* Account Selection */}
-                            <Select value={selectedAccount} onValueChange={setSelectedAccount}>
-                                <SelectTrigger className="w-48">
-                                    <SelectValue />
-                                </SelectTrigger >
-                                <SelectContent className='bg-white'>
-                                    {accountsLoading && <div className="px-4 py-2">Đang tải...</div>}
-                                    {!accountsLoading && accounts.length === 0 && <div className="px-4 py-2">Không có tài khoản</div>}
-                                    {!accountsLoading && accounts.map((account) => (
-                                        <SelectItem key={account.id} value={account.id}>
-                                            {account.name}
-                                        </SelectItem>
-                                    ))}
-                                </SelectContent>
+                            <Select
+                                value={selectedAccount}
+                                onValueChange={setSelectedAccount}
+                                className="w-48"
+                                loading={accountsLoading}
+                            >
+                                {!accountsLoading && accounts.map((account) => (
+                                    <SelectItem key={account.id} value={account.id}>
+                                        {account.name}
+                                    </SelectItem>
+                                ))}
                             </Select>
 
                             {/* Action Buttons */}
                             <div className="flex gap-2">
-                                <Button variant="outline" size="sm">
+                                <Button variant="outline" size="small">
                                     <Download className="h-4 w-4 mr-2" />
                                     Xuất PDF
                                 </Button>
-                                <Button variant="outline" size="sm">
+                                <Button variant="outline" size="small">
                                     <Share2 className="h-4 w-4 mr-2" />
                                     Chia sẻ
                                 </Button>
@@ -355,24 +347,21 @@ export default function HealthTracking() {
 
                 {/* Horizontal Tracking Options Bar - Only for age 19+ (adult with multiple charts) */}
                 {currentAccount && currentAccount.age >= 19 && trackingOptions.length > 1 && (
-                    <Card className="p-4 mb-6">
-                        <Tabs value={selectedIndex} onValueChange={(value) => setSelectedIndex(value as HealthIndexType)} className="space-y-6">
-                            <TabsList className="grid w-full grid-cols-4 lg:grid-cols-7 bg-muted">
-                                {trackingOptions.map((option) => (
-                                    <TabsTrigger
-                                        key={option.value}
-                                        value={option.type}
-                                        className="data-[state=active]:bg-green-500 data-[state=active]:text-white cursor-pointer"
-                                    >
-                                        <div className="flex items-center gap-2">
-                                            {pinTab === option.type && <Pin className="h-3 w-3" />}
-                                            {option.label}
-                                        </div>
-                                    </TabsTrigger>
-                                ))}
-                            </TabsList>
-                        </Tabs>
-                    </Card>
+                    <div className="p-4 mb-6">
+                        <TabsList className="flex flex-wrap gap-2 justify-between">
+                            {trackingOptions.map((option) => (
+                                <TabsTrigger
+                                    key={option.value}
+                                    value={option.type}
+                                    active={selectedIndex === option.type}
+                                    onClick={() => setSelectedIndex(option.type)}
+                                >
+                                    {pinTab === option.type && <Pin className="h-3 w-3" />}
+                                    {option.label}
+                                </TabsTrigger>
+                            ))}
+                        </TabsList>
+                    </div>
                 )}
 
                 {/* Main Content */}
@@ -391,13 +380,21 @@ export default function HealthTracking() {
                             </div>
 
                             <div className="flex items-center gap-2">
-                                <Button variant="outline" size="sm">
+                                <Button variant="outline" size="small">
                                     <Clock className="h-4 w-4 mr-2" />
                                     Lọc thời gian
                                 </Button>
                                 <Button
+                                    variant="outline"
+                                    size="small"
+                                    onClick={() => setInstructionOpen(true)}
+                                >
+                                    <Info className="h-4 w-4 mr-2" />
+                                    Hướng dẫn
+                                </Button>
+                                <Button
                                     variant="ghost"
-                                    size="sm"
+                                    size="small"
                                     onClick={() => setPinTab(pinTab === selectedIndex ? null : selectedIndex)}
                                 >
                                     <Pin className={`h-4 w-4 ${pinTab === selectedIndex ? 'text-blue-600' : ''}`} />
@@ -408,87 +405,88 @@ export default function HealthTracking() {
                         {/* BMI Tabs for children */}
                         {selectedIndex === HealthIndex.BMI && currentAccount && currentAccount.age < 19 && (
                             <div className="mb-6">
-                                <Tabs value={activeTab as string} onValueChange={(value) => setActiveTab(value as BMIChildrenTabsType)}>
-                                    <TabsList className="grid w-full grid-cols-2 ">
-                                        {bmiTabs.map((tab) => (
-                                            <TabsTrigger key={tab.value} value={tab.value}>
-                                                {tab.label}
-                                            </TabsTrigger>
-                                        ))}
-                                    </TabsList>
-                                </Tabs>
+                                <TabsList>
+                                    {bmiTabs.map((tab) => (
+                                        <TabsTrigger
+                                            key={tab.value}
+                                            value={tab.value}
+                                            active={activeTab === tab.value}
+                                            onClick={() => setActiveTab(tab.value)}
+                                        >
+                                            {tab.label}
+                                        </TabsTrigger>
+                                    ))}
+                                </TabsList>
                             </div>
                         )}
 
-                        {/* Blood Pressure sub-tabs: Home vs Facility */
-                        }
+                        {/* Blood Pressure sub-tabs: Home vs Facility */}
                         {selectedIndex === HealthIndex.BloodPressure && (
                             <div className="mb-4">
-                                <Tabs value={bpVariant} onValueChange={(v) => setBpVariant(v as 'home' | 'facility')}>
-                                    <TabsList className="bg-muted grid grid-cols-2 gap-1 rounded-md p-1">
-                                        <TabsTrigger className="data-[state=active]:bg-green-500 data-[state=active]:text-white" value="home">Đo tại nhà</TabsTrigger>
-                                        <TabsTrigger className="data-[state=active]:bg-green-500 data-[state=active]:text-white" value="facility">Cơ sở y tế</TabsTrigger>
-                                    </TabsList>
-                                </Tabs>
+                                <TabsList>
+                                    <TabsTrigger
+                                        value="home"
+                                        active={bpVariant === 'home'}
+                                        onClick={() => setBpVariant('home')}
+                                    >
+                                        Đo tại nhà
+                                    </TabsTrigger>
+                                    <TabsTrigger
+                                        value="facility"
+                                        active={bpVariant === 'facility'}
+                                        onClick={() => setBpVariant('facility')}
+                                    >
+                                        Cơ sở y tế
+                                    </TabsTrigger>
+                                </TabsList>
                             </div>
                         )}
 
                         {/* Blood Sugar sub-tabs: Fasting vs 2-hour vs HbA1c */}
                         {selectedIndex === HealthIndex.BloodSugar && (
                             <div className="mb-4">
-                                <Tabs value={sugarVariant} onValueChange={(v) => setSugarVariant(v as 'fasting' | 'twoHours' | 'hba1c')}>
-                                    <TabsList className="bg-muted grid grid-cols-3 gap-1 rounded-md p-1">
-                                        <TabsTrigger className="data-[state=active]:bg-green-500 data-[state=active]:text-white" value="fasting">Lúc đói</TabsTrigger>
-                                        <TabsTrigger className="data-[state=active]:bg-green-500 data-[state=active]:text-white" value="twoHours">Sau 2 giờ uống</TabsTrigger>
-                                        <TabsTrigger className="data-[state=active]:bg-green-500 data-[state=active]:text-white" value="hba1c">HbA1c</TabsTrigger>
-                                    </TabsList>
-                                </Tabs>
+                                <TabsList>
+                                    <TabsTrigger value="fasting" active={sugarVariant === 'fasting'} onClick={() => setSugarVariant('fasting')}>Lúc đói</TabsTrigger>
+                                    <TabsTrigger value="twoHours" active={sugarVariant === 'twoHours'} onClick={() => setSugarVariant('twoHours')}>Sau 2 giờ uống</TabsTrigger>
+                                    <TabsTrigger value="hba1c" active={sugarVariant === 'hba1c'} onClick={() => setSugarVariant('hba1c')}>HbA1c</TabsTrigger>
+                                </TabsList>
                             </div>
                         )}
 
-                        {/* Blood Lipid sub-tabs */
-                        }
+                        {/* Blood Lipid sub-tabs */}
                         {selectedIndex === HealthIndex.BloodLipid && (
                             <div className="mb-4">
-                                <Tabs value={lipidVariant} onValueChange={(v) => setLipidVariant(v as any)}>
-                                    <TabsList className="bg-muted grid grid-cols-4 gap-1 rounded-md p-1">
-                                        <TabsTrigger className="data-[state=active]:bg-green-500 data-[state=active]:text-white" value="total">Cholesterol</TabsTrigger>
-                                        <TabsTrigger className="data-[state=active]:bg-green-500 data-[state=active]:text-white" value="ldl">LDL</TabsTrigger>
-                                        <TabsTrigger className="data-[state=active]:bg-green-500 data-[state=active]:text-white" value="hdl">HDL</TabsTrigger>
-                                        <TabsTrigger className="data-[state=active]:bg-green-500 data-[state=active]:text-white" value="triglyceride">Triglyceride</TabsTrigger>
-                                    </TabsList>
-                                </Tabs>
+                                <TabsList>
+                                    <TabsTrigger value="total" active={lipidVariant === 'total'} onClick={() => setLipidVariant('total')}>Cholesterol</TabsTrigger>
+                                    <TabsTrigger value="ldl" active={lipidVariant === 'ldl'} onClick={() => setLipidVariant('ldl')}>LDL</TabsTrigger>
+                                    <TabsTrigger value="hdl" active={lipidVariant === 'hdl'} onClick={() => setLipidVariant('hdl')}>HDL</TabsTrigger>
+                                    <TabsTrigger value="triglyceride" active={lipidVariant === 'triglyceride'} onClick={() => setLipidVariant('triglyceride')}>Triglyceride</TabsTrigger>
+                                </TabsList>
                             </div>
                         )}
 
-                        {/* Liver function sub-tabs */
-                        }
+                        {/* Liver function sub-tabs */}
                         {selectedIndex === HealthIndex.LiverFunction && (
                             <div className="mb-4">
-                                <Tabs value={liverVariant} onValueChange={(v) => setLiverVariant(v as 'ALT' | 'AST')}>
-                                    <TabsList className="bg-muted grid grid-cols-2 gap-1 rounded-md p-1">
-                                        <TabsTrigger className="data-[state=active]:bg-green-500 data-[state=active]:text-white" value="ALT">ALT</TabsTrigger>
-                                        <TabsTrigger className="data-[state=active]:bg-green-500 data-[state=active]:text-white" value="AST">AST</TabsTrigger>
-                                    </TabsList>
-                                </Tabs>
+                                <TabsList>
+                                    <TabsTrigger value="ALT" active={liverVariant === 'ALT'} onClick={() => setLiverVariant('ALT')}>ALT</TabsTrigger>
+                                    <TabsTrigger value="AST" active={liverVariant === 'AST'} onClick={() => setLiverVariant('AST')}>AST</TabsTrigger>
+                                </TabsList>
                             </div>
                         )}
 
-                        {/* Kidney function sub-tabs */
-                        }
+                        {/* Kidney function sub-tabs */}
                         {selectedIndex === HealthIndex.KidneyFunction && (
                             <div className="mb-4">
-                                <Tabs value={kidneyVariant} onValueChange={(v) => setKidneyVariant(v as 'creatinine' | 'urea')}>
-                                    <TabsList className="bg-muted grid grid-cols-2 gap-1 rounded-md p-1">
-                                        <TabsTrigger className="data-[state=active]:bg-green-500 data-[state=active]:text-white" value="creatinine">Creatinine</TabsTrigger>
-                                        <TabsTrigger className="data-[state=active]:bg-green-500 data-[state=active]:text-white" value="urea">Urea</TabsTrigger>
-                                    </TabsList>
-                                </Tabs>
+                                <TabsList>
+                                    <TabsTrigger value="creatinine" active={kidneyVariant === 'creatinine'} onClick={() => setKidneyVariant('creatinine')}>Creatinine</TabsTrigger>
+                                    <TabsTrigger value="urea" active={kidneyVariant === 'urea'} onClick={() => setKidneyVariant('urea')}>Urea</TabsTrigger>
+                                </TabsList>
                             </div>
                         )}
 
                         {/* Chart Container */}
-                        <div className="h-96 w-full">
+                        <div className="w-full">
                             {renderChart()}
                         </div>
 
@@ -572,6 +570,21 @@ export default function HealthTracking() {
                                 }}
                             />
                         )}
+
+                        {/* Chart Instruction Modal */}
+                        <ChartInstructionModal
+                            isOpen={isInstructionOpen}
+                            onClose={() => setInstructionOpen(false)}
+                            chartType={selectedIndex}
+                            variant={
+                                selectedIndex === HealthIndex.BloodSugar ? sugarVariant :
+                                    selectedIndex === HealthIndex.BloodLipid ? lipidVariant :
+                                        selectedIndex === HealthIndex.LiverFunction ? liverVariant :
+                                            selectedIndex === HealthIndex.KidneyFunction ? kidneyVariant :
+                                                selectedIndex === HealthIndex.BloodPressure ? bpVariant :
+                                                    undefined
+                            }
+                        />
                     </Card>
 
                     {/* Summary and Recommendations */}
@@ -582,12 +595,12 @@ export default function HealthTracking() {
                                 <div className="flex justify-between">
                                     <span className="text-gray-600">Giá trị mới nhất:</span>
                                     <span className="font-medium">
-                                        {currentChartData ? (
-                                            selectedIndex === HealthIndex.BMI && activeTab === BMIChildrenTabs.Weight
-                                                ? `${currentChartData.VALUE_WEIGHT} kg`
-                                                : selectedIndex === HealthIndex.BMI && activeTab === BMIChildrenTabs.Height
-                                                    ? `${currentChartData.VALUE_HEIGHT} cm`
-                                                    : currentChartData.VALUE || '22.5'
+                                        {conclusions && conclusions.length > 0 ? (
+                                            selectedIndex === HealthIndex.BMI && activeTab === BMIChildrenTabsEnum.Weight
+                                                ? `${conclusions[0].VALUE_WEIGHT} kg`
+                                                : selectedIndex === HealthIndex.BMI && activeTab === BMIChildrenTabsEnum.Height
+                                                    ? `${conclusions[0].VALUE_HEIGHT} cm`
+                                                    : conclusions[0].VALUE || '22.5'
                                         ) : '22.5'}
                                     </span>
                                 </div>
@@ -596,11 +609,11 @@ export default function HealthTracking() {
                                     <Badge
                                         variant="secondary"
                                         style={{
-                                            backgroundColor: currentChartData?.COLOR || '#e5e7eb',
+                                            backgroundColor: conclusions && conclusions.length > 0 ? conclusions[0].COLOR || '#e5e7eb' : '#e5e7eb',
                                             color: '#fff'
                                         }}
                                     >
-                                        {currentChartData?.TYPE || 'Bình thường'}
+                                        {conclusions && conclusions.length > 0 ? conclusions[0].TYPE || 'Bình thường' : 'Bình thường'}
                                     </Badge>
                                 </div>
                                 <div className="flex justify-between">
@@ -613,10 +626,10 @@ export default function HealthTracking() {
                         <Card className="p-6">
                             <h4 className="font-semibold text-gray-900 mb-4">Khuyến nghị</h4>
                             <div className="space-y-2">
-                                {currentChartData?.RECOMMEND ? (
+                                {conclusions && conclusions.length > 0 && conclusions[0].RECOMMEND ? (
                                     <div
                                         className="text-sm text-gray-600"
-                                        dangerouslySetInnerHTML={{ __html: currentChartData.RECOMMEND }}
+                                        dangerouslySetInnerHTML={{ __html: conclusions[0].RECOMMEND }}
                                     />
                                 ) : (
                                     <>

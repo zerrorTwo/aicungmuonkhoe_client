@@ -10,6 +10,7 @@ export interface BMIUpdatePayload {
     DATE: string; // yyyy-mm-dd
     VALUE_HEIGHT: number; // cm
     VALUE_WEIGHT: number; // kg
+    VALUE: number; // BMI value (calculated)
     HEALTH_DOCUMENT_ID: number;
     MODEL: 'BMI';
     AGE_TYPE: string;
@@ -70,11 +71,16 @@ const BMIUpdateModal: React.FC<BMIUpdateModalProps> = ({ isOpen, onClose, onSubm
         try {
             setSubmitting(true);
 
+            const heightInMeters = parseFloat(height) / 100; // Convert cm to meters
+            const weightKg = parseFloat(weight);
+            const bmiValue = weightKg / (heightInMeters * heightInMeters); // BMI formula: weight(kg) / height(m)^2
+
             // Format payload with uppercase fields
             const payload: BMIUpdatePayload = {
                 DATE: date,
                 VALUE_HEIGHT: parseFloat(parseFloat(height).toFixed(2)),
                 VALUE_WEIGHT: parseFloat(parseFloat(weight).toFixed(2)),
+                VALUE: parseFloat(bmiValue.toFixed(2)), // Add calculated BMI value
                 HEALTH_DOCUMENT_ID: healthDocumentId, // Use prop value
                 MODEL: 'BMI',
                 AGE_TYPE: ageType, // Use prop value
