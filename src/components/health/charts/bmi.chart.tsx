@@ -297,9 +297,8 @@ export default function BMIChart({
               if (activeTab === BMIChildrenTabs.WeightHeight) {
                 return value;
               } else {
-                if (Number(value) === 0) return `{ bold | ${startIndex} tuổi } `;
-                if (Number(value) === 12)
-                  return `{ bold | ${startIndex + 1} tuổi } `;
+                if (Number(value) === 0) return `${startIndex} tuổi`;
+                if (Number(value) === 12) return `${startIndex + 1} tuổi`;
               }
 
               return value;
@@ -834,7 +833,6 @@ export default function BMIChart({
           }
 
           return `
-  < div style = "font-family: 'Roboto'; color: #333; font-size: ${isMobile ? '12px' : '18px'}; line-height: 140%;" >
     ${ageRange === BMIAgeRange.FROM_0_LESS_THAN_5 ||
               ageRange === BMIAgeRange.FROM_5_LESS_THAN_12 ||
               ageRange === BMIAgeRange.FROM_12_LESS_THAN_20
