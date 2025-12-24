@@ -1,19 +1,19 @@
-import { useEffect, useMemo, useState, useCallback } from "react"
+import { useEffect, useMemo, useState, useCallback } from "react";
 import {
   useLazyGetConclusionsRangeQuery,
   useGetConclusionsPaginationQuery,
-} from "@/store/api/conclusionApi"
-import type { Conclusion } from "@/types/health"
-import dayjs from "dayjs"
+} from "@/store/api/conclusionApi";
+import type { Conclusion } from "@/types/health";
+import dayjs from "dayjs";
 
 interface UseHealthConclusionsParams {
-  healthDocumentId?: string
-  model: string // 'BMI', 'BLOOD_PRESSURE', etc.
-  ageType?: string // Age type for BMI charts
-  activeTab?: string // Active tab for charts
-  page?: number
-  pageSize?: number
-  enabled?: boolean
+  healthDocumentId?: string;
+  model: string; // 'BMI', 'BLOOD_PRESSURE', etc.
+  ageType?: string; // Age type for BMI charts
+  activeTab?: string; // Active tab for charts
+  page?: number;
+  pageSize?: number;
+  enabled?: boolean;
 }
 
 export function useHealthConclusions({
@@ -25,9 +25,9 @@ export function useHealthConclusions({
   pageSize = 12,
   enabled = true,
 }: UseHealthConclusionsParams) {
-  const [chartData, setChartData] = useState<Conclusion[]>([])
+  const [chartData, setChartData] = useState<Conclusion[]>([]);
 
-  const offset = (page - 1) * pageSize
+  const offset = (page - 1) * pageSize;
 
   // Step 1: Fetch paginated data (for history list)
   const {
@@ -41,47 +41,47 @@ export function useHealthConclusions({
       MODEL: model,
       AGE_TYPE: ageType,
       ACTIVE_TAB: activeTab,
-      SORT: "desc",
+      SORT: "CREATED_DATE:desc",
       OFFSET: String(offset),
       LIMIT: String(pageSize),
     },
     {
       skip: !enabled || !healthDocumentId || !model,
     }
-  )
+  );
 
   const [
     triggerRange,
     { data: rangeData, isLoading: isRangeLoading, isFetching: isRangeFetching },
-  ] = useLazyGetConclusionsRangeQuery()
+  ] = useLazyGetConclusionsRangeQuery();
 
   // Step 2: When pagination data arrives, extract min/max dates and fetch range data
   useEffect(() => {
-    console.log("=== PAGINATION DATA CHANGED ===")
-    console.log("paginationData:", paginationData)
+    console.log("=== PAGINATION DATA CHANGED ===");
+    console.log("paginationData:", paginationData);
 
     // API returns { listData: [], paging: { total } }
-    const dataList = paginationData?.listData
+    const dataList = paginationData?.listData;
 
     if (dataList && dataList.length > 0) {
-      console.log("Pagination has data, extracting dates...")
-      console.log("First item:", dataList[0])
+      console.log("Pagination has data, extracting dates...");
+      console.log("First item:", dataList[0]);
 
       // Get min and max dates from paginated results
       // Handle both 'date' and 'DATE' field names
       const validDates = dataList
         .map((item: any) => item.date || item.DATE)
         .filter((date: string) => date && dayjs(date).isValid())
-        .sort()
+        .sort();
 
-      console.log("Valid dates:", validDates)
+      console.log("Valid dates:", validDates);
 
       if (validDates.length > 0) {
-        const minDate = validDates[0]
-        const maxDate = validDates[validDates.length - 1]
+        const minDate = validDates[0];
+        const maxDate = validDates[validDates.length - 1];
 
-        console.log("Min date:", minDate, "Max date:", maxDate)
-        console.log("Triggering range API...")
+        console.log("Min date:", minDate, "Max date:", maxDate);
+        console.log("Triggering range API...");
 
         // Fetch range data for chart
         triggerRange({
@@ -94,16 +94,16 @@ export function useHealthConclusions({
           SORT: "desc",
           OFFSET: "0",
           LIMIT: "100", // Get all data in range for chart
-        })
+        });
       } else {
-        console.log("No valid dates found")
+        console.log("No valid dates found");
       }
     } else if (dataList && dataList.length === 0) {
-      console.log("Pagination returned empty data")
+      console.log("Pagination returned empty data");
       // No data
-      setChartData([])
+      setChartData([]);
     } else {
-      console.log("Pagination data is null or undefined")
+      console.log("Pagination data is null or undefined");
     }
   }, [
     paginationData,
@@ -112,7 +112,7 @@ export function useHealthConclusions({
     ageType,
     activeTab,
     triggerRange,
-  ])
+  ]);
 
   // Step 3: Update chart data when range data arrives
   useEffect(() => {
@@ -134,15 +134,15 @@ export function useHealthConclusions({
         time: item.TIME || item.time,
         id: item.ID || item.id,
         model: item.MODEL || item.model,
-      }))
+      }));
 
-      setChartData(transformedData)
+      setChartData(transformedData);
     }
-  }, [rangeData])
+  }, [rangeData]);
 
   // Transform pagination data to match expected format
   const paginatedConclusions = useMemo(() => {
-    if (!paginationData?.listData) return []
+    if (!paginationData?.listData) return [];
 
     return paginationData.listData.map((item: any) => ({
       ...item,
@@ -159,21 +159,21 @@ export function useHealthConclusions({
       time: item.TIME || item.time,
       id: item.ID || item.id,
       model: item.MODEL || item.model,
-    }))
-  }, [paginationData?.listData])
+    }));
+  }, [paginationData?.listData]);
 
-  const totalCount = paginationData?.paging?.total || 0
-  const totalPages = Math.ceil(totalCount / pageSize)
+  const totalCount = paginationData?.paging?.total || 0;
+  const totalPages = Math.ceil(totalCount / pageSize);
 
-  const isLoading = isPaginationLoading || isRangeLoading
-  const isFetching = isPaginationFetching || isRangeFetching
+  const isLoading = isPaginationLoading || isRangeLoading;
+  const isFetching = isPaginationFetching || isRangeFetching;
 
   // Comprehensive refetch function that refetches pagination (which triggers range API)
   // Memoized to prevent infinite re-renders
   const refetch = useCallback(async () => {
-    await refetchPagination()
+    await refetchPagination();
     // Range API will be automatically triggered by the useEffect when pagination data changes
-  }, [refetchPagination])
+  }, [refetchPagination]);
 
   return {
     // For history list (paginated)
@@ -191,5 +191,5 @@ export function useHealthConclusions({
 
     // Refetch function - refetches both pagination and range data
     refetch,
-  }
+  };
 }

@@ -1,40 +1,40 @@
-import React, { useState, useEffect } from "react"
-import { Button } from "../ui/button"
-import { Input } from "../ui/input"
-import { Label } from "../ui/label"
-import { Card, CardContent, CardHeader, CardTitle } from "../ui/card"
-import { calculateAge } from "@/utils/age"
-import PhysicalMeasuresSection from "../healthForm/PhysicalMeasuresSection"
-import ActivityLevelSlider from "../healthForm/ActivityLevelSlider"
-import HealthStatusDropdown from "../healthForm/HealthStatusDropdown"
-import JobInputSection from "../healthForm/JobInputSection"
-import ExerciseFrequencySlider from "../healthForm/ExerciseFrequencySlider"
-import ExerciseTimeInputs from "../healthForm/ExerciseTimeInputs"
-import { User, Calendar, Users } from "lucide-react"
-import { showToast } from "../../utils/toast"
+import React, { useState, useEffect } from "react";
+import { Button } from "../ui/button";
+import { Input } from "../ui/input";
+import { Label } from "../ui/label";
+import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
+import { calculateAge } from "@/utils/age";
+import PhysicalMeasuresSection from "../healthForm/PhysicalMeasuresSection";
+import ActivityLevelSlider from "../healthForm/ActivityLevelSlider";
+import HealthStatusDropdown from "../healthForm/HealthStatusDropdown";
+import JobInputSection from "../healthForm/JobInputSection";
+import ExerciseFrequencySlider from "../healthForm/ExerciseFrequencySlider";
+import ExerciseTimeInputs from "../healthForm/ExerciseTimeInputs";
+import { User, Calendar, Users, Edit2, FileText, Save, X } from "lucide-react";
+import { showToast } from "../../utils/toast";
 
 interface HealthDocument {
-  ID?: number
-  FULL_NAME?: string
-  DOB?: string
-  GENDER_ID?: number
-  HEIGHT?: string
-  WEIGHT?: string
-  HEALTH_STATUS?: string
-  JOB?: string
-  EXERCISE_INTENSITY?: number
-  EXERCISE_FREQUENCY?: string // Backend expects string
-  DATE_WORKDAY?: number // Backend expects number (minutes)
-  DATE_OFF?: number // Backend expects number (minutes)
-  IS_MYSELF?: boolean
-  AVATAR?: string
+  ID?: number;
+  FULL_NAME?: string;
+  DOB?: string;
+  GENDER_ID?: number;
+  HEIGHT?: string;
+  WEIGHT?: string;
+  HEALTH_STATUS?: string;
+  JOB?: string;
+  EXERCISE_INTENSITY?: number;
+  EXERCISE_FREQUENCY?: string; // Backend expects string
+  DATE_WORKDAY?: number; // Backend expects number (minutes)
+  DATE_OFF?: number; // Backend expects number (minutes)
+  IS_MYSELF?: boolean;
+  AVATAR?: string;
 }
 
 interface HealthFormPanelProps {
-  healthDocument: HealthDocument | null
-  onUpdate: (data: HealthDocument) => void
-  isEditMode: boolean
-  onEditModeChange: (isEdit: boolean) => void
+  healthDocument: HealthDocument | null;
+  onUpdate: (data: HealthDocument) => void;
+  isEditMode: boolean;
+  onEditModeChange: (isEdit: boolean) => void;
 }
 
 const HealthFormPanel: React.FC<HealthFormPanelProps> = ({
@@ -55,34 +55,34 @@ const HealthFormPanel: React.FC<HealthFormPanelProps> = ({
     EXERCISE_FREQUENCY: "1-3 lần/tuần", // String default
     DATE_WORKDAY: 0, // Number (minutes)
     DATE_OFF: 0, // Number (minutes)
-  })
+  });
 
-  const [age, setAge] = useState<number>(0)
-  const [previousAge, setPreviousAge] = useState<number>(0)
+  const [age, setAge] = useState<number>(0);
+  const [previousAge, setPreviousAge] = useState<number>(0);
   const [ageWarning, setAgeWarning] = useState<{
-    show: boolean
-    message: string
-    detail: string
-    note: string
-  } | null>(null)
-  const isUnderFive = age < 5
+    show: boolean;
+    message: string;
+    detail: string;
+    note: string;
+  } | null>(null);
+  const isUnderFive = age < 5;
 
   // Hàm xác định mức tuổi (1-5)
   const getAgeLevel = (age: number): number => {
-    if (age < 5) return 1
-    if (age >= 5 && age < 12) return 2
-    if (age >= 12 && age < 19) return 3
-    if (age >= 19 && age <= 70) return 4
-    return 5 // > 70
-  }
+    if (age < 5) return 1;
+    if (age >= 5 && age < 12) return 2;
+    if (age >= 12 && age < 19) return 3;
+    if (age >= 19 && age <= 70) return 4;
+    return 5; // > 70
+  };
 
   // Hàm tạo cảnh báo theo mức tuổi
   // Cảnh báo về MỨC CŨ (fromLevel) khi chuyển sang mức mới
   const getAgeWarningMessage = (fromLevel: number, toLevel: number) => {
     // Không hiện cảnh báo nếu không thay đổi mức
-    if (fromLevel === toLevel) return null
+    if (fromLevel === toLevel) return null;
 
-    const isUpgrade = toLevel > fromLevel // Tăng tuổi
+    const isUpgrade = toLevel > fromLevel; // Tăng tuổi
 
     // CẢNH BÁO DỰA TRÊN MỨC CŨ (fromLevel)
     if (fromLevel === 1) {
@@ -92,7 +92,7 @@ const HealthFormPanel: React.FC<HealthFormPanelProps> = ({
         message: `Bạn đang dưới 5 tuổi, phần mềm giúp bạn theo dõi các chỉ số quan trọng sau:`,
         detail: `• Cân nặng theo tuổi\n• Chiều dài/ chiều cao theo tuổi\n• Cân nặng theo chiều dài/chiều cao\n• Tuy nhiên, bạn không thể theo dõi các chỉ số này khi thay đổi độ tuổi của mình > 5 tuổi.`,
         note: `Lưu ý: Sau khi điều chỉnh khoảng tuổi (>5 tuổi), việc theo dõi các chỉ số sức khỏe dưới 5 tuổi có thể khôi phục nếu bạn điều chỉnh ngày/tháng/năm sinh như ban đầu.`,
-      }
+      };
     }
 
     if (fromLevel === 2) {
@@ -104,7 +104,7 @@ const HealthFormPanel: React.FC<HealthFormPanelProps> = ({
           message: `Giai đoạn từ 6 - dưới 12 tuổi và từ 12 - dưới 19 tuổi, phần mềm giúp bạn theo dõi chỉ số BMI theo tuổi. Tuy nhiên, khoảng tham chiếu dữa ra kết luận và khuyến nghị về tình trạng BMI của hai khoảng tuổi này khác nhau.`,
           detail: `Do đó, việc điều chỉnh khoảng tuổi từ 6- dưới 12 tuổi thành từ 12 - dưới 19 tuổi và ngược lại có thể làm thay đổi các kết luận và khuyến nghị.`,
           note: `Lưu ý: Sau khi điều chỉnh về lại khoảng tuổi ban đầu, kết luận và khuyến nghị về BMI có thể được khôi phục.`,
-        }
+        };
       } else {
         // Chuyển xuống < 5 tuổi
         return {
@@ -112,7 +112,7 @@ const HealthFormPanel: React.FC<HealthFormPanelProps> = ({
           message: `Bạn đang từ trên 5 tuổi đến dưới 12 tuổi, phần mềm giúp bạn theo dõi chỉ số BMI theo tuổi. Tuy nhiên, bạn không thể theo dõi chỉ số này khi thay đổi độ tuổi của mình từ trên 5 tuổi đến dưới 12 tuổi thành dưới 5 tuổi.`,
           detail: ``,
           note: `Lưu ý: Sau khi điều chỉnh khoảng tuổi (5 tuổi - dưới 12 tuổi), việc theo dõi các chỉ số sức khỏe từ 5 tuổi - dưới 12 tuổi có thể khôi phục nếu bạn điều chỉnh ngày/tháng/năm sinh như ban đầu.`,
-        }
+        };
       }
     }
 
@@ -125,7 +125,7 @@ const HealthFormPanel: React.FC<HealthFormPanelProps> = ({
           message: `Bạn đang từ 12 tuổi đến dưới 19 tuổi, phần mềm giúp bạn theo dõi chỉ số BMI theo tuổi. Tuy nhiên, bạn không thể theo dõi chỉ số này khi thay đổi độ tuổi của mình từ ≥ 19 tuổi.`,
           detail: ``,
           note: `Lưu ý: Sau khi điều chỉnh khoảng tuổi (12 tuổi - dưới 19 tuổi), việc theo dõi các chỉ số sức khỏe từ 12 tuổi - dưới 19 tuổi có thể khôi phục nếu bạn điều chỉnh ngày/tháng/năm sinh như ban đầu.`,
-        }
+        };
       } else {
         // Chuyển xuống < 12 tuổi
         return {
@@ -133,7 +133,7 @@ const HealthFormPanel: React.FC<HealthFormPanelProps> = ({
           message: `Giai đoạn từ 6 - dưới 12 tuổi và từ 12 - dưới 19 tuổi, phần mềm giúp bạn theo dõi chỉ số BMI theo tuổi. Tuy nhiên, khoảng tham chiếu dữa ra kết luận và khuyến nghị về tình trạng BMI của hai khoảng tuổi này khác nhau.`,
           detail: `Do đó, việc điều chỉnh khoảng tuổi từ 6- dưới 12 tuổi thành từ 12 - dưới 19 tuổi và ngược lại có thể làm thay đổi các kết luận và khuyến nghị.`,
           note: `Lưu ý: Sau khi điều chỉnh về lại khoảng tuổi ban đầu, kết luận và khuyến nghị về BMI có thể được khôi phục.`,
-        }
+        };
       }
     }
 
@@ -146,7 +146,7 @@ const HealthFormPanel: React.FC<HealthFormPanelProps> = ({
           message: `Giai đoạn từ 19 tuổi - dưới 70 tuổi và từ 70 tuổi trở lên, phần mềm giúp bạn theo dõi các chỉ số quan trọng sau:`,
           detail: `• BMI\n• Huyết áp\n• Chức năng gan\n• Chức năng thận\n• Mỡ máu\n• Đường huyết\n• Axit uric`,
           note: `Tuy nhiên, khoảng tham chiếu đưa ra kết luận và khuyến nghị về các chỉ số sức khỏe của hai khoảng tuổi này khác nhau. Do đó, việc điều chỉnh khoảng tuổi từ 19 tuổi - dưới 70 tuổi thành từ 70 tuổi trở lên và ngược lại có thể làm thay đổi các kết luận và khuyến nghị.`,
-        }
+        };
       } else {
         // Chuyển xuống < 19 tuổi
         return {
@@ -154,7 +154,7 @@ const HealthFormPanel: React.FC<HealthFormPanelProps> = ({
           message: `Bạn đang từ 19 tuổi đến dưới 70 tuổi, phần mềm giúp bạn theo dõi các chỉ số quan trọng sau:`,
           detail: `• BMI\n• Huyết áp\n• Chức năng gan\n• Chức năng thận\n• Mỡ máu\n• Đường huyết\n• Axit uric`,
           note: `Tuy nhiên, bạn không thể theo dõi các chỉ số này khi thay đổi độ tuổi của mình < 19 tuổi.`,
-        }
+        };
       }
     }
 
@@ -165,11 +165,11 @@ const HealthFormPanel: React.FC<HealthFormPanelProps> = ({
         message: `Giai đoạn từ 19 tuổi - dưới 70 tuổi và từ 70 tuổi trở lên, phần mềm giúp bạn theo dõi các chỉ số quan trọng sau:`,
         detail: `• BMI\n• Huyết áp\n• Chức năng gan\n• Chức năng thận\n• Mỡ máu\n• Đường huyết\n• Axit uric`,
         note: `Tuy nhiên, khoảng tham chiếu đưa ra kết luận và khuyến nghị về các chỉ số sức khỏe của hai khoảng tuổi này khác nhau. Do đó, việc điều chỉnh khoảng tuổi từ 19 tuổi - dưới 70 tuổi thành từ 70 tuổi trở lên và ngược lại có thể làm thay đổi các kết luận và khuyến nghị.`,
-      }
+      };
     }
 
-    return null
-  }
+    return null;
+  };
 
   // Load data khi healthDocument thay đổi
   useEffect(() => {
@@ -177,35 +177,35 @@ const HealthFormPanel: React.FC<HealthFormPanelProps> = ({
       setFormData((prev) => ({
         ...prev,
         ...healthDocument,
-      }))
+      }));
       // Set initial age
       if (healthDocument.DOB) {
-        const initialAge = calculateAge(healthDocument.DOB)
-        setAge(initialAge)
-        setPreviousAge(initialAge)
+        const initialAge = calculateAge(healthDocument.DOB);
+        setAge(initialAge);
+        setPreviousAge(initialAge);
       }
     }
-  }, [healthDocument])
+  }, [healthDocument]);
 
   // Tính tuổi khi DOB thay đổi và hiện cảnh báo
   useEffect(() => {
     if (formData.DOB && isEditMode) {
-      const calculatedAge = calculateAge(formData.DOB)
-      const previousLevel = getAgeLevel(previousAge)
-      const newLevel = getAgeLevel(calculatedAge)
+      const calculatedAge = calculateAge(formData.DOB);
+      const previousLevel = getAgeLevel(previousAge);
+      const newLevel = getAgeLevel(calculatedAge);
 
       // Hiện cảnh báo nếu thay đổi mức tuổi
       if (previousLevel !== newLevel && previousAge !== 0) {
-        const warning = getAgeWarningMessage(previousLevel, newLevel)
-        setAgeWarning(warning)
+        const warning = getAgeWarningMessage(previousLevel, newLevel);
+        setAgeWarning(warning);
       } else {
-        setAgeWarning(null)
+        setAgeWarning(null);
       }
 
-      setAge(calculatedAge)
-      setPreviousAge(calculatedAge)
+      setAge(calculatedAge);
+      setPreviousAge(calculatedAge);
     }
-  }, [formData.DOB, isEditMode, previousAge])
+  }, [formData.DOB, isEditMode, previousAge]);
 
   const handleSubmit = () => {
     if (
@@ -214,12 +214,12 @@ const HealthFormPanel: React.FC<HealthFormPanelProps> = ({
       !formData.HEIGHT ||
       !formData.WEIGHT
     ) {
-      showToast.warning("Vui lòng điền đầy đủ thông tin bắt buộc!")
-      return
+      showToast.warning("Vui lòng điền đầy đủ thông tin bắt buộc!");
+      return;
     }
 
-    onUpdate(formData)
-  }
+    onUpdate(formData);
+  };
 
   // Nếu chưa có document nào được chọn
   if (!healthDocument) {
@@ -232,7 +232,7 @@ const HealthFormPanel: React.FC<HealthFormPanelProps> = ({
           </div>
         </CardContent>
       </Card>
-    )
+    );
   }
 
   return (
@@ -348,10 +348,9 @@ const HealthFormPanel: React.FC<HealthFormPanelProps> = ({
                         </p>
                       )}
                     </div>
-                  )}
+                  </div>
                 </div>
-              </div>
-
+              )}
               {/* Warning cho tuổi 12-19 - GIỮ LẠI (hiện khi không thay đổi) */}
               {!ageWarning && age >= 12 && age < 19 && (
                 <div className="rounded-md border border-orange-200 bg-orange-50 p-3">
@@ -459,11 +458,11 @@ const HealthFormPanel: React.FC<HealthFormPanelProps> = ({
                         "1-3 lần/tuần",
                         "4-5 lần/tuần",
                         "Hằng ngày",
-                      ]
+                      ];
                       setFormData({
                         ...formData,
                         EXERCISE_FREQUENCY: labels[value - 1] || labels[1],
-                      })
+                      });
                     }}
                   />
 
@@ -489,10 +488,10 @@ const HealthFormPanel: React.FC<HealthFormPanelProps> = ({
               <Button
                 variant="outline"
                 onClick={() => {
-                  onEditModeChange(false)
+                  onEditModeChange(false);
                   // Reload data từ healthDocument gốc
                   if (healthDocument) {
-                    setFormData({ ...formData, ...healthDocument })
+                    setFormData({ ...formData, ...healthDocument });
                   }
                 }}
                 className="flex-1 border-2 border-red-400 text-red-600 hover:bg-red-50 hover:border-red-500 font-medium py-6 rounded-xl transition-all duration-200 shadow-md hover:shadow-lg"
@@ -512,7 +511,7 @@ const HealthFormPanel: React.FC<HealthFormPanelProps> = ({
         </CardContent>
       </Card>
     </div>
-  )
-}
+  );
+};
 
-export default HealthFormPanel
+export default HealthFormPanel;
