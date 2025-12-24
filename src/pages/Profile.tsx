@@ -1,32 +1,27 @@
-import React, { useState } from "react";
-import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from "../components/ui/tabs";
-import Header from "../components/layout/Header";
-import Footer from "../components/layout/Footer";
-import PersonalInfoTab from "../components/profile/PersonalInfoTab";
-import SecurityTab from "../components/profile/SecurityTab";
-import NotificationsTab from "../components/profile/NotificationsTab";
-import ManagementAccountTab from "../components/profile/ManagementAccountTab";
-import { useGetUserProfileQuery } from "../store/api/userApi";
+import React, { useState } from "react"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "../components/ui/tabs"
+import Header from "../components/layout/Header"
+import Footer from "../components/layout/Footer"
+import PersonalInfoTab from "../components/profile/PersonalInfoTab"
+import SecurityTab from "../components/profile/SecurityTab"
+import NotificationsTab from "../components/profile/NotificationsTab"
+import ManagementAccountTab from "../components/profile/ManagementAccountTab"
+import { useGetUserProfileQuery } from "../store/api/userApi"
 
 const Profile: React.FC = () => {
   // State để quản lý tab hiện tại
-  const [activeTab, setActiveTab] = useState("personal");
-  const [resetManagementTab, setResetManagementTab] = useState(0);
+  const [activeTab, setActiveTab] = useState("personal")
+  const [resetManagementTab, setResetManagementTab] = useState(0)
 
   // Handler khi click vào tab management
   const handleManagementClick = () => {
     if (activeTab === "management") {
       // Đang active → reset về danh sách
-      setResetManagementTab((prev) => prev + 1);
+      setResetManagementTab((prev) => prev + 1)
     }
     // Luôn set active (TabsTrigger sẽ handle)
-    setActiveTab("management");
-  };
+    setActiveTab("management")
+  }
 
   // Call API để lấy user profile thay vì từ localStorage
   const {
@@ -34,43 +29,40 @@ const Profile: React.FC = () => {
     isLoading,
     error,
     refetch,
-  } = useGetUserProfileQuery();
+  } = useGetUserProfileQuery()
 
-  const userInfo = userDataResponse?.data || null;
-
-
+  const userInfo = userDataResponse?.data || null
 
   // Loading state
   if (isLoading) {
     return (
-      <div className="from-background via-primary/5 to-accent/10 min-h-screen bg-gradient-to-br flex items-center justify-center">
+      <div className="from-background via-primary/5 to-accent/10 flex min-h-screen items-center justify-center bg-gradient-to-br">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary mx-auto"></div>
+          <div className="border-primary mx-auto h-32 w-32 animate-spin rounded-full border-b-2"></div>
           <p className="mt-4 text-lg">Đang tải thông tin...</p>
         </div>
       </div>
-    );
+    )
   }
 
   // Error state
   if (error) {
     return (
-      <div className="from-background via-primary/5 to-accent/10 min-h-screen bg-gradient-to-br flex items-center justify-center">
+      <div className="from-background via-primary/5 to-accent/10 flex min-h-screen items-center justify-center bg-gradient-to-br">
         <div className="text-center">
-          <div className="text-red-500 text-6xl mb-4">⚠️</div>
-          <h2 className="text-xl font-semibold mb-2">Có lỗi xảy ra</h2>
-          <p className="text-gray-600 mb-4">Không thể tải thông tin profile</p>
+          <div className="mb-4 text-6xl text-red-500">⚠️</div>
+          <h2 className="mb-2 text-xl font-semibold">Có lỗi xảy ra</h2>
+          <p className="mb-4 text-gray-600">Không thể tải thông tin profile</p>
           <button
             onClick={() => refetch()}
-            className="px-4 py-2 bg-primary text-white rounded hover:bg-primary/90"
+            className="bg-primary hover:bg-primary/90 rounded px-4 py-2 text-white"
           >
             Thử lại
           </button>
         </div>
       </div>
-    );
+    )
   }
-
 
   return (
     <div className="from-background via-primary/5 to-accent/10 min-h-screen bg-gradient-to-br">
@@ -88,26 +80,26 @@ const Profile: React.FC = () => {
               <TabsList className="border-border/50 flex h-auto w-full flex-col space-y-1 rounded-xl border bg-white/80 p-4 shadow-lg backdrop-blur-sm">
                 <TabsTrigger
                   value="personal"
-                  className="cursor-pointer hover:bg-primary/10 data-[state=active]:from-primary data-[state=active]:to-primary/80 data-[state=active]:text-primary w-full justify-start rounded-lg px-4 py-3 text-left transition-all data-[state=active]:bg-gradient-to-r data-[state=active]:shadow-md data-[state=active]:font-bold"
+                  className="hover:bg-primary/10 data-[state=active]:from-primary data-[state=active]:to-primary/80 data-[state=active]:text-primary w-full cursor-pointer justify-start rounded-lg px-4 py-3 text-left transition-all data-[state=active]:bg-gradient-to-r data-[state=active]:font-bold data-[state=active]:shadow-md"
                 >
                   Thông tin cá nhân
                 </TabsTrigger>
                 <TabsTrigger
                   value="security"
-                  className="cursor-pointer hover:bg-primary/10 data-[state=active]:from-primary data-[state=active]:to-primary/80 data-[state=active]:text-primary w-full justify-start rounded-lg px-4 py-3 text-left transition-all data-[state=active]:bg-gradient-to-r data-[state=active]:shadow-md data-[state=active]:font-bold"
+                  className="hover:bg-primary/10 data-[state=active]:from-primary data-[state=active]:to-primary/80 data-[state=active]:text-primary w-full cursor-pointer justify-start rounded-lg px-4 py-3 text-left transition-all data-[state=active]:bg-gradient-to-r data-[state=active]:font-bold data-[state=active]:shadow-md"
                 >
                   Bảo mật
                 </TabsTrigger>
                 <TabsTrigger
                   value="management"
                   onClick={handleManagementClick}
-                  className="cursor-pointer hover:bg-primary/10 data-[state=active]:from-primary data-[state=active]:to-primary/80 data-[state=active]:text-primary w-full justify-start rounded-lg px-4 py-3 text-left transition-all data-[state=active]:bg-gradient-to-r data-[state=active]:shadow-md data-[state=active]:font-bold"
+                  className="hover:bg-primary/10 data-[state=active]:from-primary data-[state=active]:to-primary/80 data-[state=active]:text-primary w-full cursor-pointer justify-start rounded-lg px-4 py-3 text-left transition-all data-[state=active]:bg-gradient-to-r data-[state=active]:font-bold data-[state=active]:shadow-md"
                 >
                   Thông tin quản lý
                 </TabsTrigger>
                 <TabsTrigger
                   value="notifications"
-                  className="cursor-pointer hover:bg-primary/10 data-[state=active]:from-primary data-[state=active]:to-primary/80 data-[state=active]:text-primary w-full justify-start rounded-lg px-4 py-3 text-left transition-all data-[state=active]:bg-gradient-to-r data-[state=active]:shadow-md data-[state=active]:font-bold"
+                  className="hover:bg-primary/10 data-[state=active]:from-primary data-[state=active]:to-primary/80 data-[state=active]:text-primary w-full cursor-pointer justify-start rounded-lg px-4 py-3 text-left transition-all data-[state=active]:bg-gradient-to-r data-[state=active]:font-bold data-[state=active]:shadow-md"
                 >
                   Thông báo
                 </TabsTrigger>
@@ -138,7 +130,7 @@ const Profile: React.FC = () => {
 
       <Footer />
     </div>
-  );
-};
+  )
+}
 
-export default Profile;
+export default Profile

@@ -1,50 +1,40 @@
-import React, { useState, useEffect } from "react";
-import { Button } from "../ui/button";
-import { Input } from "../ui/input";
-import { Label } from "../ui/label";
-import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
-import { calculateAge } from "@/utils/age";
-import PhysicalMeasuresSection from "../healthForm/PhysicalMeasuresSection";
-import ActivityLevelSlider from "../healthForm/ActivityLevelSlider";
-import HealthStatusDropdown from "../healthForm/HealthStatusDropdown";
-import JobInputSection from "../healthForm/JobInputSection";
-import ExerciseFrequencySlider from "../healthForm/ExerciseFrequencySlider";
-import ExerciseTimeInputs from "../healthForm/ExerciseTimeInputs";
-import {
-  User,
-  Calendar,
-  Users,
-  Edit2,
-  Save,
-  X,
-  Camera,
-  AlertCircle,
-  FileText,
-} from "lucide-react";
-import { showToast } from "../../utils/toast";
+import React, { useState, useEffect } from "react"
+import { Button } from "../ui/button"
+import { Input } from "../ui/input"
+import { Label } from "../ui/label"
+import { Card, CardContent, CardHeader, CardTitle } from "../ui/card"
+import { calculateAge } from "@/utils/age"
+import PhysicalMeasuresSection from "../healthForm/PhysicalMeasuresSection"
+import ActivityLevelSlider from "../healthForm/ActivityLevelSlider"
+import HealthStatusDropdown from "../healthForm/HealthStatusDropdown"
+import JobInputSection from "../healthForm/JobInputSection"
+import ExerciseFrequencySlider from "../healthForm/ExerciseFrequencySlider"
+import ExerciseTimeInputs from "../healthForm/ExerciseTimeInputs"
+import { User, Calendar, Users } from "lucide-react"
+import { showToast } from "../../utils/toast"
 
 interface HealthDocument {
-  ID?: number;
-  FULL_NAME?: string;
-  DOB?: string;
-  GENDER_ID?: number;
-  HEIGHT?: string;
-  WEIGHT?: string;
-  HEALTH_STATUS?: string;
-  JOB?: string;
-  EXERCISE_INTENSITY?: number;
-  EXERCISE_FREQUENCY?: string; // Backend expects string
-  DATE_WORKDAY?: number; // Backend expects number (minutes)
-  DATE_OFF?: number; // Backend expects number (minutes)
-  IS_MYSELF?: boolean;
-  AVATAR?: string;
+  ID?: number
+  FULL_NAME?: string
+  DOB?: string
+  GENDER_ID?: number
+  HEIGHT?: string
+  WEIGHT?: string
+  HEALTH_STATUS?: string
+  JOB?: string
+  EXERCISE_INTENSITY?: number
+  EXERCISE_FREQUENCY?: string // Backend expects string
+  DATE_WORKDAY?: number // Backend expects number (minutes)
+  DATE_OFF?: number // Backend expects number (minutes)
+  IS_MYSELF?: boolean
+  AVATAR?: string
 }
 
 interface HealthFormPanelProps {
-  healthDocument: HealthDocument | null;
-  onUpdate: (data: HealthDocument) => void;
-  isEditMode: boolean;
-  onEditModeChange: (isEdit: boolean) => void;
+  healthDocument: HealthDocument | null
+  onUpdate: (data: HealthDocument) => void
+  isEditMode: boolean
+  onEditModeChange: (isEdit: boolean) => void
 }
 
 const HealthFormPanel: React.FC<HealthFormPanelProps> = ({
@@ -65,34 +55,34 @@ const HealthFormPanel: React.FC<HealthFormPanelProps> = ({
     EXERCISE_FREQUENCY: "1-3 lần/tuần", // String default
     DATE_WORKDAY: 0, // Number (minutes)
     DATE_OFF: 0, // Number (minutes)
-  });
+  })
 
-  const [age, setAge] = useState<number>(0);
-  const [previousAge, setPreviousAge] = useState<number>(0);
+  const [age, setAge] = useState<number>(0)
+  const [previousAge, setPreviousAge] = useState<number>(0)
   const [ageWarning, setAgeWarning] = useState<{
-    show: boolean;
-    message: string;
-    detail: string;
-    note: string;
-  } | null>(null);
-  const isUnderFive = age < 5;
+    show: boolean
+    message: string
+    detail: string
+    note: string
+  } | null>(null)
+  const isUnderFive = age < 5
 
   // Hàm xác định mức tuổi (1-5)
   const getAgeLevel = (age: number): number => {
-    if (age < 5) return 1;
-    if (age >= 5 && age < 12) return 2;
-    if (age >= 12 && age < 19) return 3;
-    if (age >= 19 && age <= 70) return 4;
-    return 5; // > 70
-  };
+    if (age < 5) return 1
+    if (age >= 5 && age < 12) return 2
+    if (age >= 12 && age < 19) return 3
+    if (age >= 19 && age <= 70) return 4
+    return 5 // > 70
+  }
 
   // Hàm tạo cảnh báo theo mức tuổi
   // Cảnh báo về MỨC CŨ (fromLevel) khi chuyển sang mức mới
   const getAgeWarningMessage = (fromLevel: number, toLevel: number) => {
     // Không hiện cảnh báo nếu không thay đổi mức
-    if (fromLevel === toLevel) return null;
+    if (fromLevel === toLevel) return null
 
-    const isUpgrade = toLevel > fromLevel; // Tăng tuổi
+    const isUpgrade = toLevel > fromLevel // Tăng tuổi
 
     // CẢNH BÁO DỰA TRÊN MỨC CŨ (fromLevel)
     if (fromLevel === 1) {
@@ -102,7 +92,7 @@ const HealthFormPanel: React.FC<HealthFormPanelProps> = ({
         message: `Bạn đang dưới 5 tuổi, phần mềm giúp bạn theo dõi các chỉ số quan trọng sau:`,
         detail: `• Cân nặng theo tuổi\n• Chiều dài/ chiều cao theo tuổi\n• Cân nặng theo chiều dài/chiều cao\n• Tuy nhiên, bạn không thể theo dõi các chỉ số này khi thay đổi độ tuổi của mình > 5 tuổi.`,
         note: `Lưu ý: Sau khi điều chỉnh khoảng tuổi (>5 tuổi), việc theo dõi các chỉ số sức khỏe dưới 5 tuổi có thể khôi phục nếu bạn điều chỉnh ngày/tháng/năm sinh như ban đầu.`,
-      };
+      }
     }
 
     if (fromLevel === 2) {
@@ -114,7 +104,7 @@ const HealthFormPanel: React.FC<HealthFormPanelProps> = ({
           message: `Giai đoạn từ 6 - dưới 12 tuổi và từ 12 - dưới 19 tuổi, phần mềm giúp bạn theo dõi chỉ số BMI theo tuổi. Tuy nhiên, khoảng tham chiếu dữa ra kết luận và khuyến nghị về tình trạng BMI của hai khoảng tuổi này khác nhau.`,
           detail: `Do đó, việc điều chỉnh khoảng tuổi từ 6- dưới 12 tuổi thành từ 12 - dưới 19 tuổi và ngược lại có thể làm thay đổi các kết luận và khuyến nghị.`,
           note: `Lưu ý: Sau khi điều chỉnh về lại khoảng tuổi ban đầu, kết luận và khuyến nghị về BMI có thể được khôi phục.`,
-        };
+        }
       } else {
         // Chuyển xuống < 5 tuổi
         return {
@@ -122,7 +112,7 @@ const HealthFormPanel: React.FC<HealthFormPanelProps> = ({
           message: `Bạn đang từ trên 5 tuổi đến dưới 12 tuổi, phần mềm giúp bạn theo dõi chỉ số BMI theo tuổi. Tuy nhiên, bạn không thể theo dõi chỉ số này khi thay đổi độ tuổi của mình từ trên 5 tuổi đến dưới 12 tuổi thành dưới 5 tuổi.`,
           detail: ``,
           note: `Lưu ý: Sau khi điều chỉnh khoảng tuổi (5 tuổi - dưới 12 tuổi), việc theo dõi các chỉ số sức khỏe từ 5 tuổi - dưới 12 tuổi có thể khôi phục nếu bạn điều chỉnh ngày/tháng/năm sinh như ban đầu.`,
-        };
+        }
       }
     }
 
@@ -135,7 +125,7 @@ const HealthFormPanel: React.FC<HealthFormPanelProps> = ({
           message: `Bạn đang từ 12 tuổi đến dưới 19 tuổi, phần mềm giúp bạn theo dõi chỉ số BMI theo tuổi. Tuy nhiên, bạn không thể theo dõi chỉ số này khi thay đổi độ tuổi của mình từ ≥ 19 tuổi.`,
           detail: ``,
           note: `Lưu ý: Sau khi điều chỉnh khoảng tuổi (12 tuổi - dưới 19 tuổi), việc theo dõi các chỉ số sức khỏe từ 12 tuổi - dưới 19 tuổi có thể khôi phục nếu bạn điều chỉnh ngày/tháng/năm sinh như ban đầu.`,
-        };
+        }
       } else {
         // Chuyển xuống < 12 tuổi
         return {
@@ -143,7 +133,7 @@ const HealthFormPanel: React.FC<HealthFormPanelProps> = ({
           message: `Giai đoạn từ 6 - dưới 12 tuổi và từ 12 - dưới 19 tuổi, phần mềm giúp bạn theo dõi chỉ số BMI theo tuổi. Tuy nhiên, khoảng tham chiếu dữa ra kết luận và khuyến nghị về tình trạng BMI của hai khoảng tuổi này khác nhau.`,
           detail: `Do đó, việc điều chỉnh khoảng tuổi từ 6- dưới 12 tuổi thành từ 12 - dưới 19 tuổi và ngược lại có thể làm thay đổi các kết luận và khuyến nghị.`,
           note: `Lưu ý: Sau khi điều chỉnh về lại khoảng tuổi ban đầu, kết luận và khuyến nghị về BMI có thể được khôi phục.`,
-        };
+        }
       }
     }
 
@@ -156,7 +146,7 @@ const HealthFormPanel: React.FC<HealthFormPanelProps> = ({
           message: `Giai đoạn từ 19 tuổi - dưới 70 tuổi và từ 70 tuổi trở lên, phần mềm giúp bạn theo dõi các chỉ số quan trọng sau:`,
           detail: `• BMI\n• Huyết áp\n• Chức năng gan\n• Chức năng thận\n• Mỡ máu\n• Đường huyết\n• Axit uric`,
           note: `Tuy nhiên, khoảng tham chiếu đưa ra kết luận và khuyến nghị về các chỉ số sức khỏe của hai khoảng tuổi này khác nhau. Do đó, việc điều chỉnh khoảng tuổi từ 19 tuổi - dưới 70 tuổi thành từ 70 tuổi trở lên và ngược lại có thể làm thay đổi các kết luận và khuyến nghị.`,
-        };
+        }
       } else {
         // Chuyển xuống < 19 tuổi
         return {
@@ -164,7 +154,7 @@ const HealthFormPanel: React.FC<HealthFormPanelProps> = ({
           message: `Bạn đang từ 19 tuổi đến dưới 70 tuổi, phần mềm giúp bạn theo dõi các chỉ số quan trọng sau:`,
           detail: `• BMI\n• Huyết áp\n• Chức năng gan\n• Chức năng thận\n• Mỡ máu\n• Đường huyết\n• Axit uric`,
           note: `Tuy nhiên, bạn không thể theo dõi các chỉ số này khi thay đổi độ tuổi của mình < 19 tuổi.`,
-        };
+        }
       }
     }
 
@@ -175,52 +165,47 @@ const HealthFormPanel: React.FC<HealthFormPanelProps> = ({
         message: `Giai đoạn từ 19 tuổi - dưới 70 tuổi và từ 70 tuổi trở lên, phần mềm giúp bạn theo dõi các chỉ số quan trọng sau:`,
         detail: `• BMI\n• Huyết áp\n• Chức năng gan\n• Chức năng thận\n• Mỡ máu\n• Đường huyết\n• Axit uric`,
         note: `Tuy nhiên, khoảng tham chiếu đưa ra kết luận và khuyến nghị về các chỉ số sức khỏe của hai khoảng tuổi này khác nhau. Do đó, việc điều chỉnh khoảng tuổi từ 19 tuổi - dưới 70 tuổi thành từ 70 tuổi trở lên và ngược lại có thể làm thay đổi các kết luận và khuyến nghị.`,
-      };
+      }
     }
 
-    return null;
-  };
+    return null
+  }
 
   // Load data khi healthDocument thay đổi
   useEffect(() => {
     if (healthDocument) {
-      console.log("📥 Loading health document data:", healthDocument);
-      setFormData({
-        ...formData,
+      setFormData((prev) => ({
+        ...prev,
         ...healthDocument,
-      });
+      }))
       // Set initial age
       if (healthDocument.DOB) {
-        const initialAge = calculateAge(healthDocument.DOB);
-        setAge(initialAge);
-        setPreviousAge(initialAge);
+        const initialAge = calculateAge(healthDocument.DOB)
+        setAge(initialAge)
+        setPreviousAge(initialAge)
       }
     }
-  }, [healthDocument]);
+  }, [healthDocument])
 
   // Tính tuổi khi DOB thay đổi và hiện cảnh báo
   useEffect(() => {
     if (formData.DOB && isEditMode) {
-      const calculatedAge = calculateAge(formData.DOB);
-      const previousLevel = getAgeLevel(previousAge);
-      const newLevel = getAgeLevel(calculatedAge);
-
-      console.log(
-        `🎂 Age changed: ${previousAge} (level ${previousLevel}) → ${calculatedAge} (level ${newLevel})`
-      );
+      const calculatedAge = calculateAge(formData.DOB)
+      const previousLevel = getAgeLevel(previousAge)
+      const newLevel = getAgeLevel(calculatedAge)
 
       // Hiện cảnh báo nếu thay đổi mức tuổi
       if (previousLevel !== newLevel && previousAge !== 0) {
-        const warning = getAgeWarningMessage(previousLevel, newLevel);
-        setAgeWarning(warning);
+        const warning = getAgeWarningMessage(previousLevel, newLevel)
+        setAgeWarning(warning)
       } else {
-        setAgeWarning(null);
+        setAgeWarning(null)
       }
 
-      setAge(calculatedAge);
-      setPreviousAge(calculatedAge);
+      setAge(calculatedAge)
+      setPreviousAge(calculatedAge)
     }
-  }, [formData.DOB, isEditMode]);
+  }, [formData.DOB, isEditMode, previousAge])
 
   const handleSubmit = () => {
     if (
@@ -229,42 +214,25 @@ const HealthFormPanel: React.FC<HealthFormPanelProps> = ({
       !formData.HEIGHT ||
       !formData.WEIGHT
     ) {
-      showToast.warning("Vui lòng điền đầy đủ thông tin bắt buộc!");
-      return;
+      showToast.warning("Vui lòng điền đầy đủ thông tin bắt buộc!")
+      return
     }
 
-    // Loại bỏ các field không được phép
-    const {
-      USER_LINK,
-      GENDER,
-      CREATED_AT,
-      UPDATED_AT,
-      DELETED_AT,
-      ...cleanPayload
-    } = formData;
-
-    onUpdate(cleanPayload);
-  };
+    onUpdate(formData)
+  }
 
   // Nếu chưa có document nào được chọn
   if (!healthDocument) {
     return (
-      <Card className="h-full border-none shadow-xl">
-        <CardContent className="flex items-center justify-center h-full min-h-[600px]">
-          <div className="text-center">
-            <div className="w-32 h-32 mx-auto mb-6 bg-gradient-to-br from-teal-100 to-teal-200 rounded-full flex items-center justify-center">
-              <FileText className="w-16 h-16 text-teal-600" />
-            </div>
-            <p className="text-xl font-medium text-gray-700 mb-2">
-              Chưa có hồ sơ được chọn
-            </p>
-            <p className="text-sm text-gray-500">
-              Vui lòng chọn một hồ sơ từ danh sách bên trái
-            </p>
+      <Card className="h-full">
+        <CardContent className="flex h-full items-center justify-center">
+          <div className="text-center text-gray-400">
+            <div className="mb-4 text-6xl">📋</div>
+            <p className="text-lg">Chọn một hồ sơ để xem chi tiết</p>
           </div>
         </CardContent>
       </Card>
-    );
+    )
   }
 
   return (
@@ -300,104 +268,85 @@ const HealthFormPanel: React.FC<HealthFormPanelProps> = ({
           {/* Wrap toàn bộ form - disable interaction khi không edit */}
           <div className={!isEditMode ? "pointer-events-none opacity-70" : ""}>
             {/* Avatar Section */}
-            <div className="flex justify-center mb-8">
-              <div className="relative group">
-                <div className="w-32 h-32 rounded-full bg-gradient-to-br from-teal-100 to-emerald-100 flex items-center justify-center overflow-hidden ring-4 ring-teal-100 shadow-lg transition-all duration-300 group-hover:ring-teal-200">
+            <div className="mb-6 flex justify-center">
+              <div className="relative">
+                <div className="flex h-24 w-24 items-center justify-center overflow-hidden rounded-full bg-gray-200 text-4xl text-gray-500">
                   {healthDocument.AVATAR ? (
                     <img
                       src={healthDocument.AVATAR}
                       alt="Avatar"
-                      className="w-full h-full object-cover"
+                      className="h-full w-full object-cover"
                     />
                   ) : (
                     <User className="w-16 h-16 text-teal-600" />
                   )}
                 </div>
-                {isEditMode && (
-                  <button className="absolute bottom-1 right-1 bg-gradient-to-r from-teal-500 to-emerald-500 text-white rounded-full w-10 h-10 flex items-center justify-center hover:from-teal-600 hover:to-emerald-600 shadow-lg transition-all duration-200 transform hover:scale-110">
-                    <Camera className="w-5 h-5" />
-                  </button>
-                )}
+                <button className="absolute right-0 bottom-0 flex h-8 w-8 items-center justify-center rounded-full bg-[hsl(158,64%,52%)] text-white hover:bg-[hsl(158,64%,45%)]">
+                  <span className="text-sm">Cập nhật</span>
+                </button>
               </div>
             </div>
 
             {/* Form Fields */}
-            <div className="space-y-6">
-              {/* Thông tin cơ bản */}
-              <div className="bg-white rounded-xl p-6 shadow-md border border-gray-100">
-                <h3 className="text-sm font-semibold text-gray-700 uppercase tracking-wide mb-4 flex items-center">
-                  <div className="w-1 h-5 bg-teal-500 rounded-full mr-3"></div>
-                  Thông tin cơ bản
-                </h3>
+            <div className="space-y-4">
+              {/* Tên hiển thị */}
+              <div>
+                <Label className="flex items-center text-sm font-medium">
+                  <User className="mr-1 h-4 w-4" />
+                  Tên hiển thị <span className="ml-1 text-red-500">*</span>
+                </Label>
+                <Input
+                  placeholder="Nhập họ và tên"
+                  value={formData.FULL_NAME}
+                  onChange={(e) =>
+                    setFormData({ ...formData, FULL_NAME: e.target.value })
+                  }
+                  className="mt-1"
+                  disabled={!isEditMode}
+                />
+              </div>
 
-                <div className="space-y-4">
-                  {/* Tên hiển thị */}
-                  <div>
-                    <Label className="text-sm font-medium flex items-center text-gray-700 mb-2">
-                      <User className="w-4 h-4 mr-2 text-teal-600" />
-                      Tên hiển thị <span className="text-red-500 ml-1">*</span>
-                    </Label>
-                    <Input
-                      placeholder="Nhập họ và tên"
-                      value={formData.FULL_NAME}
-                      onChange={(e) =>
-                        setFormData({ ...formData, FULL_NAME: e.target.value })
-                      }
-                      className="border-gray-300 focus:border-teal-500 focus:ring-teal-500 rounded-lg"
-                      disabled={!isEditMode}
-                    />
-                  </div>
+              {/* Ngày sinh */}
+              <div>
+                <Label className="flex items-center text-sm font-medium">
+                  <Calendar className="mr-1 h-4 w-4" />
+                  Ngày sinh <span className="ml-1 text-red-500">*</span>
+                </Label>
+                <Input
+                  type="date"
+                  value={formData.DOB}
+                  onChange={(e) =>
+                    setFormData({ ...formData, DOB: e.target.value })
+                  }
+                  className="mt-1"
+                  disabled={!isEditMode}
+                />
+              </div>
 
-                  {/* Ngày sinh */}
-                  <div>
-                    <Label className="text-sm font-medium flex items-center text-gray-700 mb-2">
-                      <Calendar className="w-4 h-4 mr-2 text-teal-600" />
-                      Ngày sinh <span className="text-red-500 ml-1">*</span>
-                      {age > 0 && (
-                        <span className="ml-3 text-xs font-normal text-teal-600 bg-teal-50 px-2 py-1 rounded-full">
-                          {age} tuổi
-                        </span>
+              {/* CẢNH BÁO ĐỘNG KHI THAY ĐỔI MỨC TUỔI */}
+              {ageWarning && ageWarning.show && (
+                <div className="rounded-lg border-2 border-orange-300 bg-orange-50 p-4 shadow-sm">
+                  <div className="flex items-start gap-3">
+                    <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-orange-100">
+                      <span className="text-2xl">⚠️</span>
+                    </div>
+                    <div className="flex-1">
+                      <p className="mb-2 text-sm font-bold text-orange-800">
+                        Cảnh báo
+                      </p>
+                      <p className="mb-2 text-sm text-gray-800">
+                        {ageWarning.message}
+                      </p>
+                      {ageWarning.detail && (
+                        <div className="mb-2 text-sm whitespace-pre-line text-gray-700">
+                          {ageWarning.detail}
+                        </div>
                       )}
-                    </Label>
-                    <Input
-                      type="date"
-                      value={formData.DOB}
-                      onChange={(e) =>
-                        setFormData({ ...formData, DOB: e.target.value })
-                      }
-                      className="border-gray-300 focus:border-teal-500 focus:ring-teal-500 rounded-lg"
-                      disabled={!isEditMode}
-                    />
-                  </div>
-
-                  {/* CẢNH BÁO ĐỘNG KHI THAY ĐỔI MỨC TUỔI */}
-                  {ageWarning && ageWarning.show && (
-                    <div className="bg-gradient-to-r from-orange-50 to-amber-50 border-l-4 border-orange-400 rounded-lg p-5 shadow-md">
-                      <div className="flex items-start gap-4">
-                        <div className="flex-shrink-0 w-11 h-11 bg-orange-100 rounded-full flex items-center justify-center ring-4 ring-orange-50">
-                          <AlertCircle className="w-6 h-6 text-orange-600" />
-                        </div>
-                        <div className="flex-1">
-                          <p className="text-sm font-bold text-orange-900 mb-2 flex items-center">
-                            <span className="bg-orange-200 text-orange-800 text-xs px-2 py-0.5 rounded-full mr-2">
-                              Cảnh báo
-                            </span>
-                          </p>
-                          <p className="text-sm text-gray-800 mb-2 leading-relaxed">
-                            {ageWarning.message}
-                          </p>
-                          {ageWarning.detail && (
-                            <div className="text-sm text-gray-700 mb-2 whitespace-pre-line bg-white/50 rounded-md p-3 leading-relaxed">
-                              {ageWarning.detail}
-                            </div>
-                          )}
-                          {ageWarning.note && (
-                            <p className="text-xs text-gray-600 italic mt-3 bg-white/50 rounded-md p-2">
-                              💡 {ageWarning.note}
-                            </p>
-                          )}
-                        </div>
-                      </div>
+                      {ageWarning.note && (
+                        <p className="mt-2 text-xs text-gray-600 italic">
+                          {ageWarning.note}
+                        </p>
+                      )}
                     </div>
                   )}
                 </div>
@@ -405,19 +354,18 @@ const HealthFormPanel: React.FC<HealthFormPanelProps> = ({
 
               {/* Warning cho tuổi 12-19 - GIỮ LẠI (hiện khi không thay đổi) */}
               {!ageWarning && age >= 12 && age < 19 && (
-                <div className="bg-gradient-to-r from-orange-50 to-amber-50 border-l-4 border-orange-400 rounded-lg p-4 shadow-sm">
-                  <p className="text-xs font-semibold text-orange-900 flex items-center mb-2">
-                    <AlertCircle className="w-4 h-4 mr-2 text-orange-600" />
-                    Thông tin quan trọng
+                <div className="rounded-md border border-orange-200 bg-orange-50 p-3">
+                  <p className="flex items-center text-xs font-semibold text-orange-600">
+                    ⚠️ Cảnh báo
                   </p>
-                  <p className="text-xs text-gray-700 leading-relaxed">
+                  <p className="mt-1 text-xs text-gray-700">
                     Bạn đang <strong>từ 12 tuổi đến dưới 19 tuổi</strong>, phần
                     mềm giúp bạn theo dõi chỉ số <strong>BMI theo tuổi</strong>.
                     Tuy nhiên, bạn không thể theo dõi chỉ số này khi thay đổi độ
                     tuổi của mình <strong>từ ≥ 19 tuổi</strong>.
                   </p>
-                  <p className="text-xs text-gray-600 mt-2 italic bg-white/50 rounded p-2">
-                    💡 Lưu ý: Sau khi điều chỉnh khoảng tuổi (12 tuổi - dưới 19
+                  <p className="mt-2 text-xs text-gray-700 italic underline">
+                    Lưu ý: Sau khi điều chỉnh khoảng tuổi (12 tuổi - dưới 19
                     tuổi), việc theo dõi các chỉ số sức khỏe từ 12 tuổi - dưới
                     19 tuổi có thể khôi phục nếu bạn điều chỉnh ngày/tháng/năm
                     sinh như ban đầu.
@@ -426,17 +374,13 @@ const HealthFormPanel: React.FC<HealthFormPanelProps> = ({
               )}
 
               {/* Giới tính */}
-              <div className="bg-white rounded-xl p-6 shadow-md border border-gray-100">
-                <h3 className="text-sm font-semibold text-gray-700 uppercase tracking-wide mb-4 flex items-center">
-                  <div className="w-1 h-5 bg-teal-500 rounded-full mr-3"></div>
-                  Giới tính
-                </h3>
-                <Label className="text-sm font-medium flex items-center text-gray-700 mb-2">
-                  <Users className="w-4 h-4 mr-2 text-teal-600" />
-                  Giới tính <span className="text-red-500 ml-1">*</span>
+              <div>
+                <Label className="flex items-center text-sm font-medium">
+                  <Users className="mr-1 h-4 w-4" />
+                  Giới tính <span className="ml-1 text-red-500">*</span>
                 </Label>
                 <select
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 disabled:bg-gray-100 disabled:cursor-not-allowed transition-all duration-200"
+                  className="mt-1 w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-[hsl(158,64%,52%)] focus:outline-none disabled:cursor-not-allowed disabled:bg-gray-100"
                   value={formData.GENDER_ID}
                   onChange={(e) =>
                     setFormData({
@@ -488,73 +432,51 @@ const HealthFormPanel: React.FC<HealthFormPanelProps> = ({
               {/* Các fields chỉ hiện với age >= 5 */}
               {!isUnderFive && age >= 5 && (
                 <>
-                  <div className="bg-white rounded-xl p-6 shadow-md border border-gray-100">
-                    <h3 className="text-sm font-semibold text-gray-700 uppercase tracking-wide mb-4 flex items-center">
-                      <div className="w-1 h-5 bg-teal-500 rounded-full mr-3"></div>
-                      Tình trạng sức khỏe
-                    </h3>
-                    <HealthStatusDropdown
-                      value={formData.HEALTH_STATUS || "healthy"}
-                      onChange={(value) =>
-                        setFormData({ ...formData, HEALTH_STATUS: value })
-                      }
-                    />
-                  </div>
+                  <HealthStatusDropdown
+                    value={formData.HEALTH_STATUS || "healthy"}
+                    onChange={(value) =>
+                      setFormData({ ...formData, HEALTH_STATUS: value })
+                    }
+                  />
 
-                  <div className="bg-white rounded-xl p-6 shadow-md border border-gray-100">
-                    <h3 className="text-sm font-semibold text-gray-700 uppercase tracking-wide mb-4 flex items-center">
-                      <div className="w-1 h-5 bg-teal-500 rounded-full mr-3"></div>
-                      Thông tin nghề nghiệp
-                    </h3>
-                    <JobInputSection
-                      value={formData.JOB || ""}
-                      onChange={(value) =>
-                        setFormData({ ...formData, JOB: value })
-                      }
-                    />
-                  </div>
+                  <JobInputSection
+                    value={formData.JOB || ""}
+                    onChange={(value) =>
+                      setFormData({ ...formData, JOB: value })
+                    }
+                  />
 
-                  <div className="bg-white rounded-xl p-6 shadow-md border border-gray-100">
-                    <h3 className="text-sm font-semibold text-gray-700 uppercase tracking-wide mb-4 flex items-center">
-                      <div className="w-1 h-5 bg-teal-500 rounded-full mr-3"></div>
-                      Thông tin tập luyện
-                    </h3>
-                    <div className="space-y-6">
-                      <ExerciseFrequencySlider
-                        value={
-                          typeof formData.EXERCISE_FREQUENCY === "string"
-                            ? 2
-                            : formData.EXERCISE_FREQUENCY || 2
-                        }
-                        onChange={(value) => {
-                          // Convert number to string label for backend
-                          const labels = [
-                            "Rất ít/không",
-                            "1-3 lần/tuần",
-                            "4-5 lần/tuần",
-                            "Hằng ngày",
-                          ];
-                          setFormData({
-                            ...formData,
-                            EXERCISE_FREQUENCY: labels[value - 1] || labels[1],
-                          });
-                        }}
-                      />
+                  <ExerciseFrequencySlider
+                    value={
+                      typeof formData.EXERCISE_FREQUENCY === "string"
+                        ? 2
+                        : formData.EXERCISE_FREQUENCY || 2
+                    }
+                    onChange={(value) => {
+                      // Convert number to string label for backend
+                      const labels = [
+                        "Rất ít/không",
+                        "1-3 lần/tuần",
+                        "4-5 lần/tuần",
+                        "Hằng ngày",
+                      ]
+                      setFormData({
+                        ...formData,
+                        EXERCISE_FREQUENCY: labels[value - 1] || labels[1],
+                      })
+                    }}
+                  />
 
-                      <div className="pt-4 border-t border-gray-200">
-                        <ExerciseTimeInputs
-                          workdayTime={formData.DATE_WORKDAY || 0}
-                          weekendTime={formData.DATE_OFF || 0}
-                          onWorkdayChange={(value) =>
-                            setFormData({ ...formData, DATE_WORKDAY: value })
-                          }
-                          onWeekendChange={(value) =>
-                            setFormData({ ...formData, DATE_OFF: value })
-                          }
-                        />
-                      </div>
-                    </div>
-                  </div>
+                  <ExerciseTimeInputs
+                    workdayTime={formData.DATE_WORKDAY || 0}
+                    weekendTime={formData.DATE_OFF || 0}
+                    onWorkdayChange={(value) =>
+                      setFormData({ ...formData, DATE_WORKDAY: value })
+                    }
+                    onWeekendChange={(value) =>
+                      setFormData({ ...formData, DATE_OFF: value })
+                    }
+                  />
                 </>
               )}
             </div>
@@ -563,14 +485,14 @@ const HealthFormPanel: React.FC<HealthFormPanelProps> = ({
 
           {/* Action Buttons - chỉ hiện khi đang edit */}
           {isEditMode && (
-            <div className="flex gap-4 mt-8 pt-6 border-t-2 border-gray-200">
+            <div className="mt-6 flex gap-3">
               <Button
                 variant="outline"
                 onClick={() => {
-                  onEditModeChange(false);
+                  onEditModeChange(false)
                   // Reload data từ healthDocument gốc
                   if (healthDocument) {
-                    setFormData({ ...formData, ...healthDocument });
+                    setFormData({ ...formData, ...healthDocument })
                   }
                 }}
                 className="flex-1 border-2 border-red-400 text-red-600 hover:bg-red-50 hover:border-red-500 font-medium py-6 rounded-xl transition-all duration-200 shadow-md hover:shadow-lg"
@@ -580,7 +502,7 @@ const HealthFormPanel: React.FC<HealthFormPanelProps> = ({
               </Button>
               <Button
                 onClick={handleSubmit}
-                className="flex-1 bg-gradient-to-r from-teal-500 to-emerald-500 hover:from-teal-600 hover:to-emerald-600 text-white font-medium py-6 rounded-xl transition-all duration-200 shadow-md hover:shadow-lg"
+                className="flex-1 bg-[hsl(158,64%,52%)] text-white hover:bg-[hsl(158,64%,45%)]"
               >
                 <Save className="w-5 h-5 mr-2" />
                 Lưu thay đổi
@@ -590,7 +512,7 @@ const HealthFormPanel: React.FC<HealthFormPanelProps> = ({
         </CardContent>
       </Card>
     </div>
-  );
-};
+  )
+}
 
-export default HealthFormPanel;
+export default HealthFormPanel

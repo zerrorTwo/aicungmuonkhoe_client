@@ -62,6 +62,7 @@ const baseQueryWithReauth: BaseQueryFn<
       console.log("Token refresh failed, redirecting to login...");
       // Refresh failed, remove stored token and redirect to login
       localStorage.removeItem("access_token");
+      // Keep conversation_id for context preservation
       // You might want to dispatch a logout action here
       window.location.href = "/login";
     }
