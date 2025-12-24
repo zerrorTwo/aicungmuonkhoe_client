@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
 import { Label } from "../ui/label";
+import { Select, SelectItem } from "../ui/select";
 import DatePicker from "../ui/date-picker";
 import { User, Calendar, Users } from "lucide-react";
 import ModalOverlay from "./ModalOverlay";
@@ -27,18 +28,14 @@ const SelfManagedAccountModal: React.FC<SelfManagedAccountModalProps> = ({
   const [formData, setFormData] = useState({
     FULL_NAME: "",
     DOB: "",
-    GENDER_ID: undefined as number | undefined,
+    GENDER: "",
   });
 
   const { data: gendersResponse, isLoading: gendersLoading, isError: gendersIsError } = useGetAllGendersQuery();
-  const rawGenders = gendersResponse?.data || [];
-  const genders = rawGenders.map((g: any) => ({
-    id: Number(g.ID ?? g.id ?? 0),
-    name: String(g.NAME ?? g.name ?? g.NAME ?? ""),
-  }));
+  const genders = gendersResponse?.data || [];
 
   const handleSubmit = () => {
-    if (!formData.FULL_NAME || !formData.DOB || !formData.GENDER_ID) {
+    if (!formData.FULL_NAME || !formData.DOB || !formData.GENDER) {
       showToast.error("Vui lòng điền họ tên, ngày sinh và chọn giới tính!");
       return;
     }
@@ -46,11 +43,19 @@ const SelfManagedAccountModal: React.FC<SelfManagedAccountModalProps> = ({
       showToast.error("Ngày sinh không được lớn hơn ngày hiện tại!");
       return;
     }
+
+    // Convert gender name to ID
+    const selectedGender = genders.find((g) =>
+      g.NAME?.trim().toUpperCase() === formData.GENDER.trim().toUpperCase()
+    );
+    const genderId = selectedGender?.ID || 7; // Default to 7 (NAM) if not found
+
     onSubmit({
-      ...formData,
-      GENDER_ID: formData.GENDER_ID as number,
+      FULL_NAME: formData.FULL_NAME,
+      DOB: formData.DOB,
+      GENDER_ID: genderId,
     });
-    setFormData({ FULL_NAME: "", DOB: "", GENDER_ID: undefined });
+    setFormData({ FULL_NAME: "", DOB: "", GENDER: "" });
     onClose();
   };
 
@@ -58,15 +63,19 @@ const SelfManagedAccountModal: React.FC<SelfManagedAccountModalProps> = ({
     setFormData({ ...formData, DOB: date });
   };
 
+  const handleGenderChange = (genderName: string) => {
+    setFormData({ ...formData, GENDER: genderName });
+  };
+
   return (
     <ModalOverlay isOpen={isOpen} onClose={onClose}>
-      <div className="p-6 max-h-[600px] overflow-y-auto">
+      <div className="p-6 max-h-[600px] overflow-x-hidden" style={{ overflow: 'visible' }}>
         <h2 className="text-xl font-bold text-[hsl(158,64%,52%)] mb-6">
           Thêm hồ sơ sức khỏe
         </h2>
 
         {/* Form Fields */}
-        <div className="space-y-4">
+        <div className="space-y-4" style={{ overflow: 'visible' }}>
           <div>
             <Label className="text-sm font-medium flex items-center">
               <User className="w-4 h-4 mr-1" />
@@ -99,32 +108,43 @@ const SelfManagedAccountModal: React.FC<SelfManagedAccountModalProps> = ({
             </div>
           </div>
 
-          <div>
+          <div style={{ position: 'relative', overflow: 'visible', zIndex: 1 }}>
             <Label className="text-sm font-medium flex items-center">
               <Users className="w-4 h-4 mr-1" />
               Giới tính <span className="text-red-500 ml-1">*</span>
             </Label>
-            <select
-              className="w-full mt-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[hsl(158,64%,52%)]"
-              value={formData.GENDER_ID ?? ''}
-              onChange={(e) => {
-                const val = e.target.value;
-                setFormData({ ...formData, GENDER_ID: val ? Number(val) : undefined });
-              }}
-            >
-              <option value="" disabled>Chọn giới tính</option>
-              {gendersLoading && <option>Đang tải...</option>}
-              {gendersIsError && <option>Không tải được giới tính</option>}
-              {!gendersLoading && !gendersIsError && genders.length === 0 && (
-                <>
-                  <option value={1}>Nam</option>
-                  <option value={2}>Nữ</option>
-                </>
-              )}
-              {!gendersLoading && genders.map((g: any) => (
-                <option key={g.id} value={g.id}>{g.name}</option>
-              ))}
-            </select>
+            <div className="relative" id="gender-select-container" style={{ overflow: 'visible' }}>
+              <Select
+                className="w-full [&_.ant-select-selector]:h-10 [&_.ant-select-selector]:rounded-md [&_.ant-select-selector]:border-gray-300 [&_.ant-select-selector]:transition"
+                popupClassName="rounded-md border border-gray-200 bg-white z-[10000]"
+                size="middle"
+                value={formData.GENDER || undefined}
+                onValueChange={handleGenderChange}
+                placeholder="Chọn giới tính"
+                getPopupContainer={() => document.getElementById('gender-select-container') || document.body}
+              >
+                {gendersLoading && (
+                  <SelectItem value="loading" disabled>
+                    Đang tải...
+                  </SelectItem>
+                )}
+                {gendersIsError && (
+                  <SelectItem value="error" disabled>
+                    Không tải được giới tính
+                  </SelectItem>
+                )}
+                {!gendersLoading && !gendersIsError && genders.length === 0 && (
+                  <>
+                    <SelectItem value="NAM">Nam</SelectItem>
+                    <SelectItem value="NỮ">Nữ</SelectItem>
+                    <SelectItem value="KHÁC">Khác</SelectItem>
+                  </>
+                )}
+                {!gendersLoading && genders.map((g: any) => (
+                  <SelectItem key={g.ID} value={g.NAME}>{g.NAME}</SelectItem>
+                ))}
+              </Select>
+            </div>
           </div>
         </div>
 

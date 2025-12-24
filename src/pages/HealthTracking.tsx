@@ -17,6 +17,7 @@ import {
 import { useGetAllHealthDocumentsOfUserQuery } from "@/store/api/healthDocumentApi"
 import { Calendar, Clock, Download, Info, Pin, Share2 } from "lucide-react"
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
+import { useParams, useNavigate } from "react-router-dom"
 // import { ConclusionModal } from '@/components/modals';
 import {
   BMIUpdateModal,
@@ -45,12 +46,12 @@ import HistoryList from "@/components/health/HistoryList"
 // Constants following PMS structure
 const HealthIndex = {
   BMI: "BMI",
-  BloodPressure: "BloodPressure",
-  BloodSugar: "BloodSugar",
-  AcidUric: "AcidUric",
-  LiverFunction: "LiverFunction",
-  KidneyFunction: "KidneyFunction",
-  BloodLipid: "BloodLipid",
+  BloodPressure: "BLOOD_PRESSURE",
+  BloodSugar: "BLOOD_SUGAR",
+  AcidUric: "ACID_URIC",
+  LiverFunction: "LIVER_FUNCTION",
+  KidneyFunction: "KIDNEY_FUNCTION",
+  BloodLipid: "BLOOD_LIPID",
 } as const
 
 type HealthIndexType = (typeof HealthIndex)[keyof typeof HealthIndex]
@@ -103,6 +104,10 @@ interface Account {
 }
 
 export default function HealthTracking() {
+  // URL parameters and navigation
+  const { id } = useParams<{ id: string }>()
+  const navigate = useNavigate()
+
   // States following PMS structure
   const [selectedAccount, setSelectedAccount] = useState<string>("")
   const [selectedIndex, setSelectedIndex] = useState<HealthIndexType>(
@@ -156,17 +161,41 @@ export default function HealthTracking() {
     }))
   }, [accountsData])
 
-  // Set default selectedAccount to 'self' (bản thân) if exists, else first account
+  // Initialize selectedAccount from URL parameter or default to 'self'
   useEffect(() => {
+    console.log('=== URL INIT EFFECT ===')
+    console.log('accounts:', accounts?.length)
+    console.log('URL id:', id)
+    console.log('current selectedAccount:', selectedAccount)
+
     if (!accounts || accounts.length === 0) return
-    // Tìm bản thân
-    const selfAccount = accounts.find((acc) => acc.accountType === "self")
-    if (selfAccount) {
-      setSelectedAccount(selfAccount.id)
-    } else {
-      setSelectedAccount(accounts[0].id)
+
+    // If URL has ID parameter, use it
+    if (id) {
+      const accountExists = accounts.find((acc) => acc.id === id)
+      console.log('Account exists for URL id?', !!accountExists)
+      if (accountExists) {
+        console.log('Setting selectedAccount from URL:', id)
+        // Only update if different to trigger refetch
+        if (selectedAccount !== id) {
+          setSelectedAccount(id)
+        }
+        return
+      }
     }
-  }, [accounts])
+
+    // Otherwise, default to 'self' or first account
+    const selfAccount = accounts.find((acc) => acc.accountType === "self")
+    const defaultId = selfAccount ? selfAccount.id : accounts[0].id
+    console.log('Setting default selectedAccount:', defaultId)
+
+    // Only update if different
+    if (selectedAccount !== defaultId) {
+      setSelectedAccount(defaultId)
+      // Update URL to reflect the default selection
+      navigate(`/health-tracking/${defaultId}`, { replace: true })
+    }
+  }, [accounts, id, navigate, selectedAccount])
 
   // Get current account data
   const currentAccount = useMemo(() => {
@@ -295,6 +324,26 @@ export default function HealthTracking() {
   const [pageSize] = useState(12)
   const [selectedHistoryItem, setSelectedHistoryItem] = useState<any>(null)
 
+  // Compute current active tab based on selected index
+  const currentActiveTab = useMemo(() => {
+    switch (selectedIndex) {
+      case HealthIndex.BloodPressure:
+        return bpVariant
+      case HealthIndex.BloodSugar:
+        return sugarVariant
+      case HealthIndex.BloodLipid:
+        return lipidVariant
+      case HealthIndex.LiverFunction:
+        return liverVariant
+      case HealthIndex.KidneyFunction:
+        return kidneyVariant
+      case HealthIndex.BMI:
+        return activeTab
+      default:
+        return ""
+    }
+  }, [selectedIndex, bpVariant, sugarVariant, lipidVariant, liverVariant, kidneyVariant, activeTab])
+
   // Fetch health data based on selected index
   const {
     conclusions, // For chart
@@ -309,11 +358,19 @@ export default function HealthTracking() {
     healthDocumentId: selectedAccount,
     model: selectedIndex,
     ageType: ageRange,
-    activeTab,
+    activeTab: currentActiveTab,
     page: currentPage,
     pageSize,
     enabled: !!selectedAccount && !!selectedIndex,
   })
+
+  // Refetch data when account changes (including URL changes)
+  useEffect(() => {
+    if (selectedAccount && selectedIndex) {
+      console.log('Account changed, refetching data for ID:', selectedAccount)
+      refetch()
+    }
+  }, [selectedAccount, selectedIndex, refetch])
 
   // Render chart component
   const renderChart = useCallback(() => {
@@ -416,6 +473,15 @@ export default function HealthTracking() {
     refetch()
   }
 
+  // Handle account selection change - update both state and URL
+  const handleAccountChange = (accountId: string) => {
+    console.log('=== HANDLE ACCOUNT CHANGE ===')
+    console.log('New account ID:', accountId)
+    console.log('Previous selectedAccount:', selectedAccount)
+    setSelectedAccount(accountId)
+    navigate(`/health-tracking/${accountId}`)
+  }
+
   // const submitConclusion = async (payload: HealthConclusion) => {
   //     // TODO: Replace with real API calls depending on selectedIndex (model)
   //     console.log('Create conclusion for', selectedIndex, payload);
@@ -443,7 +509,7 @@ export default function HealthTracking() {
               {/* Account Selection */}
               <Select
                 value={selectedAccount}
-                onValueChange={setSelectedAccount}
+                onValueChange={handleAccountChange}
                 className="w-48"
                 loading={accountsLoading}
               >
@@ -738,20 +804,28 @@ export default function HealthTracking() {
                   console.log("BP update", payload)
                   handleUpdateSuccess()
                 }}
+                healthDocumentId={Number(selectedAccount)}
+                ageType={ageRange}
+                activeTab={bpVariant}
               />
             )}
             {selectedIndex === HealthIndex.BloodSugar && (
               <BloodSugarUpdateModal
+                ageType={ageRange} // Pass ageType prop
+                healthDocumentId={Number(selectedAccount)}
                 isOpen={isUpdateOpen}
                 onClose={() => setUpdateOpen(false)}
                 onSubmit={async (payload) => {
                   console.log("Sugar update", payload)
                   handleUpdateSuccess()
                 }}
+                activeTab={sugarVariant}
               />
             )}
             {selectedIndex === HealthIndex.AcidUric && (
               <UricUpdateModal
+                ageType={ageRange} // Pass ageType prop
+                healthDocumentId={Number(selectedAccount)}
                 isOpen={isUpdateOpen}
                 onClose={() => setUpdateOpen(false)}
                 onSubmit={async (payload) => {
@@ -762,32 +836,41 @@ export default function HealthTracking() {
             )}
             {selectedIndex === HealthIndex.LiverFunction && (
               <LiverUpdateModal
+                ageType={ageRange} // Pass ageType prop
+                healthDocumentId={Number(selectedAccount)}
                 isOpen={isUpdateOpen}
                 onClose={() => setUpdateOpen(false)}
                 onSubmit={async (payload) => {
                   console.log("Liver update", payload)
                   handleUpdateSuccess()
                 }}
+                activeTab={liverVariant}
               />
             )}
             {selectedIndex === HealthIndex.KidneyFunction && (
               <KidneyUpdateModal
+                ageType={ageRange} // Pass ageType prop
+                healthDocumentId={Number(selectedAccount)}
                 isOpen={isUpdateOpen}
                 onClose={() => setUpdateOpen(false)}
                 onSubmit={async (payload) => {
                   console.log("Kidney update", payload)
                   handleUpdateSuccess()
                 }}
+                activeTab={kidneyVariant}
               />
             )}
             {selectedIndex === HealthIndex.BloodLipid && (
               <LipidUpdateModal
+                ageType={ageRange} // Pass ageType prop
+                healthDocumentId={Number(selectedAccount)}
                 isOpen={isUpdateOpen}
                 onClose={() => setUpdateOpen(false)}
                 onSubmit={async (payload) => {
                   console.log("Lipid update", payload)
                   handleUpdateSuccess()
                 }}
+                activeTab={lipidVariant}
               />
             )}
 

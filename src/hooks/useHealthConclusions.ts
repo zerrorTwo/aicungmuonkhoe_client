@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react"
+import { useEffect, useMemo, useState, useCallback } from "react"
 import {
   useLazyGetConclusionsRangeQuery,
   useGetConclusionsPaginationQuery,
@@ -168,6 +168,13 @@ export function useHealthConclusions({
   const isLoading = isPaginationLoading || isRangeLoading
   const isFetching = isPaginationFetching || isRangeFetching
 
+  // Comprehensive refetch function that refetches pagination (which triggers range API)
+  // Memoized to prevent infinite re-renders
+  const refetch = useCallback(async () => {
+    await refetchPagination()
+    // Range API will be automatically triggered by the useEffect when pagination data changes
+  }, [refetchPagination])
+
   return {
     // For history list (paginated)
     paginatedConclusions,
@@ -182,7 +189,7 @@ export function useHealthConclusions({
     isPaginationLoading,
     isChartLoading: isRangeLoading || isRangeFetching,
 
-    // Refetch function
-    refetch: refetchPagination,
+    // Refetch function - refetches both pagination and range data
+    refetch,
   }
 }

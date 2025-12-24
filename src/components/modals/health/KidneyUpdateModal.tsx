@@ -4,17 +4,28 @@ import { Button } from "../../ui/button";
 import { Input } from "../../ui/input";
 import { Label } from "../../ui/label";
 import DatePicker from "../../ui/date-picker";
+import { useCreateConclusionClientMutation } from "@/store/api/conclusionApi";
 
-export interface KidneyUpdatePayload { date: string; value: number; }
-
+export interface KidneyUpdatePayload {
+    DATE: string;
+    VALUE: number;
+    HEALTH_DOCUMENT_ID: number;
+    MODEL: string; // URE or CREA
+    AGE_TYPE: string;
+    TIME: string;
+}
 interface KidneyUpdateModalProps {
     isOpen: boolean;
     onClose: () => void;
-    onSubmit: (data: KidneyUpdatePayload) => Promise<void> | void;
+    onSubmit?: (data: KidneyUpdatePayload) => Promise<void> | void;
     initialData?: Partial<KidneyUpdatePayload> | null;
+    healthDocumentId: number;
+    ageType: string;
+    activeTab: string;
 }
 
-const KidneyUpdateModal: React.FC<KidneyUpdateModalProps> = ({ isOpen, onClose, onSubmit, initialData }) => {
+const KidneyUpdateModal: React.FC<KidneyUpdateModalProps> = ({ isOpen, onClose, onSubmit, initialData, healthDocumentId, ageType, activeTab }) => {
+    const [createConclusionClient] = useCreateConclusionClientMutation();
     const [date, setDate] = useState<string>(new Date().toISOString().slice(0, 10));
     const [value, setValue] = useState<string>("");
     const [submitting, setSubmitting] = useState(false);
@@ -27,8 +38,8 @@ const KidneyUpdateModal: React.FC<KidneyUpdateModalProps> = ({ isOpen, onClose, 
 
     useEffect(() => {
         if (initialData) {
-            setDate(initialData.date ? new Date(initialData.date).toISOString().slice(0, 10) : new Date().toISOString().slice(0, 10));
-            setValue(initialData.value !== undefined ? String(initialData.value) : "");
+            setDate(initialData.DATE ? new Date(initialData.DATE).toISOString().slice(0, 10) : new Date().toISOString().slice(0, 10));
+            setValue(initialData.VALUE !== undefined ? String(initialData.VALUE) : "");
         } else if (isOpen) {
             setDate(new Date().toISOString().slice(0, 10));
             setValue("");
@@ -49,7 +60,19 @@ const KidneyUpdateModal: React.FC<KidneyUpdateModalProps> = ({ isOpen, onClose, 
         if (!validate()) return;
         try {
             setSubmitting(true);
-            await onSubmit({ date, value: parseFloat(value) });
+
+            const payload: KidneyUpdatePayload = {
+                DATE: date,
+                VALUE: parseFloat(parseFloat(value).toFixed(2)),
+                HEALTH_DOCUMENT_ID: healthDocumentId,
+                MODEL: activeTab,
+                AGE_TYPE: ageType,
+                TIME: new Date().toISOString().slice(11, 19),
+            };
+
+            await createConclusionClient(payload).unwrap();
+            await Promise.resolve(onSubmit?.(payload));
+
             onClose();
         } finally {
             setSubmitting(false);
