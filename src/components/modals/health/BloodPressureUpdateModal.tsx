@@ -4,21 +4,31 @@ import { Button } from "../../ui/button";
 import { Input } from "../../ui/input";
 import { Label } from "../../ui/label";
 import DatePicker from "../../ui/date-picker";
+import { useCreateConclusionClientMutation } from "@/store/api/conclusionApi";
 
 export interface BloodPressureUpdatePayload {
-    date: string; // yyyy-mm-dd
-    valueSys: number; // mmHg
-    valueDia: number; // mmHg
+    DATE: string; // yyyy-mm-dd
+    VALUE: number; // Primary value (SYS)
+    VALUE_SYS: number; // mmHg
+    VALUE_DIA: number; // mmHg
+    HEALTH_DOCUMENT_ID: number;
+    MODEL: string; // HOSPITAL or HOME
+    AGE_TYPE: string;
+    TIME: string; // HH:mm:ss
 }
 
 interface BloodPressureUpdateModalProps {
     isOpen: boolean;
     onClose: () => void;
-    onSubmit: (data: BloodPressureUpdatePayload) => Promise<void> | void;
+    onSubmit?: (data: BloodPressureUpdatePayload) => Promise<void> | void;
     initialData?: Partial<BloodPressureUpdatePayload> | null;
+    healthDocumentId: number;
+    ageType: string;
+    activeTab: string; // HOSPITAL or HOME
 }
 
-const BloodPressureUpdateModal: React.FC<BloodPressureUpdateModalProps> = ({ isOpen, onClose, onSubmit, initialData }) => {
+const BloodPressureUpdateModal: React.FC<BloodPressureUpdateModalProps> = ({ isOpen, onClose, onSubmit, initialData, healthDocumentId, ageType, activeTab }) => {
+    const [createConclusionClient] = useCreateConclusionClientMutation();
     const [date, setDate] = useState<string>(new Date().toISOString().slice(0, 10));
     const [sys, setSys] = useState<string>("");
     const [dia, setDia] = useState<string>("");
@@ -30,9 +40,9 @@ const BloodPressureUpdateModal: React.FC<BloodPressureUpdateModalProps> = ({ isO
 
     useEffect(() => {
         if (initialData) {
-            setDate(initialData.date ? new Date(initialData.date).toISOString().slice(0, 10) : new Date().toISOString().slice(0, 10));
-            setSys(initialData.valueSys !== undefined ? String(initialData.valueSys) : "");
-            setDia(initialData.valueDia !== undefined ? String(initialData.valueDia) : "");
+            setDate(initialData.DATE ? new Date(initialData.DATE).toISOString().slice(0, 10) : new Date().toISOString().slice(0, 10));
+            setSys(initialData.VALUE_SYS !== undefined ? String(initialData.VALUE_SYS) : "");
+            setDia(initialData.VALUE_DIA !== undefined ? String(initialData.VALUE_DIA) : "");
         } else if (isOpen) {
             setDate(new Date().toISOString().slice(0, 10));
             setSys("");
@@ -57,7 +67,21 @@ const BloodPressureUpdateModal: React.FC<BloodPressureUpdateModalProps> = ({ isO
         if (!validate()) return;
         try {
             setSubmitting(true);
-            await onSubmit({ date, valueSys: parseFloat(sys), valueDia: parseFloat(dia) });
+
+            const payload: BloodPressureUpdatePayload = {
+                DATE: date,
+                VALUE: parseFloat(parseFloat(sys).toFixed(2)), // Use SYS as primary value
+                VALUE_SYS: parseFloat(parseFloat(sys).toFixed(2)),
+                VALUE_DIA: parseFloat(parseFloat(dia).toFixed(2)),
+                HEALTH_DOCUMENT_ID: healthDocumentId,
+                MODEL: activeTab, // HOSPITAL or HOME
+                AGE_TYPE: ageType,
+                TIME: new Date().toISOString().slice(11, 19),
+            };
+
+            await createConclusionClient(payload).unwrap();
+            await Promise.resolve(onSubmit?.(payload));
+
             onClose();
         } finally {
             setSubmitting(false);

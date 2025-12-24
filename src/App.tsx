@@ -23,36 +23,13 @@ function App() {
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Login />} />
             <Route path="/about" element={<About />} />
-            <Route
-              path="/profile"
-              element={
-                <AuthGuard>
-                  <Profile />
-                </AuthGuard>
-              }
-            />
-            <Route
-              path="/health-tracking"
-              element={
-                <AuthGuard>
-                  <HealthTracking />
-                </AuthGuard>
-              }
-            />
-            <Route
-              path="/health-consulting"
-              element={
-                <AuthGuard>
-                  <HealthConsultingPage />
-                </AuthGuard>
-              }
-            />
+            <Route path="/profile" element={<AuthGuard><Profile /></AuthGuard>} />
+            <Route path="/health-tracking" element={<AuthGuard><HealthTracking /></AuthGuard>} />
+            <Route path="/health-tracking/:id" element={<AuthGuard><HealthTracking /></AuthGuard>} />
+            <Route path="/health-consulting" element={<AuthGuard><HealthConsultingPage /></AuthGuard>} />
             {/* Add more routes as needed */}
           </Routes>
         </HealthDocumentGuard>
-
-        {/* Chat Popup - Available on all pages */}
-        <ChatPopup />
 
         {/* Toast Container for beautiful notifications */}
         <ToastContainer

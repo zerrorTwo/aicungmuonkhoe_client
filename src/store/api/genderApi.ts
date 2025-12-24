@@ -2,10 +2,15 @@
 import { baseApi } from "./baseApi"
 
 export interface Gender {
-  id: number
-  name: string
-  cd?: string
-  desc?: string
+  ID: number
+  NAME: string
+  CD?: string
+  DESC?: string
+  CREATED_DATE?: string
+  CREATED_BY?: string | null
+  MODIFIED_DATE?: string
+  MODIFIED_BY?: string | null
+  IS_DELETED?: number
 }
 
 export interface GendersListResponse {
