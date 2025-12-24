@@ -32,11 +32,14 @@ export interface UsersListResponse {
 }
 
 export interface UserProfileHealthDocument {
-    ID: number;
-    HEIGHT?: string;
-    WEIGHT?: string;
-    HEALTH_STATUS?: string;
-    EXERCISE_FREQUENCY?: string;
+  ID: number;
+  HEIGHT?: string;
+  WEIGHT?: string;
+  HEALTH_STATUS?: string;
+  EXERCISE_FREQUENCY?: string;
+  BLOOD_PRESSURE_SYSTOLIC?: string;
+  BLOOD_PRESSURE_DIASTOLIC?: string;
+  BLOOD_SUGAR?: string;
 }
 
 export interface UserProfileData {
@@ -80,23 +83,23 @@ export interface UpdateSecuritySettingRequest {
 
 // Forgot password request/response types
 export interface ForgotPasswordRequest {
-    EMAIL: string;
+  EMAIL: string;
 }
 
 export interface ForgotPasswordResponse {
-    message: string;
-    status: number;
+  message: string;
+  status: number;
 }
 
 export interface ResetPasswordRequest {
-    EMAIL: string;
-    OTP_CODE: string;
-    NEW_PASSWORD: string;
+  EMAIL: string;
+  OTP_CODE: string;
+  NEW_PASSWORD: string;
 }
 
 export interface ResetPasswordResponse {
-    message: string;
-    status: number;
+  message: string;
+  status: number;
 }
 
 // User API slice
@@ -112,104 +115,120 @@ export const userApi = baseApi.injectEndpoints({
       invalidatesTags: ["User"],
     }),
 
-        // Get user by ID
-        getUserById: builder.query<UserResponse, number>({
-            query: (id) => `/user/${id}`,
-            providesTags: (result, error, id) => [{ type: 'User', id }],
-        }),
+    // Get user by ID
+    getUserById: builder.query<UserResponse, number>({
+      query: (id) => `/user/${id}`,
+      providesTags: (result, error, id) => [{ type: "User", id }],
+    }),
 
-        // Update user by ID
-        updateUser: builder.mutation<UserResponse, { id: number; data: UpdateUserRequest }>({
-            query: ({ id, data }) => ({
-                url: `/user/${id}`,
-                method: 'PUT',
-                body: data,
-            }),
-            invalidatesTags: (result, error, { id }) => [{ type: 'User', id }],
-        }),
+    // Update user by ID
+    updateUser: builder.mutation<
+      UserResponse,
+      { id: number; data: UpdateUserRequest }
+    >({
+      query: ({ id, data }) => ({
+        url: `/user/${id}`,
+        method: "PUT",
+        body: data,
+      }),
+      invalidatesTags: (result, error, { id }) => [{ type: "User", id }],
+    }),
 
-        // Delete user by ID
-        deleteUser: builder.mutation<{ success: boolean; message: string }, number>({
-            query: (id) => ({
-                url: `/user/${id}`,
-                method: 'DELETE',
-            }),
-            invalidatesTags: (result, error, id) => [{ type: 'User', id }],
+    // Delete user by ID
+    deleteUser: builder.mutation<{ success: boolean; message: string }, number>(
+      {
+        query: (id) => ({
+          url: `/user/${id}`,
+          method: "DELETE",
         }),
+        invalidatesTags: (result, error, id) => [{ type: "User", id }],
+      }
+    ),
 
-        // Get all users (admin only)
-        getAllUsers: builder.query<UsersListResponse, void>({
-            query: () => '/user',
-            providesTags: ['User'],
-        }),
+    // Get all users (admin only)
+    getAllUsers: builder.query<UsersListResponse, void>({
+      query: () => "/user",
+      providesTags: ["User"],
+    }),
 
-        // Get user profile (including health document)
-        getUserProfile: builder.query<UserProfileResponse, void>({
-            query: () => '/user/profile/me',
-            providesTags: ['User'],
-        }),
+    // Get user profile (including health document)
+    getUserProfile: builder.query<UserProfileResponse, void>({
+      query: () => "/user/profile/me",
+      providesTags: ["User"],
+    }),
 
-        // Update user profile
-        updateUserProfile: builder.mutation<UserProfileResponse, UpdateUserProfileRequest>({
-            query: (updateData) => ({
-                url: '/user/profile/me',
-                method: 'PUT',
-                body: updateData,
-            }),
-            invalidatesTags: ['User'],
-        }),
+    // Update user profile
+    updateUserProfile: builder.mutation<
+      UserProfileResponse,
+      UpdateUserProfileRequest
+    >({
+      query: (updateData) => ({
+        url: "/user/profile/me",
+        method: "PUT",
+        body: updateData,
+      }),
+      invalidatesTags: ["User"],
+    }),
 
-        // Upload user avatar (separate endpoint)
-        uploadUserAvatar: builder.mutation<UserProfileResponse, FormData>({
-            query: (formData) => ({
-                url: '/user/profile/me/avatar',
-                method: 'PUT',
-                body: formData,
-            }),
-            invalidatesTags: ['User'],
-        }),
+    // Upload user avatar (separate endpoint)
+    uploadUserAvatar: builder.mutation<UserProfileResponse, FormData>({
+      query: (formData) => ({
+        url: "/user/profile/me/avatar",
+        method: "PUT",
+        body: formData,
+      }),
+      invalidatesTags: ["User"],
+    }),
 
-        updateSecuritySetting: builder.mutation<UserResponse, UpdateSecuritySettingRequest>({
-            query: (data) => ({
-                url: '/user/security/me',
-                method: 'PUT',
-                body: data,
-            }),
-            invalidatesTags: ['User'],
-        }),
+    updateSecuritySetting: builder.mutation<
+      UserResponse,
+      UpdateSecuritySettingRequest
+    >({
+      query: (data) => ({
+        url: "/user/security/me",
+        method: "PUT",
+        body: data,
+      }),
+      invalidatesTags: ["User"],
+    }),
 
-        // Forgot password - Send OTP to email
-        forgotPassword: builder.mutation<ForgotPasswordResponse, ForgotPasswordRequest>({
-            query: (data) => ({
-                url: '/user/forgot-password',
-                method: 'POST',
-                body: data,
-            }),
-        }),
+    // Forgot password - Send OTP to email
+    forgotPassword: builder.mutation<
+      ForgotPasswordResponse,
+      ForgotPasswordRequest
+    >({
+      query: (data) => ({
+        url: "/user/forgot-password",
+        method: "POST",
+        body: data,
+      }),
+    }),
 
-        // Reset password with OTP
-        resetPassword: builder.mutation<ResetPasswordResponse, ResetPasswordRequest>({
-            query: (data) => ({
-                url: '/user/reset-password',
-                method: 'POST',
-                body: data,
-            }),
-        }),
-    })
+    // Reset password with OTP
+    resetPassword: builder.mutation<
+      ResetPasswordResponse,
+      ResetPasswordRequest
+    >({
+      query: (data) => ({
+        url: "/user/reset-password",
+        method: "POST",
+        body: data,
+      }),
+    }),
+  }),
 });
 
 // Export hooks for components
 export const {
-    useCreateUserMutation,
-    useGetUserByIdQuery, 
-    useUpdateUserMutation,
-    useDeleteUserMutation,
-    useGetAllUsersQuery,
-    useGetUserProfileQuery,
-    useUpdateUserProfileMutation,
-    useUploadUserAvatarMutation,
-    useUpdateSecuritySettingMutation,
-    useForgotPasswordMutation,
-    useResetPasswordMutation,
+  useCreateUserMutation,
+  useGetUserByIdQuery,
+  useUpdateUserMutation,
+  useDeleteUserMutation,
+  useGetAllUsersQuery,
+  useGetUserProfileQuery,
+  useUpdateUserProfileMutation,
+  useUploadUserAvatarMutation,
+  useUpdateSecuritySettingMutation,
+  useForgotPasswordMutation,
+  useResetPasswordMutation,
 } = userApi;
-
