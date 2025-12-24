@@ -237,24 +237,34 @@ const HealthFormPanel: React.FC<HealthFormPanelProps> = ({
 
   return (
     <div className="w-full">
-      <Card className="shadow-weather">
-        <CardHeader className="bg-gradient-to-r from-[hsl(158,64%,52%)] to-[hsl(158,64%,42%)] text-white">
+      <Card className="border-none shadow-2xl rounded-2xl overflow-hidden">
+        <CardHeader className="bg-gradient-to-r from-teal-500 via-teal-600 to-emerald-600 text-white py-6">
           <CardTitle className="flex items-center justify-between">
-            <span>Hồ sơ sức khỏe</span>
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center">
+                <FileText className="w-6 h-6 text-white" />
+              </div>
+              <div>
+                <h2 className="text-xl font-bold">Hồ sơ sức khỏe</h2>
+                <p className="text-xs text-teal-50 mt-0.5">
+                  Quản lý thông tin cá nhân
+                </p>
+              </div>
+            </div>
             {!isEditMode && (
               <Button
                 variant="outline"
-                className="bg-white text-[hsl(158,64%,52%)] hover:bg-gray-100"
+                className="bg-white text-teal-600 hover:bg-teal-50 hover:text-teal-700 border-none font-medium transition-all duration-200 shadow-md hover:shadow-lg"
                 onClick={() => onEditModeChange(true)}
               >
-                ✏️ Chỉnh sửa
+                <Edit2 className="w-4 h-4 mr-2" />
+                Chỉnh sửa
               </Button>
             )}
           </CardTitle>
         </CardHeader>
 
-        <CardContent className="p-6">
-          {/* Bỏ overflow-y-auto và max-h để scroll theo trang */}
+        <CardContent className="p-8 bg-gradient-to-b from-gray-50 to-white">
           {/* Wrap toàn bộ form - disable interaction khi không edit */}
           <div className={!isEditMode ? "pointer-events-none opacity-70" : ""}>
             {/* Avatar Section */}
@@ -268,7 +278,7 @@ const HealthFormPanel: React.FC<HealthFormPanelProps> = ({
                       className="h-full w-full object-cover"
                     />
                   ) : (
-                    "👤"
+                    <User className="w-16 h-16 text-teal-600" />
                   )}
                 </div>
                 <button className="absolute right-0 bottom-0 flex h-8 w-8 items-center justify-center rounded-full bg-[hsl(158,64%,52%)] text-white hover:bg-[hsl(158,64%,45%)]">
@@ -338,9 +348,9 @@ const HealthFormPanel: React.FC<HealthFormPanelProps> = ({
                         </p>
                       )}
                     </div>
-                  </div>
+                  )}
                 </div>
-              )}
+              </div>
 
               {/* Warning cho tuổi 12-19 - GIỮ LẠI (hiện khi không thay đổi) */}
               {!ageWarning && age >= 12 && age < 19 && (
@@ -386,9 +396,11 @@ const HealthFormPanel: React.FC<HealthFormPanelProps> = ({
               </div>
 
               {/* Physical Measures */}
-              <div
-                className={!isEditMode ? "pointer-events-none opacity-60" : ""}
-              >
+              <div className="bg-white rounded-xl p-6 shadow-md border border-gray-100">
+                <h3 className="text-sm font-semibold text-gray-700 uppercase tracking-wide mb-4 flex items-center">
+                  <div className="w-1 h-5 bg-teal-500 rounded-full mr-3"></div>
+                  Chỉ số cơ thể
+                </h3>
                 <PhysicalMeasuresSection
                   height={formData.HEIGHT || ""}
                   weight={formData.WEIGHT || ""}
@@ -403,13 +415,19 @@ const HealthFormPanel: React.FC<HealthFormPanelProps> = ({
               </div>
 
               {/* Activity Level - disabled cho < 5 tuổi hoặc không edit */}
-              <ActivityLevelSlider
-                value={formData.EXERCISE_INTENSITY || 2}
-                onChange={(value) =>
-                  setFormData({ ...formData, EXERCISE_INTENSITY: value })
-                }
-                disabled={isUnderFive || !isEditMode}
-              />
+              <div className="bg-white rounded-xl p-6 shadow-md border border-gray-100">
+                <h3 className="text-sm font-semibold text-gray-700 uppercase tracking-wide mb-4 flex items-center">
+                  <div className="w-1 h-5 bg-teal-500 rounded-full mr-3"></div>
+                  Mức độ vận động
+                </h3>
+                <ActivityLevelSlider
+                  value={formData.EXERCISE_INTENSITY || 2}
+                  onChange={(value) =>
+                    setFormData({ ...formData, EXERCISE_INTENSITY: value })
+                  }
+                  disabled={isUnderFive || !isEditMode}
+                />
+              </div>
 
               {/* Các fields chỉ hiện với age >= 5 */}
               {!isUnderFive && age >= 5 && (
@@ -477,14 +495,16 @@ const HealthFormPanel: React.FC<HealthFormPanelProps> = ({
                     setFormData({ ...formData, ...healthDocument })
                   }
                 }}
-                className="flex-1 border-red-500 text-red-500 hover:bg-red-50"
+                className="flex-1 border-2 border-red-400 text-red-600 hover:bg-red-50 hover:border-red-500 font-medium py-6 rounded-xl transition-all duration-200 shadow-md hover:shadow-lg"
               >
-                Hủy
+                <X className="w-5 h-5 mr-2" />
+                Hủy bỏ
               </Button>
               <Button
                 onClick={handleSubmit}
                 className="flex-1 bg-[hsl(158,64%,52%)] text-white hover:bg-[hsl(158,64%,45%)]"
               >
+                <Save className="w-5 h-5 mr-2" />
                 Lưu thay đổi
               </Button>
             </div>

@@ -1,5 +1,6 @@
 import React from "react";
 import { Label } from "@/components/ui/label";
+import { Activity } from "lucide-react";
 
 interface ActivityLevelSliderProps {
   value: number; // 1 = Nhẹ, 2 = Trung Bình, 3 = Nặng
@@ -16,15 +17,16 @@ const ActivityLevelSlider: React.FC<ActivityLevelSliderProps> = ({
 
   return (
     <div>
-      <Label className="text-sm font-medium flex items-center">
-        🏃 Hoạt động thể lực{" "}
+      <Label className="text-sm font-medium flex items-center text-gray-700 mb-3">
+        <Activity className="w-4 h-4 mr-2 text-teal-600" />
+        Hoạt động thể lực
         {disabled && (
-          <span className="ml-2 text-xs text-gray-400">
-            (Mặc định: Trung Bình)
+          <span className="ml-2 text-xs text-gray-500 font-normal bg-gray-100 px-2 py-1 rounded-full">
+            Mặc định: Trung Bình
           </span>
         )}
       </Label>
-      <div className="mt-2">
+      <div className="relative">
         <input
           type="range"
           min="1"
@@ -33,27 +35,33 @@ const ActivityLevelSlider: React.FC<ActivityLevelSliderProps> = ({
           value={value}
           onChange={(e) => onChange(Number(e.target.value))}
           disabled={disabled}
-          className={`w-full h-2 rounded-lg appearance-none cursor-pointer ${
+          className={`w-full h-3 rounded-full appearance-none cursor-pointer transition-all ${
             disabled
-              ? "bg-gray-200 cursor-not-allowed"
-              : "bg-gradient-to-r from-green-200 via-teal-300 to-teal-500"
+              ? "bg-gray-200 cursor-not-allowed opacity-60"
+              : "bg-gradient-to-r from-green-300 via-teal-400 to-teal-600"
           }`}
           style={{
             WebkitAppearance: "none",
           }}
         />
-        <div className="flex justify-between mt-2 px-1">
+        <div className="flex justify-between mt-3 px-1">
           {labels.map((label, index) => (
-            <span
+            <div
               key={index}
-              className={`text-xs ${
+              className={`text-xs transition-all ${
                 value === index + 1
-                  ? "text-[hsl(158,64%,52%)] font-semibold"
+                  ? "text-teal-600 font-bold scale-110"
                   : "text-gray-500"
               }`}
             >
-              {label}
-            </span>
+              <div
+                className={`text-center px-2 py-1 rounded-lg ${
+                  value === index + 1 ? "bg-teal-50" : ""
+                }`}
+              >
+                {label}
+              </div>
+            </div>
           ))}
         </div>
       </div>

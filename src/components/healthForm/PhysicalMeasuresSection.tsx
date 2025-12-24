@@ -1,6 +1,7 @@
 import React from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Ruler, Weight } from "lucide-react";
 
 interface PhysicalMeasuresSectionProps {
   height: string;
@@ -20,37 +21,39 @@ const PhysicalMeasuresSection: React.FC<PhysicalMeasuresSectionProps> = ({
   return (
     <div className="grid grid-cols-2 gap-4">
       <div>
-        <Label className="text-sm font-medium flex items-center">
-          📏 Chiều cao
+        <Label className="text-sm font-medium flex items-center text-gray-700 mb-2">
+          <Ruler className="w-4 h-4 mr-2 text-teal-600" />
+          Chiều cao <span className="text-red-500 ml-1">*</span>
         </Label>
-        <div className="relative mt-1">
+        <div className="relative">
           <Input
             type="number"
-            placeholder="Chiều cao"
+            placeholder="Nhập chiều cao"
             value={height}
             onChange={(e) => onHeightChange(e.target.value)}
-            className="pr-10"
+            className="pr-12 border-gray-300 focus:border-teal-500 focus:ring-teal-500 rounded-lg"
             disabled={disabled}
           />
-          <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 text-sm">
+          <span className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 text-sm font-medium bg-gray-50 px-2 py-1 rounded">
             cm
           </span>
         </div>
       </div>
       <div>
-        <Label className="text-sm font-medium flex items-center">
-          ⚖️ Cân nặng
+        <Label className="text-sm font-medium flex items-center text-gray-700 mb-2">
+          <Weight className="w-4 h-4 mr-2 text-teal-600" />
+          Cân nặng <span className="text-red-500 ml-1">*</span>
         </Label>
-        <div className="relative mt-1">
+        <div className="relative">
           <Input
             type="number"
-            placeholder="Cân nặng"
+            placeholder="Nhập cân nặng"
             value={weight}
             onChange={(e) => onWeightChange(e.target.value)}
-            className="pr-10"
+            className="pr-12 border-gray-300 focus:border-teal-500 focus:ring-teal-500 rounded-lg"
             disabled={disabled}
           />
-          <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 text-sm">
+          <span className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 text-sm font-medium bg-gray-50 px-2 py-1 rounded">
             kg
           </span>
         </div>

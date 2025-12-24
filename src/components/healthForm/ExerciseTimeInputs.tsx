@@ -1,5 +1,6 @@
 import React from "react";
 import { Label } from "@/components/ui/label";
+import { Clock } from "lucide-react";
 
 interface ExerciseTimeInputsProps {
   workdayTime: number; // in minutes
@@ -18,15 +19,18 @@ const ExerciseTimeInputs: React.FC<ExerciseTimeInputsProps> = ({
 
   return (
     <div>
-      <Label className="text-sm font-medium flex items-center mb-3">
-        ⏱️ Thời gian mỗi lần vận động
+      <Label className="text-sm font-medium flex items-center text-gray-700 mb-4">
+        <Clock className="w-4 h-4 mr-2 text-teal-600" />
+        Thời gian mỗi lần vận động
       </Label>
 
       {/* Ngày làm việc / đi học */}
-      <div className="mb-4">
-        <div className="flex justify-between items-center mb-2">
-          <span className="text-sm text-gray-600">Ngày làm việc / đi học:</span>
-          <span className="text-sm font-semibold text-[hsl(158,64%,52%)]">
+      <div className="mb-6 bg-gradient-to-r from-teal-50 to-emerald-50 p-4 rounded-lg">
+        <div className="flex justify-between items-center mb-3">
+          <span className="text-sm font-medium text-gray-700">
+            Ngày làm việc / đi học:
+          </span>
+          <span className="text-base font-bold text-teal-600 bg-white px-3 py-1 rounded-full shadow-sm">
             {workdayTime} phút
           </span>
         </div>
@@ -37,14 +41,14 @@ const ExerciseTimeInputs: React.FC<ExerciseTimeInputsProps> = ({
           step="5"
           value={workdayTime}
           onChange={(e) => onWorkdayChange(Number(e.target.value))}
-          className="w-full h-2 bg-gradient-to-r from-gray-200 to-teal-500 rounded-lg appearance-none cursor-pointer"
+          className="w-full h-3 bg-gradient-to-r from-gray-300 via-teal-400 to-teal-600 rounded-full appearance-none cursor-pointer shadow-inner"
           style={{
             WebkitAppearance: "none",
           }}
         />
-        <div className="flex justify-between mt-1 px-1">
+        <div className="flex justify-between mt-2 px-1">
           {timeMarks.map((mark) => (
-            <span key={mark} className="text-xs text-gray-400">
+            <span key={mark} className="text-xs text-gray-500 font-medium">
               {mark}
             </span>
           ))}
@@ -52,10 +56,10 @@ const ExerciseTimeInputs: React.FC<ExerciseTimeInputsProps> = ({
       </div>
 
       {/* Ngày nghỉ */}
-      <div>
-        <div className="flex justify-between items-center mb-2">
-          <span className="text-sm text-gray-600">Ngày nghỉ:</span>
-          <span className="text-sm font-semibold text-[hsl(158,64%,52%)]">
+      <div className="bg-gradient-to-r from-emerald-50 to-teal-50 p-4 rounded-lg">
+        <div className="flex justify-between items-center mb-3">
+          <span className="text-sm font-medium text-gray-700">Ngày nghỉ:</span>
+          <span className="text-base font-bold text-emerald-600 bg-white px-3 py-1 rounded-full shadow-sm">
             {weekendTime} phút
           </span>
         </div>
@@ -66,14 +70,14 @@ const ExerciseTimeInputs: React.FC<ExerciseTimeInputsProps> = ({
           step="5"
           value={weekendTime}
           onChange={(e) => onWeekendChange(Number(e.target.value))}
-          className="w-full h-2 bg-gradient-to-r from-gray-200 to-teal-500 rounded-lg appearance-none cursor-pointer"
+          className="w-full h-3 bg-gradient-to-r from-gray-300 via-emerald-400 to-emerald-600 rounded-full appearance-none cursor-pointer shadow-inner"
           style={{
             WebkitAppearance: "none",
           }}
         />
-        <div className="flex justify-between mt-1 px-1">
+        <div className="flex justify-between mt-2 px-1">
           {timeMarks.map((mark) => (
-            <span key={mark} className="text-xs text-gray-400">
+            <span key={mark} className="text-xs text-gray-500 font-medium">
               {mark}
             </span>
           ))}
