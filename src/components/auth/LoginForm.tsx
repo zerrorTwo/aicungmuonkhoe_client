@@ -74,39 +74,40 @@ const LoginForm: React.FC<LoginFormProps> = ({
             user: result.data.user,
             token: result.data.access_token,
           })
-        )
+        );
 
         // Save to localStorage
-        localStorage.setItem("access_token", result.data.access_token)
-        localStorage.setItem("user", JSON.stringify(result.data.user))
+        localStorage.setItem("access_token", result.data.access_token);
+        localStorage.setItem("user", JSON.stringify(result.data.user));
+        localStorage.setItem("conversation_id", result.data.conversation_id);
 
-        navigate("/", { replace: true })
+        navigate("/", { replace: true });
       } else {
-        dispatch(loginFailure())
-        setError(result.message || "Đăng nhập thất bại")
+        dispatch(loginFailure());
+        setError(result.message || "Đăng nhập thất bại");
       }
-    } catch (err: unknown) {
+    } catch (err: any) {
       // Handle account not verified
-      if (getStatusFromError(err) === 403) {
+      if (err.status === 403) {
         try {
           await sendOtp({
             EMAIL: loginData.email,
             OTP_TYPE: OTP_TYPE.SIGN_UP,
-          }).unwrap()
-          onNeedVerification(loginData.email)
-        } catch (otpErr: unknown) {
-          console.error("Error sending OTP:", otpErr)
+          }).unwrap();
+          onNeedVerification(loginData.email);
+        } catch (otpErr) {
+          console.error("Error sending OTP:", otpErr);
           setError(
             "Tài khoản chưa xác thực và không thể gửi mã OTP. Vui lòng thử lại sau."
-          )
+          );
         }
       } else {
-        const errorMessage = handleApiError(err)
-        setError(errorMessage)
-        dispatch(loginFailure())
+        const errorMessage = handleApiError(err);
+        setError(errorMessage);
+        dispatch(loginFailure());
       }
     }
-  }
+  };
 
   return (
     <form onSubmit={handleLogin} className="space-y-4">
