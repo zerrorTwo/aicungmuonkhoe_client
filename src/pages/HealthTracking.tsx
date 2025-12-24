@@ -348,11 +348,9 @@ export default function HealthTracking() {
   const {
     conclusions, // For chart
     paginatedConclusions, // For history list
-    totalCount,
     totalPages,
     isLoading: dataLoading,
     isPaginationLoading,
-    isChartLoading,
     refetch,
   } = useHealthConclusions({
     healthDocumentId: selectedAccount,
