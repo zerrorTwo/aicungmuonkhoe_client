@@ -1,143 +1,145 @@
-import React, { useEffect, type ReactNode } from 'react';
-import { useAppSelector, useAppDispatch } from '@/store/hooks';
-import { useGetMyHealthDocumentQuery, useCreateHealthDocumentMutation } from '@/store/api/healthDocumentApi';
-import { setHealthDocument, setShowHealthInfoModal, setHasHealthDocument } from '@/store/slices/healthDocumentSlice';
-import { showToast } from '@/utils/toast';
-import { HealthInfoModal } from '@/components/modals';
-import { useNavigate } from 'react-router-dom';
+import React, { useEffect, type ReactNode } from "react"
+import { useAppSelector, useAppDispatch } from "@/store/hooks"
+import {
+  useGetMyHealthDocumentQuery,
+  useCreateHealthDocumentMutation,
+  type CreateHealthDocumentRequest,
+} from "@/store/api/healthDocumentApi"
+import {
+  setHealthDocument,
+  setShowHealthInfoModal,
+  setHasHealthDocument,
+} from "@/store/slices/healthDocumentSlice"
+import { showToast } from "@/utils/toast"
+import { HealthInfoModal } from "@/components/modals"
+import { useNavigate } from "react-router-dom"
 
 interface HealthDocumentGuardProps {
-    children: ReactNode;
-    shouldCheck?: boolean; // Để kiểm soát khi nào cần check
-    excludePaths?: string[]; // Danh sách các path không cần check
+  children: ReactNode
+  shouldCheck?: boolean // Để kiểm soát khi nào cần check
+  excludePaths?: string[] // Danh sách các path không cần check
 }
 
 const HealthDocumentGuard: React.FC<HealthDocumentGuardProps> = ({
-    children,
-    shouldCheck = true,
-    // excludePaths = ['/login', '/register', '/']
+  children,
+  shouldCheck = true,
+  // excludePaths = ['/login', '/register', '/']
 }) => {
-    const dispatch = useAppDispatch();
-    const navigate = useNavigate();
+  const dispatch = useAppDispatch()
+  const navigate = useNavigate()
 
-    // Auth state
-    const { isAuthenticated } = useAppSelector(state => state.auth);
+  // Auth state
+  const { isAuthenticated } = useAppSelector((state) => state.auth)
 
-    // Health document state
-    const { showHealthInfoModal, hasHealthDocument, currentHealthDocument } = useAppSelector(state => state.healthDocument);
+  // Health document state
+  const { showHealthInfoModal, hasHealthDocument, currentHealthDocument } =
+    useAppSelector((state) => state.healthDocument)
 
-    // API hooks
-    const { data: healthDocData, isLoading, error } = useGetMyHealthDocumentQuery(undefined, {
-        skip: !isAuthenticated || !shouldCheck
-    });
+  // API hooks
+  const {
+    data: healthDocData,
+    isLoading,
+    error,
+  } = useGetMyHealthDocumentQuery(undefined, {
+    skip: !isAuthenticated || !shouldCheck,
+  })
 
-    const [createHealthDocument] = useCreateHealthDocumentMutation();
+  const [createHealthDocument] = useCreateHealthDocumentMutation()
 
+  // Define protected routes (can add more in the future)
+  const protectedRoutes = ["/health-tracking"]
+  const currentPath = window.location.pathname
+  const isProtectedRoute = protectedRoutes.includes(currentPath)
+  const shouldSkipCheck = !isProtectedRoute || !shouldCheck || !isAuthenticated
 
-    // Define protected routes (can add more in the future)
-    const protectedRoutes = ['/health-tracking'];
-    const currentPath = window.location.pathname;
-    const isProtectedRoute = protectedRoutes.includes(currentPath);
-    const shouldSkipCheck = !isProtectedRoute || !shouldCheck || !isAuthenticated;
+  useEffect(() => {
+    if (shouldSkipCheck) {
+      return
+    }
 
-    useEffect(() => {
-        if (shouldSkipCheck) {
-            return;
-        }
+    // Nếu đã có health document trong state, không cần check nữa
+    if (hasHealthDocument && currentHealthDocument) {
+      return
+    }
 
-        // Nếu đã có health document trong state, không cần check nữa
-        if (hasHealthDocument && currentHealthDocument) {
-            return;
-        }
+    // Nếu API loading, chờ
+    if (isLoading) {
+      return
+    }
+    console.log("HealthDocumentGuard: Checking health document status...", {
+      healthDocData,
+      error,
+    })
+    // Nếu API trả về success và có data
+    if (healthDocData?.status == 200 && healthDocData.data) {
+      console.log("Health document found:", healthDocData.data)
+      dispatch(setHealthDocument(healthDocData.data))
+      dispatch(setHasHealthDocument(true))
+      dispatch(setShowHealthInfoModal(false))
+    }
+    // Nếu API trả về lỗi hoặc không có data (user chưa có health document)
+    else if (error || healthDocData?.status !== 200 || !healthDocData?.data) {
+      console.log("No health document found, showing modal")
+      // Nếu đang ở trang theo dõi sức khỏe thì chuyển về trang chủ và hiện modal + toast
+      if (window.location.pathname === "/health-tracking") {
+        navigate("/")
+        setTimeout(() => {
+          dispatch(setHasHealthDocument(false))
+          dispatch(setShowHealthInfoModal(true))
+          showToast.error("Vui lòng cập nhật để xem chi tiết")
+        }, 100) // Đảm bảo modal hiện sau khi về trang chủ
+      } else {
+        dispatch(setHasHealthDocument(false))
+        dispatch(setShowHealthInfoModal(true))
+      }
+    }
+  }, [
+    shouldSkipCheck,
+    hasHealthDocument,
+    currentHealthDocument,
+    healthDocData,
+    isLoading,
+    error,
+    dispatch,
+    navigate,
+  ])
 
-        // Nếu API loading, chờ
-        if (isLoading) {
-            return;
-        }
-        console.log('HealthDocumentGuard: Checking health document status...', { healthDocData, error });
-        // Nếu API trả về success và có data
-        if (healthDocData?.status == 200 && healthDocData.data) {
-            console.log('Health document found:', healthDocData.data);
-            dispatch(setHealthDocument(healthDocData.data));
-            dispatch(setHasHealthDocument(true));
-            dispatch(setShowHealthInfoModal(false));
-        }
-        // Nếu API trả về lỗi hoặc không có data (user chưa có health document)
-        else if (error || (healthDocData?.status !== 200 || !healthDocData?.data)) {
-            console.log('No health document found, showing modal');
-            // Nếu đang ở trang theo dõi sức khỏe thì chuyển về trang chủ và hiện modal + toast
-            if (window.location.pathname === '/health-tracking') {
-                navigate('/');
-                setTimeout(() => {
-                    dispatch(setHasHealthDocument(false));
-                    dispatch(setShowHealthInfoModal(true));
-                    showToast.error('Vui lòng cập nhật để xem chi tiết');
-                }, 100); // Đảm bảo modal hiện sau khi về trang chủ
-            } else {
-                dispatch(setHasHealthDocument(false));
-                dispatch(setShowHealthInfoModal(true));
-            }
-        }
-    }, [
-        shouldSkipCheck,
-        hasHealthDocument,
-        currentHealthDocument,
-        healthDocData,
-        isLoading,
-        error,
-        dispatch,
-        navigate
-    ]);
+  // Handle save and navigate
+  const handleHealthInfoSaveAndNavigate = async (
+    healthData: CreateHealthDocumentRequest
+  ) => {
+    try {
+      const result = await createHealthDocument(healthData).unwrap()
+      if (result.message === "Tạo thành công!") {
+        dispatch(setHealthDocument(result.data))
+        dispatch(setHasHealthDocument(true))
+        dispatch(setShowHealthInfoModal(false))
+        navigate("/health-tracking")
+      }
+    } catch (err: unknown) {
+      console.error("Failed to save health info:", err)
+    }
+  }
 
-    // Handle save health document
-    // const handleHealthInfoSave = async (healthData: any) => {
-    //     try {
-    //         const result = await createHealthDocument(healthData).unwrap();
-    //         if (result.message === 'Tạo thành công!') {
-    //             dispatch(setHealthDocument(result.data));
-    //             dispatch(setHasHealthDocument(true));
-    //             dispatch(setShowHealthInfoModal(false));
-    //             console.log('Health document created successfully');
-    //         }
-    //     } catch (err: any) {
-    //         console.error('Failed to save health info:', err);
-    //     }
-    // };
+  // Handle close modal
+  const handleHealthInfoClose = () => {
+    dispatch(setShowHealthInfoModal(false))
+    // Có thể redirect về trang chủ nếu user đóng modal mà chưa tạo health document
+    // navigate('/');
+  }
 
-    // Handle save and navigate
-    const handleHealthInfoSaveAndNavigate = async (healthData: any) => {
-        try {
-            const result = await createHealthDocument(healthData).unwrap();
-            if (result.message === 'Tạo thành công!') {
-                dispatch(setHealthDocument(result.data));
-                dispatch(setHasHealthDocument(true));
-                dispatch(setShowHealthInfoModal(false));
-                navigate('/health-tracking');
-            }
-        } catch (err: any) {
-            console.error('Failed to save health info:', err);
-        }
-    };
+  return (
+    <>
+      {children}
 
-    // Handle close modal
-    const handleHealthInfoClose = () => {
-        dispatch(setShowHealthInfoModal(false));
-        // Có thể redirect về trang chủ nếu user đóng modal mà chưa tạo health document
-        // navigate('/');
-    };
+      {/* Health Info Modal */}
+      <HealthInfoModal
+        isOpen={showHealthInfoModal}
+        onClose={handleHealthInfoClose}
+        onSubmit={handleHealthInfoSaveAndNavigate}
+      />
+    </>
+  )
+}
 
-    return (
-        <>
-            {children}
-
-            {/* Health Info Modal */}
-            <HealthInfoModal
-                isOpen={showHealthInfoModal}
-                onClose={handleHealthInfoClose}
-                onSubmit={handleHealthInfoSaveAndNavigate}
-            />
-        </>
-    );
-};
-
-export default HealthDocumentGuard;
+export default HealthDocumentGuard
