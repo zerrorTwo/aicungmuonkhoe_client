@@ -53,8 +53,9 @@ export const conclusionApi = baseApi.injectEndpoints({
     }),
     getConclusionsRange: builder.query({
       query: (params: GetConclusionsRangeParams) => ({
-        url: `/conclusion/range?MODEL=${params.MODEL}&START_TIME=${params.START_TIME}&END_TIME=${params.END_TIME}&ID=${params.ID}&AGE_TYPE=${params.AGE_TYPE}&ACTIVE_TAB=${params.ACTIVE_TAB}&SORT=${params.SORT || ""}&OFFSET=${params.OFFSET || ""}&LIMIT=${params.LIMIT || ""}`,
+        url: `/conclusion/range`,
         method: "GET",
+        params,
       }),
     }),
   }),
