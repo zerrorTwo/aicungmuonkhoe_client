@@ -2,6 +2,7 @@
 import { configureStore } from '@reduxjs/toolkit';
 import { setupListeners } from '@reduxjs/toolkit/query';
 import { baseApi } from './api/baseApi';
+import { consultingApi } from './api/consultingApi';
 import authReducer from './slices/authSlice';
 import healthDocumentReducer from './slices/healthDocumentSlice';
 
@@ -10,6 +11,7 @@ export const store = configureStore({
     reducer: {
         // Add the generated reducer as a specific top-level slice
         [baseApi.reducerPath]: baseApi.reducer,
+        [consultingApi.reducerPath]: consultingApi.reducer,
         // Add other reducers here
         auth: authReducer,
         healthDocument: healthDocumentReducer,
@@ -21,7 +23,7 @@ export const store = configureStore({
             serializableCheck: {
                 ignoredActions: ['persist/PERSIST', 'persist/REHYDRATE'],
             },
-        }).concat(baseApi.middleware),
+        }).concat(baseApi.middleware, consultingApi.middleware),
     devTools: process.env.NODE_ENV !== 'production',
 });
 

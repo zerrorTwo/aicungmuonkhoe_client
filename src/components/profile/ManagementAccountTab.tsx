@@ -124,8 +124,6 @@ const ManagementAccountTab: React.FC<ManagementAccountTabProps> = ({
     GENDER_ID: number;
   }) => {
     try {
-      console.log("Creating new health document:", formData);
-
       const result = await createHealthDocument({
         FULL_NAME: formData.FULL_NAME,
         DOB: formData.DOB,
@@ -156,7 +154,6 @@ const ManagementAccountTab: React.FC<ManagementAccountTabProps> = ({
 
   // Handler khi click vào "Hồ sơ sức khỏe" trong menu
   const handleHealthRecordClick = (healthData: any) => {
-    console.log("📂 Opening health record for:", healthData);
     setSelectedHealthDocument(healthData);
     setIsEditMode(false); // Mở ở chế độ xem
     // KHÔNG gọi onHealthRecordSelect() để tab không bị active/đậm
@@ -170,12 +167,8 @@ const ManagementAccountTab: React.FC<ManagementAccountTabProps> = ({
         return;
       }
 
-      console.log("💾 Updating health document:", formData);
-
       // Loại bỏ các field không được phép gửi lên backend
       const { ID, IS_DELETED, USER, ...validData } = formData;
-
-      console.log("📤 Cleaned data for API:", validData);
 
       const result = await updateHealthDocument({
         id: selectedHealthDocument.ID,
@@ -187,7 +180,7 @@ const ManagementAccountTab: React.FC<ManagementAccountTabProps> = ({
 
       // Thoát chế độ edit, giữ nguyên form để xem
       setIsEditMode(false);
-      setSelectedHealthDocument(result); // Update với data mới
+      setSelectedHealthDocument(result.data); // Update với data mới
     } catch (error) {
       console.error("❌ Failed to update health document:", error);
       showToast.error("Có lỗi xảy ra khi cập nhật hồ sơ!");
