@@ -16,6 +16,7 @@ export const conclusionApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
     getConclusionById: builder.query({
       query: (id) => `/conclusion/${id}`,
+      providesTags: (_result, _error, id) => [{ type: "Conclusion", id }],
     }),
     createConclusion: builder.mutation({
       query: (data) => ({
@@ -23,12 +24,14 @@ export const conclusionApi = baseApi.injectEndpoints({
         method: "POST",
         body: data,
       }),
+      invalidatesTags: ["Conclusion"],
     }),
     deleteConclusion: builder.mutation({
       query: (id) => ({
         url: `/conclusion/${id}`,
         method: "DELETE",
       }),
+      invalidatesTags: ["Conclusion"],
     }),
     createConclusionClient: builder.mutation({
       query: (data) => ({
@@ -36,6 +39,7 @@ export const conclusionApi = baseApi.injectEndpoints({
         method: "POST",
         body: data,
       }),
+      invalidatesTags: ["Conclusion"],
     }),
     updateConclusionClient: builder.mutation({
       query: ({ id, data }) => ({
@@ -43,6 +47,14 @@ export const conclusionApi = baseApi.injectEndpoints({
         method: "PUT",
         body: data,
       }),
+      invalidatesTags: ["Conclusion"],
+    }),
+    deleteConclusionClient: builder.mutation({
+      query: (id) => ({
+        url: `/conclusion/client/${id}`,
+        method: "DELETE",
+      }),
+      invalidatesTags: ["Conclusion"],
     }),
     getConclusionsPagination: builder.query({
       query: (params) => ({
@@ -50,6 +62,7 @@ export const conclusionApi = baseApi.injectEndpoints({
         method: "GET",
         params,
       }),
+      providesTags: ["Conclusion"],
     }),
     getConclusionsRange: builder.query({
       query: (params: GetConclusionsRangeParams) => ({
@@ -57,6 +70,7 @@ export const conclusionApi = baseApi.injectEndpoints({
         method: "GET",
         params,
       }),
+      providesTags: ["Conclusion"],
     }),
   }),
 })
@@ -67,6 +81,7 @@ export const {
   useDeleteConclusionMutation,
   useCreateConclusionClientMutation,
   useUpdateConclusionClientMutation,
+  useDeleteConclusionClientMutation,
   useGetConclusionsPaginationQuery,
   useLazyGetConclusionsRangeQuery,
 } = conclusionApi

@@ -4,9 +4,10 @@ import { Button } from "../../ui/button";
 import { Input } from "../../ui/input";
 import { Label } from "../../ui/label";
 import DatePicker from "../../ui/date-picker";
-import { useCreateConclusionClientMutation } from "@/store/api/conclusionApi"; // Import the API hook
+import { useCreateConclusionClientMutation, useUpdateConclusionClientMutation } from "@/store/api/conclusionApi"; // Import the API hook
 
 export interface BMIUpdatePayload {
+    ID?: number; // Added optional ID
     DATE: string; // yyyy-mm-dd
     VALUE_HEIGHT: number; // cm
     VALUE_WEIGHT: number; // kg
@@ -21,13 +22,14 @@ interface BMIUpdateModalProps {
     isOpen: boolean;
     onClose: () => void;
     onSubmit?: (data: BMIUpdatePayload) => Promise<void> | void;
-    initialData?: Partial<BMIUpdatePayload> | null;
+    initialData?: Partial<BMIUpdatePayload & { id?: number; ID?: number }> | null;
     ageType: string; // New prop for age type
     healthDocumentId: number; // New prop for health document ID
 }
 
 const BMIUpdateModal: React.FC<BMIUpdateModalProps> = ({ isOpen, onClose, onSubmit, initialData, ageType, healthDocumentId }) => {
     const [createConclusionClient] = useCreateConclusionClientMutation(); // Initialize the mutation
+    const [updateConclusionClient] = useUpdateConclusionClientMutation();
     const [date, setDate] = useState<string>(new Date().toISOString().slice(0, 10));
     const [height, setHeight] = useState<string>("");
     const [weight, setWeight] = useState<string>("");
@@ -87,8 +89,13 @@ const BMIUpdateModal: React.FC<BMIUpdateModalProps> = ({ isOpen, onClose, onSubm
                 TIME: new Date().toISOString().slice(11, 19), // Add current time in HH:mm:ss format
             };
 
-            // Call the API to create a BMI record using /client endpoint
-            await createConclusionClient(payload).unwrap();
+            const idToUpdate = initialData?.id || initialData?.ID;
+
+            if (idToUpdate) {
+                await updateConclusionClient({ id: idToUpdate, data: payload }).unwrap();
+            } else {
+                await createConclusionClient(payload).unwrap();
+            }
 
             // Call parent's onSubmit callback to trigger refresh
             await Promise.resolve(onSubmit?.(payload));

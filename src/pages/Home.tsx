@@ -9,16 +9,29 @@ import Footer from '@/components/layout/Footer';
 import StartedTour from '@/components/tour/StartedTour';
 import { useGetUserProfileQuery } from '@/store/api/userApi';
 import { useAuth } from '@/hooks/useAuth';
+import {
+    useGetStartedTourByFeatureQuery,
+    useCreateStartedTourMutation,
+} from '@/store/api/startedTourApi';
+import { StartTourModule } from '@/enum/start-tour';
 
 const Home: React.FC = () => {
     const { isAuthenticated } = useAuth();
     const [runTour, setRunTour] = useState(false);
-    const TOUR_COMPLETED_KEY = 'tour_completed';
 
     // Get user profile to check if health document exists
     const { data: profileData, isSuccess } = useGetUserProfileQuery(undefined, {
         skip: !isAuthenticated(),
     });
+
+    // Check if tour has been completed via API
+    const { data: tourData } = useGetStartedTourByFeatureQuery(
+        { FEATURE: StartTourModule.HOME },
+        { skip: !isAuthenticated() }
+    );
+
+    // Mutation to mark tour as completed
+    const [createStartedTour] = useCreateStartedTourMutation();
 
     useEffect(() => {
         // Only run tour for authenticated users
@@ -26,9 +39,8 @@ const Home: React.FC = () => {
             return;
         }
 
-        // Check if tour has been completed before
-        const tourCompleted = localStorage.getItem(TOUR_COMPLETED_KEY);
-        if (tourCompleted) {
+        // Check if tour has been completed before via API
+        if (tourData?.data) {
             return;
         }
 
@@ -41,11 +53,16 @@ const Home: React.FC = () => {
                 setRunTour(true);
             }
         }
-    }, [isAuthenticated, isSuccess, profileData]);
+    }, [isAuthenticated, isSuccess, profileData, tourData]);
 
-    const handleTourFinish = () => {
+    const handleTourFinish = async () => {
         setRunTour(false);
-        localStorage.setItem(TOUR_COMPLETED_KEY, 'true');
+        // Save tour completion via API
+        try {
+            await createStartedTour({ FEATURE: StartTourModule.HOME }).unwrap();
+        } catch (error) {
+            console.error('Failed to save tour completion:', error);
+        }
     };
 
     return (

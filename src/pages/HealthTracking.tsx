@@ -31,6 +31,7 @@ import {
 } from "@/components/modals/health"
 import { useHealthConclusions } from "@/hooks/useHealthConclusions"
 import { toast } from "react-toastify"
+import { useDeleteConclusionClientMutation } from "@/store/api/conclusionApi"
 
 // Import advanced chart components with WHO standards
 import AcidUricChart from "@/components/health/charts/acid-uric.chart"
@@ -40,7 +41,6 @@ import BloodSugarChart from "@/components/health/charts/blood-sugar.chart"
 import BMIChart from "@/components/health/charts/bmi.chart"
 import KidneyFunctionChart from "@/components/health/charts/kidney-function.chart"
 import LiverFunctionChart from "@/components/health/charts/liver-function.chart"
-import HistoryDetail from "@/components/health/history-detail"
 import HistoryList from "@/components/health/HistoryList"
 
 // Constants following PMS structure
@@ -139,10 +139,14 @@ export default function HealthTracking() {
   const [kidneyVariant, setKidneyVariant] = useState<KidneyFunctionTabs>(
     KidneyFunctionTabs.Creatinine
   )
+  const [editingItem, setEditingItem] = useState<any>(null)
 
   // State to hold current chart data (from API range)
   // const [currentChartData, setCurrentChartData] = useState<any>(null);
   // const [refreshTrigger, setRefreshTrigger] = useState(0);
+
+  // Delete mutation
+  const [deleteConclusion] = useDeleteConclusionClientMutation()
 
   // Fetch accounts from API
   const { data: accountsData, isLoading: accountsLoading } =
@@ -288,7 +292,6 @@ export default function HealthTracking() {
   // Reset pagination when account or chart changes
   useEffect(() => {
     setCurrentPage(1)
-    setSelectedHistoryItem(null)
   }, [selectedAccount, selectedIndex, activeTab])
 
   // Get chart data - kept for backward compatibility but not used
@@ -322,7 +325,6 @@ export default function HealthTracking() {
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1)
   const [pageSize] = useState(12)
-  const [selectedHistoryItem, setSelectedHistoryItem] = useState<any>(null)
 
   // Compute current active tab based on selected index
   const currentActiveTab = useMemo(() => {
@@ -485,6 +487,69 @@ export default function HealthTracking() {
   //     console.log('Create conclusion for', selectedIndex, payload);
   //     toast.success('Đã lưu kết luận');
   // };
+
+  // Handler for editing history item
+  const handleEditHistoryItem = (item: any) => {
+    console.log("Edit item:", item)
+    setEditingItem(item)
+
+    // Map model to appropriate modal and set variant
+    const model = item.model || item.MODEL
+
+    // Determine which modal to open based on model
+    if (model === 'BMI') {
+      // BMI modal doesn't need variant
+      setUpdateOpen(true)
+      setSelectedIndex(HealthIndex.BMI)
+    } else if (model === 'HOME' || model === 'HOSPITAL') {
+      // Blood Pressure
+      setBpVariant(model === 'HOME' ? BloodPressureTabs.Home : BloodPressureTabs.Hospital)
+      setSelectedIndex(HealthIndex.BloodPressure)
+      setUpdateOpen(true)
+    } else if (model === 'HUNGRY' || model === 'TWO_HOURS' || model === 'HBA1C') {
+      // Blood Sugar
+      if (model === 'HUNGRY') setSugarVariant(BloodSugarTabs.Hungry)
+      else if (model === 'TWO_HOURS') setSugarVariant(BloodSugarTabs.TwoHours)
+      else if (model === 'HBA1C') setSugarVariant(BloodSugarTabs.HbA1c)
+      setSelectedIndex(HealthIndex.BloodSugar)
+      setUpdateOpen(true)
+    } else if (model === 'ACID_URIC' || model === 'AXIT_URIC') {
+      // Uric Acid
+      setSelectedIndex(HealthIndex.AcidUric)
+      setUpdateOpen(true)
+    } else if (model === 'SGPT' || model === 'SGOT') {
+      // Liver Function
+      setLiverVariant(model === 'SGPT' ? LiverFunctionTabs.SGPT : LiverFunctionTabs.SGOT)
+      setSelectedIndex(HealthIndex.LiverFunction)
+      setUpdateOpen(true)
+    } else if (model === 'CREA' || model === 'URE') {
+      // Kidney Function
+      setKidneyVariant(model === 'CREA' ? KidneyFunctionTabs.Creatinine : KidneyFunctionTabs.Ure)
+      setSelectedIndex(HealthIndex.KidneyFunction)
+      setUpdateOpen(true)
+    } else if (model === 'CHOL' || model === 'LDL' || model === 'HDL' || model === 'TRIGLYCERIDE') {
+      // Blood Lipid
+      if (model === 'CHOL') setLipidVariant(BloodLipidTabs.Cholesterol)
+      else if (model === 'LDL') setLipidVariant(BloodLipidTabs.LDL)
+      else if (model === 'HDL') setLipidVariant(BloodLipidTabs.HDL)
+      else if (model === 'TRIGLYCERIDE') setLipidVariant(BloodLipidTabs.Triglyceride)
+      setSelectedIndex(HealthIndex.BloodLipid)
+      setUpdateOpen(true)
+    }
+  }
+
+  // Handler for deleting history item
+  const handleDeleteHistoryItem = async (itemId: number | string) => {
+    try {
+      await deleteConclusion(itemId).unwrap()
+      toast.success("Xóa bản ghi thành công!")
+      // Explicitly refetch data to ensure UI updates immediately
+      await refetch()
+    } catch (error: any) {
+      toast.error(error?.data?.message || "Xóa thất bại!")
+      console.error("Delete error:", error)
+    }
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -771,104 +836,121 @@ export default function HealthTracking() {
             {/* Chart Container */}
             <div className="w-full">{renderChart()}</div>
 
+
             {/* Footer actions under chart */}
-            <div className="mt-4 flex cursor-pointer items-center justify-center">
+            <div className="mt-4 py-6 flex items-center justify-center">
               <Button
                 onClick={handleAddClick}
-                className="cursor-pointer bg-[hsl(158,64%,52%)] px-8 text-white hover:bg-[hsl(158,64%,45%)]"
+                style={{ height: '48px' }}
+                className="!px-16 !font-bold !text-white hover:!bg-[hsl(158,64%,45%)]"
               >
                 Cập nhật chỉ số
               </Button>
             </div>
 
+
             {/* Specific update modals per tab */}
             {selectedIndex === HealthIndex.BMI && (
               <BMIUpdateModal
                 isOpen={isUpdateOpen}
-                onClose={() => setUpdateOpen(false)}
+                onClose={() => { setUpdateOpen(false); setEditingItem(null); }}
                 onSubmit={async (payload) => {
                   console.log("BMI update", payload)
                   handleUpdateSuccess()
+                  setEditingItem(null)
                 }}
-                ageType={ageRange} // Pass ageType prop
-                healthDocumentId={Number(selectedAccount)} // Pass healthDocumentId prop
+                ageType={ageRange}
+                healthDocumentId={Number(selectedAccount)}
+                initialData={editingItem}
               />
             )}
             {selectedIndex === HealthIndex.BloodPressure && (
               <BloodPressureUpdateModal
                 isOpen={isUpdateOpen}
-                onClose={() => setUpdateOpen(false)}
+                onClose={() => { setUpdateOpen(false); setEditingItem(null); }}
                 onSubmit={async (payload) => {
                   console.log("BP update", payload)
                   handleUpdateSuccess()
+                  setEditingItem(null)
                 }}
                 healthDocumentId={Number(selectedAccount)}
                 ageType={ageRange}
                 activeTab={bpVariant}
+                initialData={editingItem}
               />
             )}
             {selectedIndex === HealthIndex.BloodSugar && (
               <BloodSugarUpdateModal
-                ageType={ageRange} // Pass ageType prop
+                ageType={ageRange}
                 healthDocumentId={Number(selectedAccount)}
                 isOpen={isUpdateOpen}
-                onClose={() => setUpdateOpen(false)}
+                onClose={() => { setUpdateOpen(false); setEditingItem(null); }}
                 onSubmit={async (payload) => {
                   console.log("Sugar update", payload)
                   handleUpdateSuccess()
+                  setEditingItem(null)
                 }}
                 activeTab={sugarVariant}
+                initialData={editingItem}
               />
             )}
             {selectedIndex === HealthIndex.AcidUric && (
               <UricUpdateModal
-                ageType={ageRange} // Pass ageType prop
+                ageType={ageRange}
                 healthDocumentId={Number(selectedAccount)}
                 isOpen={isUpdateOpen}
-                onClose={() => setUpdateOpen(false)}
+                onClose={() => { setUpdateOpen(false); setEditingItem(null); }}
                 onSubmit={async (payload) => {
                   console.log("Uric update", payload)
                   handleUpdateSuccess()
+                  setEditingItem(null)
                 }}
+                initialData={editingItem}
               />
             )}
             {selectedIndex === HealthIndex.LiverFunction && (
               <LiverUpdateModal
-                ageType={ageRange} // Pass ageType prop
+                ageType={ageRange}
                 healthDocumentId={Number(selectedAccount)}
                 isOpen={isUpdateOpen}
-                onClose={() => setUpdateOpen(false)}
+                onClose={() => { setUpdateOpen(false); setEditingItem(null); }}
                 onSubmit={async (payload) => {
                   console.log("Liver update", payload)
                   handleUpdateSuccess()
+                  setEditingItem(null)
                 }}
                 activeTab={liverVariant}
+                initialData={editingItem}
               />
             )}
             {selectedIndex === HealthIndex.KidneyFunction && (
               <KidneyUpdateModal
-                ageType={ageRange} // Pass ageType prop
+                ageType={ageRange}
                 healthDocumentId={Number(selectedAccount)}
                 isOpen={isUpdateOpen}
-                onClose={() => setUpdateOpen(false)}
+                onClose={() => { setUpdateOpen(false); setEditingItem(null); }}
                 onSubmit={async (payload) => {
                   console.log("Kidney update", payload)
                   handleUpdateSuccess()
+                  setEditingItem(null)
                 }}
                 activeTab={kidneyVariant}
+                initialData={editingItem}
               />
             )}
             {selectedIndex === HealthIndex.BloodLipid && (
               <LipidUpdateModal
-                ageType={ageRange} // Pass ageType prop
+                ageType={ageRange}
                 healthDocumentId={Number(selectedAccount)}
                 isOpen={isUpdateOpen}
-                onClose={() => setUpdateOpen(false)}
+                onClose={() => { setUpdateOpen(false); setEditingItem(null); }}
                 onSubmit={async (payload) => {
                   console.log("Lipid update", payload)
                   handleUpdateSuccess()
+                  setEditingItem(null)
                 }}
                 activeTab={lipidVariant}
+                initialData={editingItem}
               />
             )}
 
@@ -908,28 +990,6 @@ export default function HealthTracking() {
               }
             />
           </Card>
-
-          {/* History List and Detail Section */}
-          <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-            {/* History List */}
-            <HistoryList
-              items={paginatedConclusions}
-              loading={isPaginationLoading}
-              currentPage={currentPage}
-              totalPages={totalPages}
-              onPageChange={(page) => setCurrentPage(page)}
-              onItemClick={(item) => setSelectedHistoryItem(item)}
-              selectedItemId={selectedHistoryItem?.id}
-            />
-
-            {/* History Detail */}
-            {selectedHistoryItem && (
-              <HistoryDetail
-                item={selectedHistoryItem}
-                tab={selectedIndex}
-              />
-            )}
-          </div>
 
           {/* Summary and Recommendations */}
           <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
@@ -1002,6 +1062,18 @@ export default function HealthTracking() {
               </div>
             </Card>
           </div>
+
+
+          {/* History List Section - Always visible with 2 columns */}
+          <HistoryList
+            items={paginatedConclusions}
+            loading={isPaginationLoading}
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onPageChange={(page) => setCurrentPage(page)}
+            onEdit={handleEditHistoryItem}
+            onDelete={handleDeleteHistoryItem}
+          />
         </div>
       </main>
 
