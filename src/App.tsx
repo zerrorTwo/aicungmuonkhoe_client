@@ -12,6 +12,7 @@ import AuthGuard from "./components/auth/AuthGuard";
 import About from "./pages/About";
 import HealthConsultingPage from "./pages/HealthConsulting/HealthConsulting";
 import { ChatPopup } from "@/components/chat/ChatPopup";
+import Community from "./pages/Community";
 
 function App() {
   return (
@@ -52,6 +53,14 @@ function App() {
               element={
                 <AuthGuard>
                   <HealthConsultingPage />
+                </AuthGuard>
+              }
+            />
+            <Route
+              path="/post-article"
+              element={
+                <AuthGuard>
+                  <Community />
                 </AuthGuard>
               }
             />

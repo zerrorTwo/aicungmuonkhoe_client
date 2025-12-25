@@ -1,5 +1,5 @@
-import React, { useState, useRef, useEffect } from "react"
-import { Link, useNavigate, useLocation } from "react-router-dom"
+import React, { useState, useRef, useEffect } from "react";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import {
   Menu,
   X,
@@ -10,30 +10,30 @@ import {
   FileText,
   Shield,
   Bell,
-} from "lucide-react"
-import { Button } from "@/components/ui/button"
-import Logo from "@/components/ui/Logo"
-import { cn } from "@/lib/utils"
-import { useAuth } from "@/hooks/useAuth"
-import { useAppDispatch } from "@/store/hooks"
-import { logout as logoutAction } from "@/store/slices/authSlice"
-import { useLogoutMutation } from "@/store/api/authApi"
-import { isMobile } from "react-device-detect"
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
+import Logo from "@/components/ui/Logo";
+import { cn } from "@/lib/utils";
+import { useAuth } from "@/hooks/useAuth";
+import { useAppDispatch } from "@/store/hooks";
+import { logout as logoutAction } from "@/store/slices/authSlice";
+import { useLogoutMutation } from "@/store/api/authApi";
+import { isMobile } from "react-device-detect";
 
 const Header: React.FC = () => {
-  const [isMenuOpen, setIsMenuOpen] = useState(false)
-  const [isUserDropdownOpen, setIsUserDropdownOpen] = useState(false)
-  const dropdownRef = useRef<HTMLDivElement>(null)
-  const navigate = useNavigate()
-  const location = useLocation()
-  const dispatch = useAppDispatch()
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isUserDropdownOpen, setIsUserDropdownOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+  const navigate = useNavigate();
+  const location = useLocation();
+  const dispatch = useAppDispatch();
 
   // Auth state
-  const { isAuthenticated } = useAuth()
+  const { isAuthenticated } = useAuth();
   const user = localStorage.getItem("user")
     ? JSON.parse(localStorage.getItem("user")!)
-    : null
-  const [logoutMutation] = useLogoutMutation()
+    : null;
+  const [logoutMutation] = useLogoutMutation();
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -42,59 +42,59 @@ const Header: React.FC = () => {
         dropdownRef.current &&
         !dropdownRef.current.contains(event.target as Node)
       ) {
-        setIsUserDropdownOpen(false)
+        setIsUserDropdownOpen(false);
       }
-    }
+    };
 
-    document.addEventListener("mousedown", handleClickOutside)
+    document.addEventListener("mousedown", handleClickOutside);
     return () => {
-      document.removeEventListener("mousedown", handleClickOutside)
-    }
-  }, [])
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
 
   // Close mobile menu when route changes
   useEffect(() => {
-    setIsMenuOpen(false)
-  }, [location.pathname])
+    setIsMenuOpen(false);
+  }, [location.pathname]);
 
   const handleLogout = async () => {
     try {
-      await logoutMutation().unwrap()
-      dispatch(logoutAction())
-      localStorage.removeItem("access_token")
-      localStorage.removeItem("user")
-      navigate("/login")
+      await logoutMutation().unwrap();
+      dispatch(logoutAction());
+      localStorage.removeItem("access_token");
+      localStorage.removeItem("user");
+      navigate("/login");
     } catch (error) {
-      console.error("Logout failed:", error)
+      console.error("Logout failed:", error);
       // Force logout even if API call fails
-      dispatch(logoutAction())
-      localStorage.removeItem("access_token")
-      localStorage.removeItem("user")
-      navigate("/login")
+      dispatch(logoutAction());
+      localStorage.removeItem("access_token");
+      localStorage.removeItem("user");
+      navigate("/login");
     }
-  }
+  };
 
   const getUserDisplayName = () => {
     if (user?.EMAIL) {
-      return user.EMAIL.split("@")[0]
+      return user.EMAIL.split("@")[0];
     }
-    return "User"
-  }
+    return "User";
+  };
 
   const getUserAvatar = () => {
     if (user?.FACE_IMAGE) {
-      return user.FACE_IMAGE
+      return user.FACE_IMAGE;
     }
-    return null
-  }
+    return null;
+  };
 
   // Function to check if a route is active
   const isRouteActive = (href: string) => {
     if (href === "/") {
-      return location.pathname === "/"
+      return location.pathname === "/";
     }
-    return location.pathname.startsWith(href)
-  }
+    return location.pathname.startsWith(href);
+  };
 
   const navigationItems = [
     { label: "Trang chủ", href: "/" },
@@ -102,7 +102,8 @@ const Header: React.FC = () => {
     { label: "Tư vấn sức khỏe", href: "/health-consulting" },
     { label: "Liên kết tài khoản", href: "/account-linking" },
     { label: "Hồ sơ cá nhân", href: "/profile" },
-  ]
+    { label: "Cộng đồng", href: "/post-article" },
+  ];
 
   return (
     <header className="sticky top-0 z-50 border-b border-slate-200 bg-white/95 backdrop-blur-md">
@@ -127,7 +128,7 @@ const Header: React.FC = () => {
           {/* Desktop Navigation */}
           <nav className="hidden items-center space-x-1 lg:flex">
             {navigationItems.map((item) => {
-              const isActive = isRouteActive(item.href)
+              const isActive = isRouteActive(item.href);
               return (
                 <Link
                   key={item.href}
@@ -146,7 +147,7 @@ const Header: React.FC = () => {
                     {item.label}
                   </Button>
                 </Link>
-              )
+              );
             })}
           </nav>
 
@@ -314,7 +315,7 @@ const Header: React.FC = () => {
             <div className="absolute top-16 right-0 left-0 max-h-[calc(100vh-4rem)] overflow-y-auto border-t border-slate-200 bg-white py-4">
               <nav className="space-y-2 px-4">
                 {navigationItems.map((item) => {
-                  const isActive = isRouteActive(item.href)
+                  const isActive = isRouteActive(item.href);
                   return (
                     <Link
                       key={item.href}
@@ -333,7 +334,7 @@ const Header: React.FC = () => {
                         {item.label}
                       </Button>
                     </Link>
-                  )
+                  );
                 })}
 
                 <div className="mt-2 border-t border-slate-200 pt-2">
@@ -405,8 +406,8 @@ const Header: React.FC = () => {
 
                       <button
                         onClick={() => {
-                          setIsMenuOpen(false)
-                          handleLogout()
+                          setIsMenuOpen(false);
+                          handleLogout();
                         }}
                         className="w-full"
                       >
@@ -438,7 +439,7 @@ const Header: React.FC = () => {
         )}
       </div>
     </header>
-  )
-}
+  );
+};
 
-export default Header
+export default Header;
