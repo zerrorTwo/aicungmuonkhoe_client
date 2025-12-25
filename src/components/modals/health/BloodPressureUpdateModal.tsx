@@ -4,9 +4,10 @@ import { Button } from "../../ui/button";
 import { Input } from "../../ui/input";
 import { Label } from "../../ui/label";
 import DatePicker from "../../ui/date-picker";
-import { useCreateConclusionClientMutation } from "@/store/api/conclusionApi";
+import { useCreateConclusionClientMutation, useUpdateConclusionClientMutation } from "@/store/api/conclusionApi";
 
 export interface BloodPressureUpdatePayload {
+    ID?: number;
     DATE: string; // yyyy-mm-dd
     VALUE: number; // Primary value (SYS)
     VALUE_SYS: number; // mmHg
@@ -21,7 +22,7 @@ interface BloodPressureUpdateModalProps {
     isOpen: boolean;
     onClose: () => void;
     onSubmit?: (data: BloodPressureUpdatePayload) => Promise<void> | void;
-    initialData?: Partial<BloodPressureUpdatePayload> | null;
+    initialData?: Partial<BloodPressureUpdatePayload & { id?: number; ID?: number }> | null;
     healthDocumentId: number;
     ageType: string;
     activeTab: string; // HOSPITAL or HOME
@@ -29,6 +30,7 @@ interface BloodPressureUpdateModalProps {
 
 const BloodPressureUpdateModal: React.FC<BloodPressureUpdateModalProps> = ({ isOpen, onClose, onSubmit, initialData, healthDocumentId, ageType, activeTab }) => {
     const [createConclusionClient] = useCreateConclusionClientMutation();
+    const [updateConclusionClient] = useUpdateConclusionClientMutation();
     const [date, setDate] = useState<string>(new Date().toISOString().slice(0, 10));
     const [sys, setSys] = useState<string>("");
     const [dia, setDia] = useState<string>("");
@@ -79,7 +81,13 @@ const BloodPressureUpdateModal: React.FC<BloodPressureUpdateModalProps> = ({ isO
                 TIME: new Date().toISOString().slice(11, 19),
             };
 
-            await createConclusionClient(payload).unwrap();
+            const idToUpdate = initialData?.id || initialData?.ID;
+
+            if (idToUpdate) {
+                await updateConclusionClient({ id: idToUpdate, data: payload }).unwrap();
+            } else {
+                await createConclusionClient(payload).unwrap();
+            }
             await Promise.resolve(onSubmit?.(payload));
 
             onClose();

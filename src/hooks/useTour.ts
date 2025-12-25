@@ -1,39 +1,60 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect } from "react"
+import {
+  useGetStartedTourByFeatureQuery,
+  useCreateStartedTourMutation,
+} from "@/store/api/startedTourApi"
 
-export const useTour = () => {
-    const [runTour, setRunTour] = useState(false);
-    const TOUR_COMPLETED_KEY = 'tour_completed';
+export const useTour = (feature: string) => {
+  const [runTour, setRunTour] = useState(false)
 
-    useEffect(() => {
-        // Check if tour has been completed before
-        const tourCompleted = localStorage.getItem(TOUR_COMPLETED_KEY);
-        if (!tourCompleted) {
-            // Small delay to ensure DOM is ready
-            const timer = setTimeout(() => {
-                setRunTour(true);
-            }, 0);
-            return () => clearTimeout(timer);
-        }
-    }, []);
+  // Check if tour has been completed via API
+  const { data: tourData, isLoading } = useGetStartedTourByFeatureQuery({
+    FEATURE: feature,
+  })
 
-    const handleTourFinish = () => {
-        setRunTour(false);
-        localStorage.setItem(TOUR_COMPLETED_KEY, 'true');
-    };
+  // Mutation to mark tour as completed
+  const [createStartedTour] = useCreateStartedTourMutation()
 
-    const startTour = () => {
-        setRunTour(true);
-    };
+  useEffect(() => {
+    // Don't start tour while loading
+    if (isLoading) {
+      return
+    }
 
-    const resetTour = () => {
-        localStorage.removeItem(TOUR_COMPLETED_KEY);
-        setRunTour(true);
-    };
+    // Check if tour has been completed before via API
+    if (!tourData?.data) {
+      // Small delay to ensure DOM is ready
+      const timer = setTimeout(() => {
+        setRunTour(true)
+      }, 500)
+      return () => clearTimeout(timer)
+    }
+  }, [tourData, isLoading])
 
-    return {
-        runTour,
-        handleTourFinish,
-        startTour,
-        resetTour,
-    };
-};
+  const handleTourFinish = async () => {
+    setRunTour(false)
+    // Save tour completion via API
+    try {
+      await createStartedTour({ FEATURE: feature }).unwrap()
+    } catch (error) {
+      console.error("Failed to save tour completion:", error)
+    }
+  }
+
+  const startTour = () => {
+    setRunTour(true)
+  }
+
+  const resetTour = () => {
+    setRunTour(true)
+  }
+
+  return {
+    runTour,
+    handleTourFinish,
+    startTour,
+    resetTour,
+    isCompleted: !!tourData?.data,
+    isLoading,
+  }
+}

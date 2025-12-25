@@ -4,9 +4,10 @@ import { Button } from "../../ui/button";
 import { Input } from "../../ui/input";
 import { Label } from "../../ui/label";
 import DatePicker from "../../ui/date-picker";
-import { useCreateConclusionClientMutation } from "@/store/api/conclusionApi";
+import { useCreateConclusionClientMutation, useUpdateConclusionClientMutation } from "@/store/api/conclusionApi";
 
 export interface LipidUpdatePayload {
+    ID?: number;
     DATE: string;
     VALUE: number;
     HEALTH_DOCUMENT_ID: number;
@@ -18,7 +19,7 @@ interface LipidUpdateModalProps {
     isOpen: boolean;
     onClose: () => void;
     onSubmit?: (data: LipidUpdatePayload) => Promise<void> | void;
-    initialData?: Partial<LipidUpdatePayload> | null;
+    initialData?: Partial<LipidUpdatePayload & { id?: number; ID?: number }> | null;
     healthDocumentId: number;
     ageType: string;
     activeTab: string;
@@ -26,6 +27,7 @@ interface LipidUpdateModalProps {
 
 const LipidUpdateModal: React.FC<LipidUpdateModalProps> = ({ isOpen, onClose, onSubmit, initialData, healthDocumentId, ageType, activeTab }) => {
     const [createConclusionClient] = useCreateConclusionClientMutation();
+    const [updateConclusionClient] = useUpdateConclusionClientMutation();
     const [date, setDate] = useState<string>(new Date().toISOString().slice(0, 10));
     const [value, setValue] = useState<string>("");
     const [submitting, setSubmitting] = useState(false);
@@ -70,7 +72,13 @@ const LipidUpdateModal: React.FC<LipidUpdateModalProps> = ({ isOpen, onClose, on
                 TIME: new Date().toISOString().slice(11, 19),
             };
 
-            await createConclusionClient(payload).unwrap();
+            const idToUpdate = initialData?.id || initialData?.ID;
+
+            if (idToUpdate) {
+                await updateConclusionClient({ id: idToUpdate, data: payload }).unwrap();
+            } else {
+                await createConclusionClient(payload).unwrap();
+            }
             await Promise.resolve(onSubmit?.(payload));
 
             onClose();
