@@ -254,7 +254,7 @@ const HealthFormPanel: React.FC<HealthFormPanelProps> = ({
             {!isEditMode && (
               <Button
                 variant="outline"
-                className="bg-white text-teal-600 hover:bg-teal-50 hover:text-teal-700 border-none font-medium transition-all duration-200 shadow-md hover:shadow-lg"
+                className="!bg-white !text-teal-600 hover:bg-teal-50 hover:text-teal-700 border-none font-medium transition-all duration-200 shadow-md hover:shadow-lg"
                 onClick={() => onEditModeChange(true)}
               >
                 <Edit2 className="w-4 h-4 mr-2" />
