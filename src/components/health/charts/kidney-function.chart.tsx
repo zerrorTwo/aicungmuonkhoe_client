@@ -220,8 +220,8 @@ export default function KidneyFunctionChart({
   }, [data, type]);
 
   useEffect(() => {
-    setStartIndex(Math.max(0, (conclusionList?.length ?? 0) - 12));
-  }, [conclusionList?.length]);
+    setStartIndex(Math.max(0, conclusionList.length - 12));
+  }, [conclusionList.length]);
 
   useEffect(() => {
     if (eChartsRef.current) {
@@ -443,8 +443,8 @@ export default function KidneyFunctionChart({
     dataZoom: [
       {
         show: false,
-        start: (startIndex / (conclusionList?.length ?? 1)) * 100,
-        end: ((startIndex + 12) / (conclusionList?.length ?? 1)) * 100
+        start: (startIndex / conclusionList.length) * 100,
+        end: ((startIndex + 12) / conclusionList.length) * 100
       }
     ]
   };
@@ -457,22 +457,23 @@ export default function KidneyFunctionChart({
           borderTopLeftRadius: '1.6rem',
           borderTopRightRadius: '1.6rem',
           overflow: 'hidden',
-          height: isMobile ? '30rem' : '40rem'
+          height: hiddenRange ? '50rem' : isMobile ? '37rem' : '70rem'
         }}
         ref={eChartsRef}
       />
-      {!(hiddenRange || data.length <= 12) && (
+      {!(hiddenRange || conclusionList.length <= 12) && (
         <div css={rangeStyles(chartWidth)}>
           <input
             type='range'
             min={0}
-            max={(conclusionList?.length ?? 0) - 12}
+            max={conclusionList.length - 12}
             step={1}
             onChange={handleZoomChange}
           />
           <span>Kéo để xem thêm chỉ số trên biểu đồ</span>
         </div>
       )}
+
     </div>
   );
 }

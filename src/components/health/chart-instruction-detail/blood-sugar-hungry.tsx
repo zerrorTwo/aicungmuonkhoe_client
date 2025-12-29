@@ -3,66 +3,76 @@ import { css } from '@emotion/react';
 import { isMobile } from 'react-device-detect';
 
 export default function BloodSugarDetailHungry() {
-    return (
-        <div css={rootStyles}>
-            <div css={itemStyles}>
-                Các khoảng tham chiếu của{' '}
-                <strong> biểu đồ theo dõi chỉ số Đường huyết lúc đói</strong> được căn
-                cứ theo Quyết định số 3087/QĐ-BYT về Hướng dẫn chẩn đoán và điều trị
-                tiền đái tháo đường; Quyết định số 5481/QĐ-BYT về Hướng dẫn chẩn đoán và
-                điều trị đái tháo đường típ 2 của Bộ Y tế và dựa theo tư vấn của Trường
-                Đại học Y tế Công cộng. Cách thức đọc biểu đồ theo dõi chỉ số Đường
-                huyết lúc đói như sau:
-            </div>
-            <div css={itemStyles}>
-                Biểu đồ theo dõi đường huyết lúc đói có trục tung (trục thẳng đứng) là
-                giá trị hàm lượng glucose huyết tương khi đói đo được và trục hoành
-                (trục nằm ngang) là ngày/tháng/năm tiến hành kiểm tra.
-            </div>
-            <div css={itemStyles}>
-                Chỉ số đường huyết lúc đói của bạn trong mỗi lần đo sẽ được hiển thị
-                bằng hình chấm tròn.
-            </div>
-            <div css={itemStyles}>
-                Vị trí của những điểm biểu thị giá trị đường huyết lúc đói của bạn sẽ có
-                ý nghĩa như sau:
-            </div>
-            <div css={basicGuideInfoStyles}>
-                <div>
-                    <span />
-                    <div>
-                        Nếu giá trị glucose nằm trong khu vực màu xanh dương (Chỉ số glucose{' '}
-                        <strong>{'<'}3,9 mmol/L</strong>): Giá trị glucose của bạn hiện được
-                        phân loại <span>Thấp hơn bình thường.</span>
-                    </div>
-                </div>
-                <div>
-                    <span />
-                    <div>
-                        Nếu giá trị glucose nằm trong khu vực màu xanh lá (Chỉ số glucose
-                        trong khoảng <strong>3,9 - 5,5 mmol/L</strong>): Giá trị glucose của
-                        bạn hiện được phân loại <span>Bình thường.</span>
-                    </div>
-                </div>
-                <div>
-                    <span />
-                    <div>
-                        Nếu giá trị glucose nằm trong khu vực màu cam (Chỉ số glucose trong
-                        khoảng <strong>5,6 - 6,9 mmol/L</strong>): Giá trị glucose của bạn
-                        hiện được phân loại <span>Tiền đái tháo đường.</span>
-                    </div>
-                </div>
-                <div>
-                    <span />
-                    <div>
-                        Nếu giá trị glucose nằm trong khu vực màu đỏ (Chỉ số glucose{' '}
-                        <strong>≥7 mmol/L</strong>): Giá trị glucose của bạn hiện được phân
-                        loại <span>Đái tháo đường.</span>
-                    </div>
-                </div>
-            </div>
+  return (
+    <div css={rootStyles}>
+      <div css={itemStyles}>
+        <strong>Đường huyết lúc đói là gì?</strong>
+        <br />
+        Đường huyết lúc đói là chỉ số đo lường nồng độ glucose trong máu sau khi bạn đã nhịn ăn ít nhất 8 tiếng (thường là vào buổi sáng trước khi ăn).
+      </div>
+      <div css={itemStyles}>
+        <strong>Tác động đến cơ thể:</strong>
+        <br />
+        Chỉ số này giúp phát hiện sớm bệnh đái tháo đường. Đường huyết lúc đói cao kéo dài có thể gây tổn thương mạch máu, thần kinh, mắt và thận.
+      </div>
+      <div css={itemStyles}>
+        Các khoảng tham chiếu của{' '}
+        <strong> biểu đồ theo dõi chỉ số Đường huyết lúc đói</strong> được căn
+        cứ theo Quyết định số 3087/QĐ-BYT về Hướng dẫn chẩn đoán và điều trị
+        tiền đái tháo đường; Quyết định số 5481/QĐ-BYT về Hướng dẫn chẩn đoán và
+        điều trị đái tháo đường típ 2 của Bộ Y tế và dựa theo tư vấn của Trường
+        Đại học Y tế Công cộng. Cách thức đọc biểu đồ theo dõi chỉ số Đường
+        huyết lúc đói như sau:
+      </div>
+      <div css={itemStyles}>
+        Biểu đồ theo dõi đường huyết lúc đói có trục tung (trục thẳng đứng) là
+        giá trị hàm lượng glucose huyết tương khi đói đo được và trục hoành
+        (trục nằm ngang) là ngày/tháng/năm tiến hành kiểm tra.
+      </div>
+      <div css={itemStyles}>
+        Chỉ số đường huyết lúc đói của bạn trong mỗi lần đo sẽ được hiển thị
+        bằng hình chấm tròn.
+      </div>
+      <div css={itemStyles}>
+        Vị trí của những điểm biểu thị giá trị đường huyết lúc đói của bạn sẽ có
+        ý nghĩa như sau:
+      </div>
+      <div css={basicGuideInfoStyles}>
+        <div>
+          <span />
+          <div>
+            Nếu giá trị glucose nằm trong khu vực màu xanh dương (Chỉ số glucose{' '}
+            <strong>{'<'}3,9 mmol/L</strong>): Giá trị glucose của bạn hiện được
+            phân loại <span>Thấp hơn bình thường.</span>
+          </div>
         </div>
-    );
+        <div>
+          <span />
+          <div>
+            Nếu giá trị glucose nằm trong khu vực màu xanh lá (Chỉ số glucose
+            trong khoảng <strong>3,9 - 5,5 mmol/L</strong>): Giá trị glucose của
+            bạn hiện được phân loại <span>Bình thường.</span>
+          </div>
+        </div>
+        <div>
+          <span />
+          <div>
+            Nếu giá trị glucose nằm trong khu vực màu cam (Chỉ số glucose trong
+            khoảng <strong>5,6 - 6,9 mmol/L</strong>): Giá trị glucose của bạn
+            hiện được phân loại <span>Tiền đái tháo đường.</span>
+          </div>
+        </div>
+        <div>
+          <span />
+          <div>
+            Nếu giá trị glucose nằm trong khu vực màu đỏ (Chỉ số glucose{' '}
+            <strong>≥7 mmol/L</strong>): Giá trị glucose của bạn hiện được phân
+            loại <span>Đái tháo đường.</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
 }
 
 const rootStyles = css`

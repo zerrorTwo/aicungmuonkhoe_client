@@ -3,56 +3,66 @@ import { css } from '@emotion/react';
 import { isMobile } from 'react-device-detect';
 
 export default function KidneyFunctionUreDetail() {
-    return (
-        <div css={rootStyles}>
-            <div css={itemStyles}>
-                Các khoảng tham chiếu của{' '}
-                <strong>biểu đồ theo dõi chỉ số Ure</strong> được căn cứ theo
-                Quyết định số 4069/QĐ-BYT về Hướng dẫn chẩn đoán và điều trị
-                bệnh thận mạn của Bộ Y tế và dựa theo tư vấn của Trường
-                Đại học Y tế Công cộng.
-            </div>
-            <div css={itemStyles}>
-                Biểu đồ theo dõi chỉ số Ure có trục tung (trục thẳng đứng) là giá
-                trị Ure trong máu đo được và trục hoành (trục nằm ngang) là
-                ngày/tháng/năm tiến hành kiểm tra.
-            </div>
-            <div css={itemStyles}>
-                Chỉ số Ure của bạn trong mỗi lần đo sẽ được hiển thị bằng hình
-                chấm tròn.
-            </div>
-            <div css={itemStyles}>
-                Vị trí của những điểm biểu thị giá trị Ure của bạn sẽ có ý nghĩa
-                như sau:
-            </div>
-            <div css={basicGuideInfoStyles}>
-                <div>
-                    <span />
-                    <div>
-                        Nếu giá trị Ure nằm trong khu vực màu xanh dương (Chỉ số{' '}
-                        <strong>{'<'}2,5 mmol/L</strong>): Giá trị Ure của bạn
-                        hiện được phân loại <span>Thấp hơn bình thường.</span>
-                    </div>
-                </div>
-                <div>
-                    <span />
-                    <div>
-                        Nếu giá trị Ure nằm trong khu vực màu xanh lá (Chỉ số
-                        trong khoảng <strong>2,5 - 7,5 mmol/L</strong>): Giá trị Ure của
-                        bạn hiện được phân loại <span>Bình thường.</span>
-                    </div>
-                </div>
-                <div>
-                    <span />
-                    <div>
-                        Nếu giá trị Ure nằm trong khu vực màu cam (Chỉ số{' '}
-                        <strong>{'>'} 7,5 mmol/L</strong>): Giá trị Ure của bạn hiện
-                        được phân loại <span>Cao hơn bình thường.</span>
-                    </div>
-                </div>
-            </div>
+  return (
+    <div css={rootStyles}>
+      <div css={itemStyles}>
+        <strong>Ure là gì?</strong>
+        <br />
+        Ure là sản phẩm cuối cùng của quá trình chuyển hóa chất đạm (protein) trong cơ thể. Ure được gan tạo ra và được thận lọc bỏ ra ngoài qua nước tiểu.
+      </div>
+      <div css={itemStyles}>
+        <strong>Tác động đến cơ thể:</strong>
+        <br />
+        Chỉ số Ure máu phản ánh chức năng thận và cân bằng protein. Mức Ure cao có thể do suy giảm chức năng thận, ăn nhiều đạm hoặc mất nước. Nồng độ quá cao có thể gây hội chứng urê huyết cao nguy hiểm.
+      </div>
+      <div css={itemStyles}>
+        Các khoảng tham chiếu của{' '}
+        <strong>biểu đồ theo dõi chỉ số Ure</strong> được căn cứ theo
+        Quyết định số 4069/QĐ-BYT về Hướng dẫn chẩn đoán và điều trị
+        bệnh thận mạn của Bộ Y tế và dựa theo tư vấn của Trường
+        Đại học Y tế Công cộng.
+      </div>
+      <div css={itemStyles}>
+        Biểu đồ theo dõi chỉ số Ure có trục tung (trục thẳng đứng) là giá
+        trị Ure trong máu đo được và trục hoành (trục nằm ngang) là
+        ngày/tháng/năm tiến hành kiểm tra.
+      </div>
+      <div css={itemStyles}>
+        Chỉ số Ure của bạn trong mỗi lần đo sẽ được hiển thị bằng hình
+        chấm tròn.
+      </div>
+      <div css={itemStyles}>
+        Vị trí của những điểm biểu thị giá trị Ure của bạn sẽ có ý nghĩa
+        như sau:
+      </div>
+      <div css={basicGuideInfoStyles}>
+        <div>
+          <span />
+          <div>
+            Nếu giá trị Ure nằm trong khu vực màu xanh dương (Chỉ số{' '}
+            <strong>{'<'}2,5 mmol/L</strong>): Giá trị Ure của bạn
+            hiện được phân loại <span>Thấp hơn bình thường.</span>
+          </div>
         </div>
-    );
+        <div>
+          <span />
+          <div>
+            Nếu giá trị Ure nằm trong khu vực màu xanh lá (Chỉ số
+            trong khoảng <strong>2,5 - 7,5 mmol/L</strong>): Giá trị Ure của
+            bạn hiện được phân loại <span>Bình thường.</span>
+          </div>
+        </div>
+        <div>
+          <span />
+          <div>
+            Nếu giá trị Ure nằm trong khu vực màu cam (Chỉ số{' '}
+            <strong>{'>'} 7,5 mmol/L</strong>): Giá trị Ure của bạn hiện
+            được phân loại <span>Cao hơn bình thường.</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
 }
 
 const rootStyles = css`

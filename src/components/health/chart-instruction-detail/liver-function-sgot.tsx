@@ -3,72 +3,82 @@ import { css } from '@emotion/react';
 import { isMobile } from 'react-device-detect';
 
 export default function LiverFunctionSGOTDetail() {
-    return (
-        <div css={rootStyles}>
-            <div css={itemStyles}>
-                Các khoảng tham chiếu của{' '}
-                <strong>biểu đồ theo dõi chỉ số SGOT/AST</strong> được căn cứ theo
-                Quyết định số 3310/QĐ-BYT về Hướng dẫn chẩn đoán và điều trị
-                bệnh gan nhiễm mỡ không do rượu của Bộ Y tế và dựa theo tư vấn của Trường
-                Đại học Y tế Công cộng.
-            </div>
-            <div css={itemStyles}>
-                Biểu đồ theo dõi chỉ số SGOT/AST có trục tung (trục thẳng đứng) là giá
-                trị SGOT/AST trong máu đo được và trục hoành (trục nằm ngang) là
-                ngày/tháng/năm tiến hành kiểm tra.
-            </div>
-            <div css={itemStyles}>
-                Chỉ số SGOT/AST của bạn trong mỗi lần đo sẽ được hiển thị bằng hình
-                chấm tròn.
-            </div>
-            <div css={itemStyles}>
-                Vị trí của những điểm biểu thị giá trị SGOT/AST của bạn sẽ có ý nghĩa
-                như sau:
-            </div>
-            <div css={genderStyles(1)}>
-                ♂ Đối với Nam:
-            </div>
-            <div css={basicGuideInfoStyles}>
-                <div>
-                    <span />
-                    <div>
-                        Nếu giá trị SGOT/AST nằm trong khu vực màu xanh lá (Chỉ số{' '}
-                        <strong>{'<'}37 U/L</strong>): Giá trị SGOT/AST của bạn
-                        hiện được phân loại <span>Bình thường.</span>
-                    </div>
-                </div>
-                <div>
-                    <span />
-                    <div>
-                        Nếu giá trị SGOT/AST nằm trong khu vực màu cam (Chỉ số{' '}
-                        <strong>≥37 U/L</strong>): Giá trị SGOT/AST của bạn hiện
-                        được phân loại <span>Cao hơn bình thường.</span>
-                    </div>
-                </div>
-            </div>
-            <div css={genderStyles(2)}>
-                ♀ Đối với Nữ:
-            </div>
-            <div css={basicGuideInfoStyles}>
-                <div>
-                    <span />
-                    <div>
-                        Nếu giá trị SGOT/AST nằm trong khu vực màu xanh lá (Chỉ số{' '}
-                        <strong>{'<'}31 U/L</strong>): Giá trị SGOT/AST của bạn
-                        hiện được phân loại <span>Bình thường.</span>
-                    </div>
-                </div>
-                <div>
-                    <span />
-                    <div>
-                        Nếu giá trị SGOT/AST nằm trong khu vực màu cam (Chỉ số{' '}
-                        <strong>≥31 U/L</strong>): Giá trị SGOT/AST của bạn hiện
-                        được phân loại <span>Cao hơn bình thường.</span>
-                    </div>
-                </div>
-            </div>
+  return (
+    <div css={rootStyles}>
+      <div css={itemStyles}>
+        <strong>SGOT (AST) là gì?</strong>
+        <br />
+        SGOT (hay AST) là một loại men (enzyme) có nhiều trong tế bào gan, tim, cơ bắp và thận. Bình thường nồng độ SGOT trong máu rất thấp.
+      </div>
+      <div css={itemStyles}>
+        <strong>Tác động đến cơ thể:</strong>
+        <br />
+        Khi tế bào gan hoặc cơ bị tổn thương, SGOT sẽ giải phóng vào máu làm chỉ số này tăng cao. Tuy nhiên, SGOT tăng không chỉ do gan mà có thể do tổn thương tim hoặc cơ.
+      </div>
+      <div css={itemStyles}>
+        Các khoảng tham chiếu của{' '}
+        <strong>biểu đồ theo dõi chỉ số SGOT/AST</strong> được căn cứ theo
+        Quyết định số 3310/QĐ-BYT về Hướng dẫn chẩn đoán và điều trị
+        bệnh gan nhiễm mỡ không do rượu của Bộ Y tế và dựa theo tư vấn của Trường
+        Đại học Y tế Công cộng.
+      </div>
+      <div css={itemStyles}>
+        Biểu đồ theo dõi chỉ số SGOT/AST có trục tung (trục thẳng đứng) là giá
+        trị SGOT/AST trong máu đo được và trục hoành (trục nằm ngang) là
+        ngày/tháng/năm tiến hành kiểm tra.
+      </div>
+      <div css={itemStyles}>
+        Chỉ số SGOT/AST của bạn trong mỗi lần đo sẽ được hiển thị bằng hình
+        chấm tròn.
+      </div>
+      <div css={itemStyles}>
+        Vị trí của những điểm biểu thị giá trị SGOT/AST của bạn sẽ có ý nghĩa
+        như sau:
+      </div>
+      <div css={genderStyles(1)}>
+        ♂ Đối với Nam:
+      </div>
+      <div css={basicGuideInfoStyles}>
+        <div>
+          <span />
+          <div>
+            Nếu giá trị SGOT/AST nằm trong khu vực màu xanh lá (Chỉ số{' '}
+            <strong>{'<'}37 U/L</strong>): Giá trị SGOT/AST của bạn
+            hiện được phân loại <span>Bình thường.</span>
+          </div>
         </div>
-    );
+        <div>
+          <span />
+          <div>
+            Nếu giá trị SGOT/AST nằm trong khu vực màu cam (Chỉ số{' '}
+            <strong>≥37 U/L</strong>): Giá trị SGOT/AST của bạn hiện
+            được phân loại <span>Cao hơn bình thường.</span>
+          </div>
+        </div>
+      </div>
+      <div css={genderStyles(2)}>
+        ♀ Đối với Nữ:
+      </div>
+      <div css={basicGuideInfoStyles}>
+        <div>
+          <span />
+          <div>
+            Nếu giá trị SGOT/AST nằm trong khu vực màu xanh lá (Chỉ số{' '}
+            <strong>{'<'}31 U/L</strong>): Giá trị SGOT/AST của bạn
+            hiện được phân loại <span>Bình thường.</span>
+          </div>
+        </div>
+        <div>
+          <span />
+          <div>
+            Nếu giá trị SGOT/AST nằm trong khu vực màu cam (Chỉ số{' '}
+            <strong>≥31 U/L</strong>): Giá trị SGOT/AST của bạn hiện
+            được phân loại <span>Cao hơn bình thường.</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
 }
 
 const rootStyles = css`

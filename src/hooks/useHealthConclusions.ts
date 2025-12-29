@@ -14,6 +14,8 @@ interface UseHealthConclusionsParams {
   page?: number
   pageSize?: number
   enabled?: boolean
+  startDate?: string | null
+  endDate?: string | null
 }
 
 export function useHealthConclusions({
@@ -24,6 +26,8 @@ export function useHealthConclusions({
   page = 1,
   pageSize = 12,
   enabled = true,
+  startDate,
+  endDate,
 }: UseHealthConclusionsParams) {
   const [chartData, setChartData] = useState<Conclusion[]>([])
 
@@ -44,6 +48,8 @@ export function useHealthConclusions({
       SORT: "desc",
       OFFSET: String(offset),
       LIMIT: String(pageSize),
+      START_TIME: startDate,
+      END_TIME: endDate,
     },
     {
       skip: !enabled || !healthDocumentId || !model,
@@ -57,6 +63,24 @@ export function useHealthConclusions({
 
   // Step 2: When pagination data arrives, extract min/max dates and fetch range data
   useEffect(() => {
+    // If explicit dates are provided, we should likely use them directly or handle them separately.
+    // However, the current logic relies on pagination data to determine valid range.
+    // If we want to force the chart to show the exact selected range:
+    if (startDate || endDate) {
+      triggerRange({
+        ID: healthDocumentId!,
+        MODEL: model,
+        AGE_TYPE: ageType,
+        ACTIVE_TAB: activeTab,
+        START_TIME: startDate || undefined,
+        END_TIME: endDate || undefined,
+        SORT: "desc",
+        OFFSET: "0",
+        LIMIT: "1000",
+      })
+      return // Skip the pagination derivation logic when explicit dates are used
+    }
+
     console.log("=== PAGINATION DATA CHANGED ===")
     console.log("paginationData:", paginationData)
 

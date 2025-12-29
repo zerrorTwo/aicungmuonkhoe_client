@@ -1,17 +1,17 @@
 /** @jsxImportSource @emotion/react */
+import { SIMPLE_DATE_FORMAT } from '@/constants/common.constant';
+import type { Conclusion } from '@/types/health';
+import { getMaxValue } from '@/utils/health';
 import { css } from '@emotion/react';
-import ReactECharts from 'echarts-for-react';
+import dayjs from 'dayjs';
 import type {
   CustomSeriesRenderItemAPI,
   CustomSeriesRenderItemParams,
   EChartsOption
 } from 'echarts';
+import ReactECharts from 'echarts-for-react';
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { SIMPLE_DATE_FORMAT } from '@/constants/common.constant';
-import dayjs from 'dayjs';
 import { isMobile } from 'react-device-detect';
-import { getMaxValue } from '@/utils/health';
-import type { Conclusion } from '@/types/health';
 // Removed: import { useAppSelector } from '@/store/hooks';
 import {
   convertDecimalDotToComma,
