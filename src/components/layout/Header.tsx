@@ -100,9 +100,9 @@ const Header: React.FC = () => {
     { label: "Trang chủ", href: "/" },
     { label: "Theo dõi sức khỏe", href: "/health-tracking" },
     { label: "Tư vấn sức khỏe", href: "/health-consulting" },
-    { label: "Liên kết tài khoản", href: "/account-linking" },
     { label: "Hồ sơ cá nhân", href: "/profile" },
     { label: "Cộng đồng", href: "/post-article" },
+    { label: "About", href: "/about" },
   ];
 
   return (
@@ -229,15 +229,6 @@ const Header: React.FC = () => {
                       >
                         <FileText className="h-4 w-4" />
                         <span>Thông tin sức khỏe</span>
-                      </Link>
-
-                      <Link
-                        to="/account-linking"
-                        className="flex items-center space-x-3 px-4 py-2 text-sm text-slate-700 transition-colors hover:bg-slate-50"
-                        onClick={() => setIsUserDropdownOpen(false)}
-                      >
-                        <Shield className="h-4 w-4" />
-                        <span>Liên kết tài khoản</span>
                       </Link>
 
                       <button

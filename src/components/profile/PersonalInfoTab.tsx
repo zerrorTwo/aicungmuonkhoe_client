@@ -1,33 +1,36 @@
-import React, { useState } from "react"
+import React, { useState } from "react";
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Edit3, X, Save } from "lucide-react"
-import { showToast, toastPromise } from "@/utils/toast"
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Edit3, X, Save, Loader2 } from "lucide-react";
+import { showToast, toastPromise } from "@/utils/toast";
 import {
   useUpdateUserProfileMutation,
   useUploadUserAvatarMutation,
   useGetUserProfileQuery,
   type UpdateUserProfileRequest,
   type UserProfileResponse,
-} from "@/store/api/userApi"
-import { useGetAllProvincesQuery, type Province } from "@/store/api/provinceApi"
-import { useGetAllGendersQuery } from "@/store/api/genderApi"
-import ProfileAvatar from "./ProfileAvatar"
-import PersonalInfoForm from "./PersonalInfoForm"
-import type { UserInfo } from "@/types/user.type"
+} from "@/store/api/userApi";
+import {
+  useGetAllProvincesQuery,
+  type Province,
+} from "@/store/api/provinceApi";
+import { useGetAllGendersQuery } from "@/store/api/genderApi";
+import ProfileAvatar from "./ProfileAvatar";
+import PersonalInfoForm from "./PersonalInfoForm";
+import type { UserInfo } from "@/types/user.type";
 
 interface PersonalInfoTabProps {
-  userInfo: UserInfo | null
+  userInfo: UserInfo | null;
 }
 
 const PersonalInfoTab: React.FC<PersonalInfoTabProps> = ({ userInfo }) => {
-  const [isEditing, setIsEditing] = useState(false)
+  const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState({
     FULL_NAME: "",
     PHONE: "",
@@ -36,29 +39,29 @@ const PersonalInfoTab: React.FC<PersonalInfoTabProps> = ({ userInfo }) => {
     AVATAR: "",
     GENDER_ID: 1,
     PROVINCE_ID: userInfo?.PROVINCE_ID, // Thêm PROVINCE_ID
-  })
-  const [avatarPreview, setAvatarPreview] = useState<string>("")
-  const [cachedProvinces, setCachedProvinces] = useState<Province[]>([]) // Cache provinces locally
+  });
+  const [avatarPreview, setAvatarPreview] = useState<string>("");
+  const [cachedProvinces, setCachedProvinces] = useState<Province[]>([]); // Cache provinces locally
   const [lastUpdateResult, setLastUpdateResult] =
-    useState<UserProfileResponse | null>(null) // Lưu result từ update
+    useState<UserProfileResponse | null>(null); // Lưu result từ update
 
   // RTK Query hooks
   const [updateUserProfile, { isLoading: isUpdating, error: updateError }] =
-    useUpdateUserProfileMutation()
-  const [uploadUserAvatar] = useUploadUserAvatarMutation()
-  const { data: provincesResponse } = useGetAllProvincesQuery()
-  const { data: gendersResponse } = useGetAllGendersQuery()
-  const { refetch: refetchUserProfile } = useGetUserProfileQuery()
+    useUpdateUserProfileMutation();
+  const [uploadUserAvatar] = useUploadUserAvatarMutation();
+  const { data: provincesResponse } = useGetAllProvincesQuery();
+  const { data: gendersResponse } = useGetAllGendersQuery();
+  const { refetch: refetchUserProfile } = useGetUserProfileQuery();
 
-  const provinces = provincesResponse?.data || cachedProvinces // Ưu tiên RTK Query, fallback cached
-  const genders = gendersResponse?.data || [] // Gender data from API
+  const provinces = provincesResponse?.data || cachedProvinces; // Ưu tiên RTK Query, fallback cached
+  const genders = gendersResponse?.data || []; // Gender data from API
 
   // Cache provinces khi load thành công
   React.useEffect(() => {
     if (provincesResponse?.data && provincesResponse.data.length > 0) {
-      setCachedProvinces(provincesResponse.data)
+      setCachedProvinces(provincesResponse.data);
     }
-  }, [provincesResponse])
+  }, [provincesResponse]);
 
   // Helper function để convert address ID thành tên province
   const getAddressDisplayName = (
@@ -66,7 +69,7 @@ const PersonalInfoTab: React.FC<PersonalInfoTabProps> = ({ userInfo }) => {
     fallbackId?: number | null | undefined
   ): string => {
     if (typeof address === "string" && address) {
-      return address // Nếu đã là string thì return luôn
+      return address; // Nếu đã là string thì return luôn
     }
 
     if (
@@ -78,26 +81,26 @@ const PersonalInfoTab: React.FC<PersonalInfoTabProps> = ({ userInfo }) => {
       // Nếu là object có ID, tìm province name
       const province = provinces.find(
         (p) => p.PROVINCE_ID === (address as { ID: number }).ID
-      )
-      const result = province ? province.NAME_WITH_TYPE : ""
-      return result
+      );
+      const result = province ? province.NAME_WITH_TYPE : "";
+      return result;
     }
 
     // If address is numeric ID
     if (typeof address === "number") {
-      const province = provinces.find((p) => p.PROVINCE_ID === address)
-      const result = province ? province.NAME_WITH_TYPE : ""
-      return result
+      const province = provinces.find((p) => p.PROVINCE_ID === address);
+      const result = province ? province.NAME_WITH_TYPE : "";
+      return result;
     }
 
     if (fallbackId) {
-      const province = provinces.find((p) => p.PROVINCE_ID === fallbackId)
-      const result = province ? province.NAME_WITH_TYPE : ""
-      return result
+      const province = provinces.find((p) => p.PROVINCE_ID === fallbackId);
+      const result = province ? province.NAME_WITH_TYPE : "";
+      return result;
     }
 
-    return ""
-  }
+    return "";
+  };
 
   const getprovinceId = (
     address: unknown,
@@ -110,24 +113,24 @@ const PersonalInfoTab: React.FC<PersonalInfoTabProps> = ({ userInfo }) => {
       "ID" in address &&
       typeof (address as { ID?: unknown }).ID === "number"
     ) {
-      return (address as { ID: number }).ID
+      return (address as { ID: number }).ID;
     }
     // Case 1b: address is already a number ID
     if (typeof address === "number") {
-      return address
+      return address;
     }
     // Case 2: We only have a display string; map it to province ID
     if (typeof address === "string" && address && provinces.length > 0) {
       const found = provinces.find(
         (p) =>
           p.NAME_WITH_TYPE.trim().toLowerCase() === address.trim().toLowerCase()
-      )
-      if (found) return found.PROVINCE_ID
+      );
+      if (found) return found.PROVINCE_ID;
     }
     // Case 3: Use explicit fallbackId from backend if provided
-    if ((!address || address === "") && fallbackId) return fallbackId
-    return undefined
-  }
+    if ((!address || address === "") && fallbackId) return fallbackId;
+    return undefined;
+  };
 
   // Initialize form data khi userInfo thay đổi
   React.useEffect(() => {
@@ -135,53 +138,53 @@ const PersonalInfoTab: React.FC<PersonalInfoTabProps> = ({ userInfo }) => {
     if (userInfo && provinces.length > 0) {
       // QUAN TRỌNG: Không reset formData nếu userInfo.PROVINCE rỗng nhưng formData.PROVINCE đã có
       const currentHasAddress =
-        formData.PROVINCE && formData.PROVINCE.trim() !== ""
-      const userInfoIsEmpty = !userInfo.PROVINCE || userInfo.PROVINCE === ""
+        formData.PROVINCE && formData.PROVINCE.trim() !== "";
+      const userInfoIsEmpty = !userInfo.PROVINCE || userInfo.PROVINCE === "";
 
       if (currentHasAddress && userInfoIsEmpty) {
-        return // Không reset formData
+        return; // Không reset formData
       }
 
       // LOGIC ĐƠN GIẢN: Nếu localStorage có address là số (như 3), dùng số đó làm ID
-      let provinceId = userInfo.PROVINCE_ID
-      let addressDisplayName = ""
+      let provinceId = userInfo.PROVINCE_ID;
+      let addressDisplayName = "";
 
       // Case 1: userInfo.PROVINCE là số (từ localStorage)
       if (typeof userInfo.PROVINCE === "number") {
-        provinceId = userInfo.PROVINCE
+        provinceId = userInfo.PROVINCE;
         const province = provinces.find(
           (p) => p.PROVINCE_ID === userInfo.PROVINCE
-        )
-        addressDisplayName = province ? province.NAME_WITH_TYPE : ""
+        );
+        addressDisplayName = province ? province.NAME_WITH_TYPE : "";
         console.log(
           "Found province for ID",
           userInfo.PROVINCE,
           ":",
           province?.NAME_WITH_TYPE
-        )
+        );
       }
       // Case 2: userInfo.PROVINCE là object {ID: X}
 
       // Case 3: userInfo.PROVINCE là string (tên tỉnh)
       else if (typeof userInfo.PROVINCE === "string" && userInfo.PROVINCE) {
-        addressDisplayName = userInfo.PROVINCE
+        addressDisplayName = userInfo.PROVINCE;
         const province = provinces.find(
           (p) => p.NAME_WITH_TYPE === userInfo.PROVINCE
-        )
-        provinceId = province ? province.PROVINCE_ID : undefined
+        );
+        provinceId = province ? province.PROVINCE_ID : undefined;
       }
       // Case 4: Dùng provinceId fallback
       else if (userInfo.PROVINCE_ID) {
-        provinceId = userInfo.PROVINCE_ID
+        provinceId = userInfo.PROVINCE_ID;
         const province = provinces.find(
           (p) => p.PROVINCE_ID === userInfo.PROVINCE_ID
-        )
-        addressDisplayName = province ? province.NAME_WITH_TYPE : ""
+        );
+        addressDisplayName = province ? province.NAME_WITH_TYPE : "";
       }
 
       // Get gender ID from API
-      const genderFromApi = genders.find((g) => g.NAME === userInfo.GENDER)
-      const genderId = genderFromApi?.ID || 7 // Default to 7 (NAM) if not found
+      const genderFromApi = genders.find((g) => g.NAME === userInfo.GENDER);
+      const genderId = genderFromApi?.ID || 7; // Default to 7 (NAM) if not found
 
       setFormData({
         FULL_NAME: userInfo.FULL_NAME || "",
@@ -191,66 +194,66 @@ const PersonalInfoTab: React.FC<PersonalInfoTabProps> = ({ userInfo }) => {
         AVATAR: userInfo.AVATAR || "",
         GENDER_ID: genderId,
         PROVINCE_ID: provinceId, // ID để gửi lên backend
-      })
-      setAvatarPreview(userInfo.AVATAR || "")
+      });
+      setAvatarPreview(userInfo.AVATAR || "");
     }
-  }, [userInfo, provinces]) // Dependency trên provinces (bao gồm cả cached)
+  }, [userInfo, provinces]); // Dependency trên provinces (bao gồm cả cached)
 
   // Effect xử lý update result khi provinces ready
   React.useEffect(() => {
     if (lastUpdateResult?.data?.PROVINCE && provinces.length > 0) {
       const newAddressDisplayName = getAddressDisplayName(
         lastUpdateResult.data.PROVINCE
-      )
-      const newprovinceId = getprovinceId(lastUpdateResult.data.PROVINCE)
+      );
+      const newprovinceId = getprovinceId(lastUpdateResult.data.PROVINCE);
 
       // LUÔN CẬP NHẬT FORMDATA, KHÔNG CẦN CHECK newAddressDisplayName
       setFormData((prev) => {
-        console.log("Updating formData from saved result...")
+        console.log("Updating formData from saved result...");
         const updated = {
           ...prev,
           PROVINCE: newAddressDisplayName || `ID: ${newprovinceId}`, // Fallback hiển thị ID nếu không tìm được tên
           PROVINCE_ID: newprovinceId,
-        }
-        return updated
-      })
+        };
+        return updated;
+      });
 
       // Clear saved result sau khi xử lý xong
-      setLastUpdateResult(null)
+      setLastUpdateResult(null);
     }
-  }, [lastUpdateResult, provinces]) // Trigger khi có result mới hoặc provinces ready
+  }, [lastUpdateResult, provinces]); // Trigger khi có result mới hoặc provinces ready
 
   // Handle avatar file selection
   const handleAvatarChange = async (file: File | null) => {
     if (!file) {
-      setAvatarPreview(userInfo?.AVATAR || "")
-      return
+      setAvatarPreview(userInfo?.AVATAR || "");
+      return;
     }
 
     // Validate file
-    const maxSize = 5 * 1024 * 1024 // 5MB
-    const allowedTypes = ["image/jpeg", "image/jpg", "image/png", "image/webp"]
+    const maxSize = 5 * 1024 * 1024; // 5MB
+    const allowedTypes = ["image/jpeg", "image/jpg", "image/png", "image/webp"];
 
     if (file.size > maxSize) {
-      showToast.error("Kích thước file quá lớn. Tối đa 5MB.")
-      return
+      showToast.error("Kích thước file quá lớn. Tối đa 5MB.");
+      return;
     }
 
     if (!allowedTypes.includes(file.type)) {
       showToast.error(
         "Định dạng file không hỗ trợ. Chỉ chấp nhận JPG, PNG, WebP."
-      )
-      return
+      );
+      return;
     }
 
     // Create preview URL immediately
-    const previewUrl = URL.createObjectURL(file)
-    setAvatarPreview(previewUrl)
+    const previewUrl = URL.createObjectURL(file);
+    setAvatarPreview(previewUrl);
 
     // Upload avatar immediately
     try {
-      const formData = new FormData()
-      formData.append("avatar", file)
+      const formData = new FormData();
+      formData.append("avatar", file);
 
       // // Check if FormData has avatar
       // const hasAvatar = formData.has("avatar");
@@ -260,30 +263,30 @@ const PersonalInfoTab: React.FC<PersonalInfoTabProps> = ({ userInfo }) => {
         loading: "Đang upload ảnh đại diện...",
         success: "Cập nhật ảnh đại diện thành công!",
         error: "Có lỗi xảy ra khi upload ảnh!",
-      })
+      });
 
       // Update localStorage with new user data after successful avatar upload
       if (result?.data) {
-        const currentUser = localStorage.getItem("user")
+        const currentUser = localStorage.getItem("user");
         if (currentUser) {
-          const userData = JSON.parse(currentUser)
+          const userData = JSON.parse(currentUser);
           const updatedUserData = {
             ...userData,
             FACE_IMAGE: result.data.AVATAR,
-          }
-          localStorage.setItem("user", JSON.stringify(updatedUserData))
+          };
+          localStorage.setItem("user", JSON.stringify(updatedUserData));
           console.log(
             "Updated localStorage user data after avatar upload:",
             updatedUserData
-          )
+          );
         }
       }
     } catch (error) {
-      console.error("Avatar upload failed:", error)
+      console.error("Avatar upload failed:", error);
       // Revert preview on error
-      setAvatarPreview(userInfo?.AVATAR || "")
+      setAvatarPreview(userInfo?.AVATAR || "");
     }
-  }
+  };
 
   const handleSave = async () => {
     try {
@@ -291,44 +294,46 @@ const PersonalInfoTab: React.FC<PersonalInfoTabProps> = ({ userInfo }) => {
       const currentAddressDisplayName = getAddressDisplayName(
         userInfo?.PROVINCE,
         userInfo?.PROVINCE_ID
-      )
+      );
 
       // Get current gender ID from API
-      const currentGenderFromApi = genders.find((g) => g.NAME === userInfo?.GENDER)
-      const currentGenderId = currentGenderFromApi?.ID || 7 // Default to 7 (NAM) if not found
+      const currentGenderFromApi = genders.find(
+        (g) => g.NAME === userInfo?.GENDER
+      );
+      const currentGenderId = currentGenderFromApi?.ID || 7; // Default to 7 (NAM) if not found
 
       const hasTextChanges =
         formData.FULL_NAME !== userInfo?.FULL_NAME ||
         formData.PHONE !== userInfo?.PHONE ||
         formData.DOB !== userInfo?.DOB ||
         formData.PROVINCE !== currentAddressDisplayName ||
-        formData.GENDER_ID !== currentGenderId
+        formData.GENDER_ID !== currentGenderId;
 
       if (!hasTextChanges) {
-        showToast.info("Không có thay đổi nào để lưu")
-        setIsEditing(false)
-        return
+        showToast.info("Không có thay đổi nào để lưu");
+        setIsEditing(false);
+        return;
       }
 
       // Prepare JSON data for profile update (text fields only)
-      const updateData: UpdateUserProfileRequest = {}
+      const updateData: UpdateUserProfileRequest = {};
 
       if (formData.FULL_NAME !== userInfo?.FULL_NAME) {
-        updateData.FULL_NAME = formData.FULL_NAME
+        updateData.FULL_NAME = formData.FULL_NAME;
       }
       if (formData.PHONE !== userInfo?.PHONE) {
-        updateData.PHONE = formData.PHONE
+        updateData.PHONE = formData.PHONE;
       }
       if (formData.DOB !== userInfo?.DOB) {
-        updateData.DOB = formData.DOB
+        updateData.DOB = formData.DOB;
       }
       if (formData.PROVINCE !== currentAddressDisplayName) {
         // Ensure we have an PROVINCE_ID; if missing, derive from address string
-        let addrId = formData.PROVINCE_ID
+        let addrId = formData.PROVINCE_ID;
         if (!addrId) {
-          addrId = getprovinceId(formData.PROVINCE, userInfo?.PROVINCE_ID)
+          addrId = getprovinceId(formData.PROVINCE, userInfo?.PROVINCE_ID);
         }
-        updateData.PROVINCE_ID = addrId // Gửi provinceId thay vì address
+        updateData.PROVINCE_ID = addrId; // Gửi provinceId thay vì address
       }
 
       // SPECIAL CASE: Nếu user chọn tỉnh lần đầu (từ rỗng sang có value)
@@ -340,13 +345,13 @@ const PersonalInfoTab: React.FC<PersonalInfoTabProps> = ({ userInfo }) => {
         console.log(
           "First time selecting province, sending provinceId:",
           formData.PROVINCE_ID
-        )
-        updateData.PROVINCE_ID = formData.PROVINCE_ID
+        );
+        updateData.PROVINCE_ID = formData.PROVINCE_ID;
       }
 
       // Use the currentGenderId already calculated above
       if (formData.GENDER_ID !== currentGenderId) {
-        updateData.GENDER_ID = formData.GENDER_ID
+        updateData.GENDER_ID = formData.GENDER_ID;
       }
 
       // console.log("Update data:", updateData);
@@ -360,17 +365,17 @@ const PersonalInfoTab: React.FC<PersonalInfoTabProps> = ({ userInfo }) => {
           success: "Cập nhật thông tin thành công!",
           error: "Có lỗi xảy ra khi cập nhật thông tin!",
         }
-      )
+      );
       // console.log("Update result:", result);
 
       // Lưu result để xử lý sau khi provinces ready
-      setLastUpdateResult(result)
+      setLastUpdateResult(result);
 
       // Update localStorage with new user data after successful profile update
       if (result?.data) {
-        const currentUser = localStorage.getItem("user")
+        const currentUser = localStorage.getItem("user");
         if (currentUser) {
-          const userData = JSON.parse(currentUser)
+          const userData = JSON.parse(currentUser);
 
           // Handle address from backend response (string | { ID } | number)
           // let updatedAddress = userData.address;
@@ -398,23 +403,23 @@ const PersonalInfoTab: React.FC<PersonalInfoTabProps> = ({ userInfo }) => {
             // address: updatedAddress, // Sử dụng address đã được convert
 
             //FACE_IMAGE: result.data.AVATAR || userData.FACE_IMAGE,
-          }
-          localStorage.setItem("user", JSON.stringify(updatedUserData))
+          };
+          localStorage.setItem("user", JSON.stringify(updatedUserData));
           console.log(
             "Updated localStorage user data after profile update:",
             updatedUserData
-          )
+          );
 
           // Refetch user profile để cập nhật userInfo từ parent
-          refetchUserProfile()
+          refetchUserProfile();
         }
       }
 
-      setIsEditing(false)
+      setIsEditing(false);
     } catch (error) {
-      console.error("Update failed:", error)
+      console.error("Update failed:", error);
     }
-  }
+  };
 
   // Đảm bảo userInfo có đầy đủ properties với default values
   // const safeUserInfo = {
@@ -503,33 +508,36 @@ const PersonalInfoTab: React.FC<PersonalInfoTabProps> = ({ userInfo }) => {
         )}
 
         {isEditing && (
-          <div className="flex justify-end space-x-4">
+          <div className="flex justify-end space-x-3">
             <Button
-              className="cursor-pointer"
               variant="outline"
               onClick={() => setIsEditing(false)}
+              className="cursor-pointer rounded-lg border-2 border-gray-300 px-6 py-2 font-semibold transition-all duration-200 hover:border-gray-400 hover:bg-gray-50"
             >
               Hủy
             </Button>
             <Button
               onClick={handleSave}
               disabled={isUpdating}
-              className="bg-gradient-primary flex cursor-pointer items-center justify-center gap-2 hover:opacity-90"
+              className="group relative cursor-pointer overflow-hidden rounded-lg bg-gradient-to-r from-emerald-500 to-teal-500 px-6 py-2 font-semibold text-white shadow-md transition-all duration-200 hover:scale-[1.02] hover:shadow-lg hover:shadow-emerald-200/50 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:scale-100"
             >
               {isUpdating ? (
-                "Đang lưu..."
+                <span className="flex items-center gap-2">
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  Đang lưu...
+                </span>
               ) : (
-                <>
-                  <Save className="ml-2 h-4 w-4" />
-                  <span>Lưu thay đổi</span>
-                </>
+                <span className="flex items-center gap-2">
+                  <Save className="h-4 w-4" />
+                  Lưu thay đổi
+                </span>
               )}
             </Button>
           </div>
         )}
       </CardContent>
     </Card>
-  )
-}
+  );
+};
 
-export default PersonalInfoTab
+export default PersonalInfoTab;
