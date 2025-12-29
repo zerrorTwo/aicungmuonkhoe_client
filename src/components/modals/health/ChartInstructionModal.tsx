@@ -1,4 +1,4 @@
-import React from 'react';
+
 import ModalOverlay from '../ModalOverlay';
 import {
     AcidUric,
@@ -13,34 +13,49 @@ import {
     KidneyFunctionCreatinine,
     LiverFunctionSGOT,
     LiverFunctionSGPT,
-    BloodPressure
+    BloodPressure,
+    BMIAboveNineTeen,
+    BMIFiveToTwelve,
+    BMITwelveToNineTeen,
+    BMIZeroToFive,
+    BMI as BMIGeneral
 } from '@/components/health/chart-instruction';
+import { BMIAgeRange, BMIChildrenTabs } from '@/enum/health';
 
 interface ChartInstructionModalProps {
     isOpen: boolean;
     onClose: () => void;
     chartType: string;
     variant?: string;
+    bmiAgeRange?: BMIAgeRange;
+    bmiTab?: BMIChildrenTabs;
 }
 
-const ChartInstructionModal: React.FC<ChartInstructionModalProps> = ({
+export default function ChartInstructionModal({
     isOpen,
     onClose,
     chartType,
-    variant
-}) => {
+    variant,
+    bmiAgeRange,
+    bmiTab
+}: ChartInstructionModalProps) {
+    if (!isOpen) return null;
+
     const renderInstructionContent = () => {
         switch (chartType) {
             case 'AcidUric':
+            case 'ACID_URIC':
                 return <AcidUric />;
 
             case 'BloodSugar':
+            case 'BLOOD_SUGAR':
                 if (variant === 'fasting') return <BloodSugarHungry />;
                 if (variant === 'twoHours') return <BloodSugar2Hours />;
                 if (variant === 'hba1c') return <BloodSugarHbA1c />;
                 return <BloodSugarHungry />;
 
             case 'BloodLipid':
+            case 'BLOOD_LIPID':
                 if (variant === 'total') return <BloodLipidCholesterol />;
                 if (variant === 'ldl') return <BloodLipidLDL />;
                 if (variant === 'hdl') return <BloodLipidHDL />;
@@ -48,17 +63,33 @@ const ChartInstructionModal: React.FC<ChartInstructionModalProps> = ({
                 return <BloodLipidCholesterol />;
 
             case 'KidneyFunction':
+            case 'KIDNEY_FUNCTION':
                 if (variant === 'creatinine') return <KidneyFunctionCreatinine />;
-                if (variant === 'urea') return <KidneyFunctionUre />;
-                return <KidneyFunctionCreatinine />;
+                return <KidneyFunctionUre />;
 
             case 'LiverFunction':
+            case 'LIVER_FUNCTION':
                 if (variant === 'ALT') return <LiverFunctionSGPT />;
-                if (variant === 'AST') return <LiverFunctionSGOT />;
-                return <LiverFunctionSGPT />;
+                return <LiverFunctionSGOT />;
 
             case 'BloodPressure':
+            case 'BLOOD_PRESSURE':
                 return <BloodPressure />;
+
+            case 'BMI':
+                if (bmiAgeRange === BMIAgeRange.EQUAL_MORE_THAN_70 || bmiAgeRange === BMIAgeRange.FROM_20_LESS_THEN_70) {
+                    return <BMIAboveNineTeen />;
+                }
+                if (bmiAgeRange === BMIAgeRange.FROM_12_LESS_THAN_20) {
+                    return <BMITwelveToNineTeen />;
+                }
+                if (bmiAgeRange === BMIAgeRange.FROM_5_LESS_THAN_12) {
+                    return <BMIFiveToTwelve />;
+                }
+                if (bmiAgeRange === BMIAgeRange.FROM_0_LESS_THAN_5) {
+                    return <BMIZeroToFive bmiTab={bmiTab || BMIChildrenTabs.WeightHeight} />;
+                }
+                return <BMIGeneral />;
 
             default:
                 return (
@@ -109,4 +140,4 @@ const ChartInstructionModal: React.FC<ChartInstructionModalProps> = ({
     );
 };
 
-export default ChartInstructionModal;
+

@@ -3,72 +3,82 @@ import { css } from '@emotion/react';
 import { isMobile } from 'react-device-detect';
 
 export default function LiverFunctionSGPTDetail() {
-    return (
-        <div css={rootStyles}>
-            <div css={itemStyles}>
-                Các khoảng tham chiếu của{' '}
-                <strong>biểu đồ theo dõi chỉ số SGPT/ALT</strong> được căn cứ theo
-                Quyết định số 3310/QĐ-BYT về Hướng dẫn chẩn đoán và điều trị
-                bệnh gan nhiễm mỡ không do rượu của Bộ Y tế và dựa theo tư vấn của Trường
-                Đại học Y tế Công cộng.
-            </div>
-            <div css={itemStyles}>
-                Biểu đồ theo dõi chỉ số SGPT/ALT có trục tung (trục thẳng đứng) là giá
-                trị SGPT/ALT trong máu đo được và trục hoành (trục nằm ngang) là
-                ngày/tháng/năm tiến hành kiểm tra.
-            </div>
-            <div css={itemStyles}>
-                Chỉ số SGPT/ALT của bạn trong mỗi lần đo sẽ được hiển thị bằng hình
-                chấm tròn.
-            </div>
-            <div css={itemStyles}>
-                Vị trí của những điểm biểu thị giá trị SGPT/ALT của bạn sẽ có ý nghĩa
-                như sau:
-            </div>
-            <div css={genderStyles(1)}>
-                ♂ Đối với Nam:
-            </div>
-            <div css={basicGuideInfoStyles}>
-                <div>
-                    <span />
-                    <div>
-                        Nếu giá trị SGPT/ALT nằm trong khu vực màu xanh lá (Chỉ số{' '}
-                        <strong>{'<'}40 U/L</strong>): Giá trị SGPT/ALT của bạn
-                        hiện được phân loại <span>Bình thường.</span>
-                    </div>
-                </div>
-                <div>
-                    <span />
-                    <div>
-                        Nếu giá trị SGPT/ALT nằm trong khu vực màu cam (Chỉ số{' '}
-                        <strong>≥40 U/L</strong>): Giá trị SGPT/ALT của bạn hiện
-                        được phân loại <span>Cao hơn bình thường.</span>
-                    </div>
-                </div>
-            </div>
-            <div css={genderStyles(2)}>
-                ♀ Đối với Nữ:
-            </div>
-            <div css={basicGuideInfoStyles}>
-                <div>
-                    <span />
-                    <div>
-                        Nếu giá trị SGPT/ALT nằm trong khu vực màu xanh lá (Chỉ số{' '}
-                        <strong>{'<'}31 U/L</strong>): Giá trị SGPT/ALT của bạn
-                        hiện được phân loại <span>Bình thường.</span>
-                    </div>
-                </div>
-                <div>
-                    <span />
-                    <div>
-                        Nếu giá trị SGPT/ALT nằm trong khu vực màu cam (Chỉ số{' '}
-                        <strong>≥31 U/L</strong>): Giá trị SGPT/ALT của bạn hiện
-                        được phân loại <span>Cao hơn bình thường.</span>
-                    </div>
-                </div>
-            </div>
+  return (
+    <div css={rootStyles}>
+      <div css={itemStyles}>
+        <strong>SGPT (ALT) là gì?</strong>
+        <br />
+        SGPT (hay ALT) là loại men chủ yếu tìm thấy trong gan và có vai trò quan trọng trong việc chuyển hóa thức ăn thành năng lượng.
+      </div>
+      <div css={itemStyles}>
+        <strong>Tác động đến cơ thể:</strong>
+        <br />
+        SGPT là chỉ số đặc hiệu nhất để đánh giá tổn thương gan. Khi tế bào gan bị viêm hoặc hoại tử (do virus, rượu, thuốc...), SGPT sẽ thấm vào máu, làm nồng độ tăng cao.
+      </div>
+      <div css={itemStyles}>
+        Các khoảng tham chiếu của{' '}
+        <strong>biểu đồ theo dõi chỉ số SGPT/ALT</strong> được căn cứ theo
+        Quyết định số 3310/QĐ-BYT về Hướng dẫn chẩn đoán và điều trị
+        bệnh gan nhiễm mỡ không do rượu của Bộ Y tế và dựa theo tư vấn của Trường
+        Đại học Y tế Công cộng.
+      </div>
+      <div css={itemStyles}>
+        Biểu đồ theo dõi chỉ số SGPT/ALT có trục tung (trục thẳng đứng) là giá
+        trị SGPT/ALT trong máu đo được và trục hoành (trục nằm ngang) là
+        ngày/tháng/năm tiến hành kiểm tra.
+      </div>
+      <div css={itemStyles}>
+        Chỉ số SGPT/ALT của bạn trong mỗi lần đo sẽ được hiển thị bằng hình
+        chấm tròn.
+      </div>
+      <div css={itemStyles}>
+        Vị trí của những điểm biểu thị giá trị SGPT/ALT của bạn sẽ có ý nghĩa
+        như sau:
+      </div>
+      <div css={genderStyles(1)}>
+        ♂ Đối với Nam:
+      </div>
+      <div css={basicGuideInfoStyles}>
+        <div>
+          <span />
+          <div>
+            Nếu giá trị SGPT/ALT nằm trong khu vực màu xanh lá (Chỉ số{' '}
+            <strong>{'<'}40 U/L</strong>): Giá trị SGPT/ALT của bạn
+            hiện được phân loại <span>Bình thường.</span>
+          </div>
         </div>
-    );
+        <div>
+          <span />
+          <div>
+            Nếu giá trị SGPT/ALT nằm trong khu vực màu cam (Chỉ số{' '}
+            <strong>≥40 U/L</strong>): Giá trị SGPT/ALT của bạn hiện
+            được phân loại <span>Cao hơn bình thường.</span>
+          </div>
+        </div>
+      </div>
+      <div css={genderStyles(2)}>
+        ♀ Đối với Nữ:
+      </div>
+      <div css={basicGuideInfoStyles}>
+        <div>
+          <span />
+          <div>
+            Nếu giá trị SGPT/ALT nằm trong khu vực màu xanh lá (Chỉ số{' '}
+            <strong>{'<'}31 U/L</strong>): Giá trị SGPT/ALT của bạn
+            hiện được phân loại <span>Bình thường.</span>
+          </div>
+        </div>
+        <div>
+          <span />
+          <div>
+            Nếu giá trị SGPT/ALT nằm trong khu vực màu cam (Chỉ số{' '}
+            <strong>≥31 U/L</strong>): Giá trị SGPT/ALT của bạn hiện
+            được phân loại <span>Cao hơn bình thường.</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
 }
 
 const rootStyles = css`

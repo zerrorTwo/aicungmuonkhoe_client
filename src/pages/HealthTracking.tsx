@@ -32,8 +32,12 @@ import {
 import { useHealthConclusions } from "@/hooks/useHealthConclusions"
 import { toast } from "react-toastify"
 import { useDeleteConclusionClientMutation } from "@/store/api/conclusionApi"
+import DateRangeFilter from "@/components/health/DateRangeFilter"
+import dayjs, { Dayjs } from "dayjs"
 
-// Import advanced chart components with WHO standards
+// ... existing code ...
+
+
 import AcidUricChart from "@/components/health/charts/acid-uric.chart"
 import BloodLipidChart from "@/components/health/charts/blood-lipid.chart"
 import BloodPressureChart from "@/components/health/charts/blood-pressure.chart"
@@ -140,6 +144,11 @@ export default function HealthTracking() {
     KidneyFunctionTabs.Creatinine
   )
   const [editingItem, setEditingItem] = useState<any>(null)
+
+  // Date filter state
+  const [startDate, setStartDate] = useState<Dayjs | null>(null)
+  const [endDate, setEndDate] = useState<Dayjs | null>(null)
+  const [isDateFilterOpen, setIsDateFilterOpen] = useState(false)
 
   // State to hold current chart data (from API range)
   // const [currentChartData, setCurrentChartData] = useState<any>(null);
@@ -341,6 +350,8 @@ export default function HealthTracking() {
         return kidneyVariant
       case HealthIndex.BMI:
         return activeTab
+      case HealthIndex.AcidUric:
+        return "ACID_URIC"
       default:
         return ""
     }
@@ -362,6 +373,8 @@ export default function HealthTracking() {
     page: currentPage,
     pageSize,
     enabled: !!selectedAccount && !!selectedIndex,
+    startDate: startDate ? startDate.format('YYYY-MM-DD') : undefined,
+    endDate: endDate ? endDate.format('YYYY-MM-DD') : undefined,
   })
 
   // Refetch data when account changes (including URL changes)
@@ -640,7 +653,11 @@ export default function HealthTracking() {
               </div>
 
               <div className="flex items-center gap-2">
-                <Button variant="outline" size="small">
+                <Button
+                  variant={isDateFilterOpen ? "default" : "outline"}
+                  size="small"
+                  onClick={() => setIsDateFilterOpen(!isDateFilterOpen)}
+                >
                   <Clock className="mr-2 h-4 w-4" />
                   Lọc thời gian
                 </Button>
@@ -665,6 +682,18 @@ export default function HealthTracking() {
                 </Button>
               </div>
             </div>
+
+            {/* Date Range Filter */}
+            {isDateFilterOpen && (
+              <div className="mb-6 flex justify-end animate-in fade-in slide-in-from-top-2">
+                <DateRangeFilter
+                  startDate={startDate}
+                  endDate={endDate}
+                  onStartDateChange={(date) => setStartDate(date)}
+                  onEndDateChange={(date) => setEndDate(date)}
+                />
+              </div>
+            )}
 
             {/* BMI Tabs for children */}
             {selectedIndex === HealthIndex.BMI &&
@@ -959,6 +988,8 @@ export default function HealthTracking() {
               isOpen={isInstructionOpen}
               onClose={() => setInstructionOpen(false)}
               chartType={selectedIndex}
+              bmiAgeRange={ageRange}
+              bmiTab={activeTab}
               variant={
                 selectedIndex === HealthIndex.BloodSugar
                   ? sugarVariant === BloodSugarTabs.Hungry

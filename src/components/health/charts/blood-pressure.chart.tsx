@@ -1,4 +1,5 @@
 import { SIMPLE_DATE_FORMAT } from '@/constants/common.constant';
+import { BloodPressureTabs } from '@/enum/health';
 import type { Conclusion } from '@/types/health';
 import { createSteppedArray, fillDatesToTwelve } from '@/utils/common';
 import { getMaxValue } from '@/utils/health';
@@ -15,7 +16,6 @@ import React, {
   useState
 } from 'react';
 import { isMobile } from 'react-device-detect';
-import { BloodPressureTabs } from '@/enum/health';
 
 type BloodPressureChartProps = {
   loading: boolean;
@@ -117,8 +117,8 @@ const BloodPressureChart = forwardRef(
     }, [loading]);
 
     useEffect(() => {
-      setStartIndex(Math.max(0, (conclusionList?.length ?? 0) - 12));
-    }, [conclusionList?.length]);
+      setStartIndex(Math.max(0, conclusionList.length - 12));
+    }, [conclusionList.length]);
 
     const handleZoomChange = (event: React.ChangeEvent<HTMLInputElement>) => {
       const newStartIndex = Number(event.target.value);
@@ -383,8 +383,8 @@ const BloodPressureChart = forwardRef(
       dataZoom: [
         {
           show: false,
-          start: (startIndex / (conclusionList?.length ?? 1)) * 100,
-          end: ((startIndex + 12) / (conclusionList?.length ?? 1)) * 100
+          start: (startIndex / conclusionList.length) * 100,
+          end: ((startIndex + 12) / conclusionList.length) * 100
         }
       ]
     };
@@ -399,17 +399,16 @@ const BloodPressureChart = forwardRef(
             borderBottomLeftRadius: hiddenRange ? '1.6rem' : 0,
             borderBottomRightRadius: hiddenRange ? '1.6rem' : 0,
             overflow: 'hidden',
-            height: hiddenRange ? '30rem' : isMobile ? '30rem' : '40rem',
-            width: '100%'
+            height: hiddenRange ? '50rem' : isMobile ? '37rem' : '70rem'
           }}
           ref={eChartsRef}
         />
-        {!(hiddenRange || (conclusionList?.length ?? 0) <= 12) && (
+        {!(hiddenRange || conclusionList.length <= 12) && (
           <div css={rangeStyles(chartWidth)}>
             <input
               type='range'
               min={0}
-              max={(conclusionList?.length ?? 0) - 12}
+              max={conclusionList.length - 12}
               step={1}
               onChange={handleZoomChange}
             />

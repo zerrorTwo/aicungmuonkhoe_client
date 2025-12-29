@@ -3,88 +3,98 @@ import { css } from '@emotion/react';
 import { isMobile } from 'react-device-detect';
 
 export default function KidneyFunctionCreatinineDetail() {
-    return (
-        <div css={rootStyles}>
-            <div css={itemStyles}>
-                Các khoảng tham chiếu của{' '}
-                <strong>biểu đồ theo dõi chỉ số Creatinine</strong> được căn cứ theo
-                Quyết định số 4069/QĐ-BYT về Hướng dẫn chẩn đoán và điều trị
-                bệnh thận mạn của Bộ Y tế và dựa theo tư vấn của Trường
-                Đại học Y tế Công cộng.
-            </div>
-            <div css={itemStyles}>
-                Biểu đồ theo dõi chỉ số Creatinine có trục tung (trục thẳng đứng) là giá
-                trị Creatinine trong máu đo được và trục hoành (trục nằm ngang) là
-                ngày/tháng/năm tiến hành kiểm tra.
-            </div>
-            <div css={itemStyles}>
-                Chỉ số Creatinine của bạn trong mỗi lần đo sẽ được hiển thị bằng hình
-                chấm tròn.
-            </div>
-            <div css={itemStyles}>
-                Vị trí của những điểm biểu thị giá trị Creatinine của bạn sẽ có ý nghĩa
-                như sau:
-            </div>
-            <div css={genderStyles(1)}>
-                ♂ Đối với Nam:
-            </div>
-            <div css={basicGuideInfoStyles}>
-                <div>
-                    <span />
-                    <div>
-                        Nếu giá trị Creatinine nằm trong khu vực màu xanh dương (Chỉ số{' '}
-                        <strong>{'<'}62 µmol/L</strong>): Giá trị Creatinine của bạn
-                        hiện được phân loại <span>Thấp hơn bình thường.</span>
-                    </div>
-                </div>
-                <div>
-                    <span />
-                    <div>
-                        Nếu giá trị Creatinine nằm trong khu vực màu xanh lá (Chỉ số
-                        trong khoảng <strong>62 - 120 µmol/L</strong>): Giá trị Creatinine của
-                        bạn hiện được phân loại <span>Bình thường.</span>
-                    </div>
-                </div>
-                <div>
-                    <span />
-                    <div>
-                        Nếu giá trị Creatinine nằm trong khu vực màu cam (Chỉ số{' '}
-                        <strong>{'>'} 120 µmol/L</strong>): Giá trị Creatinine của bạn hiện
-                        được phân loại <span>Cao hơn bình thường.</span>
-                    </div>
-                </div>
-            </div>
-            <div css={genderStyles(2)}>
-                ♀ Đối với Nữ:
-            </div>
-            <div css={basicGuideInfoStyles}>
-                <div>
-                    <span />
-                    <div>
-                        Nếu giá trị Creatinine nằm trong khu vực màu xanh dương (Chỉ số{' '}
-                        <strong>{'<'}53 µmol/L</strong>): Giá trị Creatinine của bạn
-                        hiện được phân loại <span>Thấp hơn bình thường.</span>
-                    </div>
-                </div>
-                <div>
-                    <span />
-                    <div>
-                        Nếu giá trị Creatinine nằm trong khu vực màu xanh lá (Chỉ số
-                        trong khoảng <strong>53 - 100 µmol/L</strong>): Giá trị Creatinine của
-                        bạn hiện được phân loại <span>Bình thường.</span>
-                    </div>
-                </div>
-                <div>
-                    <span />
-                    <div>
-                        Nếu giá trị Creatinine nằm trong khu vực màu cam (Chỉ số{' '}
-                        <strong>{'>'} 100 µmol/L</strong>): Giá trị Creatinine của bạn hiện
-                        được phân loại <span>Cao hơn bình thường.</span>
-                    </div>
-                </div>
-            </div>
+  return (
+    <div css={rootStyles}>
+      <div css={itemStyles}>
+        <strong>Creatinine là gì?</strong>
+        <br />
+        Creatinine là sản phẩm cặn bã được tạo ra từ hoạt động thoái hóa của cơ bắp. Thận khỏe mạnh sẽ lọc creatinine từ máu và thải ra ngoài qua nước tiểu.
+      </div>
+      <div css={itemStyles}>
+        <strong>Tác động đến cơ thể:</strong>
+        <br />
+        Nồng độ Creatinine trong máu phản ánh trực tiếp tốc độ lọc của thận (GFR). Mức creatinine tăng cao thường là dấu hiệu cảnh báo chức năng thận đang bị suy giảm.
+      </div>
+      <div css={itemStyles}>
+        Các khoảng tham chiếu của{' '}
+        <strong>biểu đồ theo dõi chỉ số Creatinine</strong> được căn cứ theo
+        Quyết định số 4069/QĐ-BYT về Hướng dẫn chẩn đoán và điều trị
+        bệnh thận mạn của Bộ Y tế và dựa theo tư vấn của Trường
+        Đại học Y tế Công cộng.
+      </div>
+      <div css={itemStyles}>
+        Biểu đồ theo dõi chỉ số Creatinine có trục tung (trục thẳng đứng) là giá
+        trị Creatinine trong máu đo được và trục hoành (trục nằm ngang) là
+        ngày/tháng/năm tiến hành kiểm tra.
+      </div>
+      <div css={itemStyles}>
+        Chỉ số Creatinine của bạn trong mỗi lần đo sẽ được hiển thị bằng hình
+        chấm tròn.
+      </div>
+      <div css={itemStyles}>
+        Vị trí của những điểm biểu thị giá trị Creatinine của bạn sẽ có ý nghĩa
+        như sau:
+      </div>
+      <div css={genderStyles(1)}>
+        ♂ Đối với Nam:
+      </div>
+      <div css={basicGuideInfoStyles}>
+        <div>
+          <span />
+          <div>
+            Nếu giá trị Creatinine nằm trong khu vực màu xanh dương (Chỉ số{' '}
+            <strong>{'<'}62 µmol/L</strong>): Giá trị Creatinine của bạn
+            hiện được phân loại <span>Thấp hơn bình thường.</span>
+          </div>
         </div>
-    );
+        <div>
+          <span />
+          <div>
+            Nếu giá trị Creatinine nằm trong khu vực màu xanh lá (Chỉ số
+            trong khoảng <strong>62 - 120 µmol/L</strong>): Giá trị Creatinine của
+            bạn hiện được phân loại <span>Bình thường.</span>
+          </div>
+        </div>
+        <div>
+          <span />
+          <div>
+            Nếu giá trị Creatinine nằm trong khu vực màu cam (Chỉ số{' '}
+            <strong>{'>'} 120 µmol/L</strong>): Giá trị Creatinine của bạn hiện
+            được phân loại <span>Cao hơn bình thường.</span>
+          </div>
+        </div>
+      </div>
+      <div css={genderStyles(2)}>
+        ♀ Đối với Nữ:
+      </div>
+      <div css={basicGuideInfoStyles}>
+        <div>
+          <span />
+          <div>
+            Nếu giá trị Creatinine nằm trong khu vực màu xanh dương (Chỉ số{' '}
+            <strong>{'<'}53 µmol/L</strong>): Giá trị Creatinine của bạn
+            hiện được phân loại <span>Thấp hơn bình thường.</span>
+          </div>
+        </div>
+        <div>
+          <span />
+          <div>
+            Nếu giá trị Creatinine nằm trong khu vực màu xanh lá (Chỉ số
+            trong khoảng <strong>53 - 100 µmol/L</strong>): Giá trị Creatinine của
+            bạn hiện được phân loại <span>Bình thường.</span>
+          </div>
+        </div>
+        <div>
+          <span />
+          <div>
+            Nếu giá trị Creatinine nằm trong khu vực màu cam (Chỉ số{' '}
+            <strong>{'>'} 100 µmol/L</strong>): Giá trị Creatinine của bạn hiện
+            được phân loại <span>Cao hơn bình thường.</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
 }
 
 const rootStyles = css`

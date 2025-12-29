@@ -3,48 +3,58 @@ import { css } from '@emotion/react';
 import { isMobile } from 'react-device-detect';
 
 export default function BloodLipidLDLDetail() {
-    return (
-        <div css={rootStyles}>
-            <div css={itemStyles}>
-                Các khoảng tham chiếu của{' '}
-                <strong>biểu đồ theo dõi chỉ số Cholesterol loại LDL</strong> được căn cứ theo
-                Quyết định số 3876/QĐ-BYT về Hướng dẫn chẩn đoán và điều trị
-                rối loạn lipid máu của Bộ Y tế và dựa theo tư vấn của Trường
-                Đại học Y tế Công cộng.
-            </div>
-            <div css={itemStyles}>
-                Biểu đồ theo dõi chỉ số Cholesterol loại LDL có trục tung (trục thẳng đứng) là giá
-                trị Cholesterol loại LDL trong máu đo được và trục hoành (trục nằm ngang) là
-                ngày/tháng/năm tiến hành kiểm tra.
-            </div>
-            <div css={itemStyles}>
-                Chỉ số Cholesterol loại LDL của bạn trong mỗi lần đo sẽ được hiển thị bằng hình
-                chấm tròn.
-            </div>
-            <div css={itemStyles}>
-                Vị trí của những điểm biểu thị giá trị Cholesterol loại LDL của bạn sẽ có ý nghĩa
-                như sau:
-            </div>
-            <div css={basicGuideInfoStyles}>
-                <div>
-                    <span />
-                    <div>
-                        Nếu giá trị Cholesterol loại LDL nằm trong khu vực màu xanh lá (Chỉ số{' '}
-                        <strong>{'<'}3,4 mmol/L</strong>): Giá trị Cholesterol loại LDL của bạn
-                        hiện được phân loại <span>Bình thường.</span>
-                    </div>
-                </div>
-                <div>
-                    <span />
-                    <div>
-                        Nếu giá trị Cholesterol loại LDL nằm trong khu vực màu cam (Chỉ số{' '}
-                        <strong>≥3,4 mmol/L</strong>): Giá trị Cholesterol loại LDL của
-                        bạn hiện được phân loại <span>Cao hơn bình thường.</span>
-                    </div>
-                </div>
-            </div>
+  return (
+    <div css={rootStyles}>
+      <div css={itemStyles}>
+        <strong>Cholesterol LDL là gì?</strong>
+        <br />
+        LDL (Low-Density Lipoprotein) hay còn gọi là "mỡ máu xấu", là loại cholesterol có xu hướng bám vào thành mạch máu.
+      </div>
+      <div css={itemStyles}>
+        <strong>Tác động đến cơ thể:</strong>
+        <br />
+        Khi nồng độ LDL tăng cao, nó sẽ tích tụ dần trong thành động mạch tạo thành các mảng xơ vữa, làm hẹp và cứng mạch máu, dẫn đến giảm lưu lượng máu, gây đau tim và đột quỵ.
+      </div>
+      <div css={itemStyles}>
+        Các khoảng tham chiếu của{' '}
+        <strong>biểu đồ theo dõi chỉ số Cholesterol loại LDL</strong> được căn cứ theo
+        Quyết định số 3876/QĐ-BYT về Hướng dẫn chẩn đoán và điều trị
+        rối loạn lipid máu của Bộ Y tế và dựa theo tư vấn của Trường
+        Đại học Y tế Công cộng.
+      </div>
+      <div css={itemStyles}>
+        Biểu đồ theo dõi chỉ số Cholesterol loại LDL có trục tung (trục thẳng đứng) là giá
+        trị Cholesterol loại LDL trong máu đo được và trục hoành (trục nằm ngang) là
+        ngày/tháng/năm tiến hành kiểm tra.
+      </div>
+      <div css={itemStyles}>
+        Chỉ số Cholesterol loại LDL của bạn trong mỗi lần đo sẽ được hiển thị bằng hình
+        chấm tròn.
+      </div>
+      <div css={itemStyles}>
+        Vị trí của những điểm biểu thị giá trị Cholesterol loại LDL của bạn sẽ có ý nghĩa
+        như sau:
+      </div>
+      <div css={basicGuideInfoStyles}>
+        <div>
+          <span />
+          <div>
+            Nếu giá trị Cholesterol loại LDL nằm trong khu vực màu xanh lá (Chỉ số{' '}
+            <strong>{'<'}3,4 mmol/L</strong>): Giá trị Cholesterol loại LDL của bạn
+            hiện được phân loại <span>Bình thường.</span>
+          </div>
         </div>
-    );
+        <div>
+          <span />
+          <div>
+            Nếu giá trị Cholesterol loại LDL nằm trong khu vực màu cam (Chỉ số{' '}
+            <strong>≥3,4 mmol/L</strong>): Giá trị Cholesterol loại LDL của
+            bạn hiện được phân loại <span>Cao hơn bình thường.</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
 }
 
 const rootStyles = css`

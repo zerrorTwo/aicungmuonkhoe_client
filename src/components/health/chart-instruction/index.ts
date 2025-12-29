@@ -11,3 +11,8 @@ export { default as KidneyFunctionCreatinine } from "./kidney-function-creatinin
 export { default as LiverFunctionSGOT } from "./liver-function-sgot"
 export { default as LiverFunctionSGPT } from "./liver-function-sgpt"
 export { default as BloodPressure } from "./blood-pressure"
+export { default as BMI } from "./bmi"
+export { default as BMIAboveNineTeen } from "./bmi-above-nineteen"
+export { default as BMIFiveToTwelve } from "./bmi-five-to-twelve"
+export { default as BMITwelveToNineTeen } from "./bmi-twelve-to-nineteen"
+export { default as BMIZeroToFive } from "./bmi-zero-to-five"

@@ -13,6 +13,7 @@ import About from "./pages/About";
 import HealthConsultingPage from "./pages/HealthConsulting/HealthConsulting";
 import { ChatPopup } from "@/components/chat/ChatPopup";
 import Community from "./pages/Community";
+import HealthInfoChartInstruction from "./pages/HealthInfoChartInstruction";
 
 function App() {
   return (
@@ -45,6 +46,14 @@ function App() {
               element={
                 <AuthGuard>
                   <HealthTracking />
+                </AuthGuard>
+              }
+            />
+            <Route
+              path="/health-info-chart-instruction"
+              element={
+                <AuthGuard>
+                  <HealthInfoChartInstruction />
                 </AuthGuard>
               }
             />

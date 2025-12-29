@@ -1,26 +1,6 @@
 /** @jsxImportSource @emotion/react */
-import { useEffect, useMemo, useRef, useState } from 'react';
-import { css } from '@emotion/react';
-import ReactECharts from 'echarts-for-react';
-import type {
-  CustomSeriesRenderItemAPI,
-  CustomSeriesRenderItemParams,
-  EChartsOption
-} from 'echarts';
 import logoWHO from '@/assets/images/WHO-logo.png';
-import { BMIAgeRange, BMIChildrenTabs } from '@/enum/health';
-import {
-  calculateBMI,
-  calculateExactMonthAge012,
-  filterBMIWeightHeightValues,
-  getBMIDataByAge,
-  getBMIWeightHeightMinMax,
-  getGender,
-  getHeightDataByAge,
-  getMaxValue,
-  getMaxXValueBMIWeightHeightChart,
-  getWeightDataByAge
-} from '@/utils/health';
+import { DATE_FORMAT, SIMPLE_DATE_FORMAT } from '@/constants/common.constant';
 import {
   BMI_CHART_COLOR,
   BMI_FEMALE_BY_AGE,
@@ -33,9 +13,7 @@ import {
   WEIGHT_MALE_BY_AGE,
   WEIGHT_MALE_BY_HEIGHT
 } from '@/constants/health.constant';
-import dayjs from 'dayjs';
-import { DATE_FORMAT, SIMPLE_DATE_FORMAT } from '@/constants/common.constant';
-import { isMobile } from 'react-device-detect';
+import { BMIAgeRange, BMIChildrenTabs } from '@/enum/health';
 import { useAppSelector } from '@/store/hooks';
 import { watchGetSelfAccountState } from '@/store/slices/self-managed-account.slice';
 import type { Conclusion } from '@/types/health';
@@ -46,6 +24,28 @@ import {
   rangeByStep,
   roundDownToNearest5
 } from '@/utils/common';
+import {
+  calculateBMI,
+  calculateExactMonthAge012,
+  filterBMIWeightHeightValues,
+  getBMIDataByAge,
+  getBMIWeightHeightMinMax,
+  getGender,
+  getHeightDataByAge,
+  getMaxValue,
+  getMaxXValueBMIWeightHeightChart,
+  getWeightDataByAge
+} from '@/utils/health';
+import { css } from '@emotion/react';
+import dayjs from 'dayjs';
+import type {
+  CustomSeriesRenderItemAPI,
+  CustomSeriesRenderItemParams,
+  EChartsOption
+} from 'echarts';
+import ReactECharts from 'echarts-for-react';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { isMobile } from 'react-device-detect';
 
 type BMIChartProps = {
   loading: boolean;
@@ -1315,10 +1315,7 @@ export default function BMIChart({
       (activeTab === BMIChildrenTabs.Weight ||
         activeTab === BMIChildrenTabs.Height)
     ) {
-      if (age === 0) {
-        return false;
-      }
-      return true;
+      return false;
     }
     if (
       ageRange === BMIAgeRange.FROM_5_LESS_THAN_12 ||

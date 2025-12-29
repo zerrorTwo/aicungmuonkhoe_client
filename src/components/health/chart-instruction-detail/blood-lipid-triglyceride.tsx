@@ -6,6 +6,16 @@ export default function BloodLipidTriglycerideDetail() {
   return (
     <div css={rootStyles}>
       <div css={itemStyles}>
+        <strong>Triglyceride là gì?</strong>
+        <br />
+        Triglyceride là một dạng chất béo mà cơ thể sử dụng để lưu trữ năng lượng dư thừa. Phần lớn triglyceride đến từ thức ăn (đặc biệt là dầu mỡ, tinh bột, đường).
+      </div>
+      <div css={itemStyles}>
+        <strong>Tác động đến cơ thể:</strong>
+        <br />
+        Mức triglyceride cao thường liên quan đến béo phì, bệnh tiểu đường và chế độ ăn nhiều calo. Nồng độ quá cao không chỉ gây xơ vữa động mạch mà còn có thể gây viêm tụy cấp nguy hiểm.
+      </div>
+      <div css={itemStyles}>
         Các khoảng tham chiếu của{' '}
         <strong>biểu đồ theo dõi chỉ số Triglyceride</strong> được căn cứ theo
         Quyết định số 3876/QĐ-BYT về Hướng dẫn chẩn đoán và điều trị

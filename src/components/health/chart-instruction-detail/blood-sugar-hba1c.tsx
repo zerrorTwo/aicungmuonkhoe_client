@@ -3,62 +3,72 @@ import { css } from '@emotion/react';
 import { isMobile } from 'react-device-detect';
 
 export default function BloodSugarDetailHbA1c() {
-    return (
-        <div css={rootStyles}>
-            <div css={itemStyles}>
-                Các khoảng tham chiếu của{' '}
-                <strong>biểu đồ theo dõi chỉ số HbA1c</strong> được căn
-                cứ theo Quyết định số 3087/QĐ-BYT về Hướng dẫn chẩn đoán và điều trị
-                tiền đái tháo đường; Quyết định số 5481/QĐ-BYT về Hướng dẫn chẩn đoán và
-                điều trị đái tháo đường típ 2 của Bộ Y tế và dựa theo tư vấn của Trường
-                Đại học Y tế Công cộng.
-            </div>
-            <div css={itemStyles}>
-                Biểu đồ theo dõi HbA1c có trục tung (trục thẳng đứng) là
-                giá trị HbA1c đo được và trục hoành (trục nằm ngang) là ngày/tháng/năm tiến hành kiểm tra.
-            </div>
-            <div css={itemStyles}>
-                Chỉ số HbA1c của bạn trong mỗi lần đo sẽ được hiển thị bằng hình chấm tròn.
-            </div>
-            <div css={itemStyles}>
-                Vị trí của những điểm biểu thị giá trị HbA1c của bạn sẽ có ý nghĩa như sau:
-            </div>
-            <div css={basicGuideInfoStyles}>
-                <div>
-                    <span />
-                    <div>
-                        Nếu giá trị HbA1c nằm trong khu vực màu xanh dương (Chỉ số HbA1c{' '}
-                        <strong>{'<'}2,9%</strong>): Giá trị HbA1c của bạn hiện được
-                        phân loại <span>Thấp hơn bình thường.</span>
-                    </div>
-                </div>
-                <div>
-                    <span />
-                    <div>
-                        Nếu giá trị HbA1c nằm trong khu vực màu xanh lá (Chỉ số HbA1c trong
-                        khoảng <strong>2,9 - 5,6%</strong>): Giá trị HbA1c của bạn
-                        hiện được phân loại <span>Không thuộc Tiền đái tháo đường/Đái tháo đường.</span>
-                    </div>
-                </div>
-                <div>
-                    <span />
-                    <div>
-                        Nếu giá trị HbA1c nằm trong khu vực màu cam (Chỉ số HbA1c trong
-                        khoảng <strong>5,7 - 6,4%</strong>): Giá trị HbA1c của bạn
-                        hiện được phân loại <span>Tiền đái tháo đường.</span>
-                    </div>
-                </div>
-                <div>
-                    <span />
-                    <div>
-                        Nếu giá trị HbA1c nằm trong khu vực màu đỏ (Chỉ số HbA1c{' '}
-                        <strong>≥6,5%</strong>): Giá trị HbA1c của bạn hiện được phân
-                        loại <span>Đái tháo đường.</span>
-                    </div>
-                </div>
-            </div>
+  return (
+    <div css={rootStyles}>
+      <div css={itemStyles}>
+        <strong>HbA1c là gì?</strong>
+        <br />
+        HbA1c là chỉ số phản ánh mức đường huyết trung bình của bạn trong khoảng 2-3 tháng gần đây, thông qua sự gắn kết của đường với Hemoglobin trong hồng cầu.
+      </div>
+      <div css={itemStyles}>
+        <strong>Tác động đến cơ thể:</strong>
+        <br />
+        Đây là chỉ số "vàng" để kiểm soát bệnh đái tháo đường. HbA1c cao cho thấy việc kiểm soát đường huyết chưa tốt, tăng nguy cơ biến chứng dài hạn.
+      </div>
+      <div css={itemStyles}>
+        Các khoảng tham chiếu của{' '}
+        <strong>biểu đồ theo dõi chỉ số HbA1c</strong> được căn
+        cứ theo Quyết định số 3087/QĐ-BYT về Hướng dẫn chẩn đoán và điều trị
+        tiền đái tháo đường; Quyết định số 5481/QĐ-BYT về Hướng dẫn chẩn đoán và
+        điều trị đái tháo đường típ 2 của Bộ Y tế và dựa theo tư vấn của Trường
+        Đại học Y tế Công cộng.
+      </div>
+      <div css={itemStyles}>
+        Biểu đồ theo dõi HbA1c có trục tung (trục thẳng đứng) là
+        giá trị HbA1c đo được và trục hoành (trục nằm ngang) là ngày/tháng/năm tiến hành kiểm tra.
+      </div>
+      <div css={itemStyles}>
+        Chỉ số HbA1c của bạn trong mỗi lần đo sẽ được hiển thị bằng hình chấm tròn.
+      </div>
+      <div css={itemStyles}>
+        Vị trí của những điểm biểu thị giá trị HbA1c của bạn sẽ có ý nghĩa như sau:
+      </div>
+      <div css={basicGuideInfoStyles}>
+        <div>
+          <span />
+          <div>
+            Nếu giá trị HbA1c nằm trong khu vực màu xanh dương (Chỉ số HbA1c{' '}
+            <strong>{'<'}2,9%</strong>): Giá trị HbA1c của bạn hiện được
+            phân loại <span>Thấp hơn bình thường.</span>
+          </div>
         </div>
-    );
+        <div>
+          <span />
+          <div>
+            Nếu giá trị HbA1c nằm trong khu vực màu xanh lá (Chỉ số HbA1c trong
+            khoảng <strong>2,9 - 5,6%</strong>): Giá trị HbA1c của bạn
+            hiện được phân loại <span>Không thuộc Tiền đái tháo đường/Đái tháo đường.</span>
+          </div>
+        </div>
+        <div>
+          <span />
+          <div>
+            Nếu giá trị HbA1c nằm trong khu vực màu cam (Chỉ số HbA1c trong
+            khoảng <strong>5,7 - 6,4%</strong>): Giá trị HbA1c của bạn
+            hiện được phân loại <span>Tiền đái tháo đường.</span>
+          </div>
+        </div>
+        <div>
+          <span />
+          <div>
+            Nếu giá trị HbA1c nằm trong khu vực màu đỏ (Chỉ số HbA1c{' '}
+            <strong>≥6,5%</strong>): Giá trị HbA1c của bạn hiện được phân
+            loại <span>Đái tháo đường.</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
 }
 
 const rootStyles = css`

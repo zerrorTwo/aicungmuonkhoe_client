@@ -3,56 +3,66 @@ import { css } from '@emotion/react';
 import { isMobile } from 'react-device-detect';
 
 export default function BloodLipidCholesterolDetail() {
-    return (
-        <div css={rootStyles}>
-            <div css={itemStyles}>
-                Các khoảng tham chiếu của{' '}
-                <strong>biểu đồ theo dõi chỉ số Cholesterol toàn phần</strong> được căn cứ theo
-                Quyết định số 3876/QĐ-BYT về Hướng dẫn chẩn đoán và điều trị
-                rối loạn lipid máu của Bộ Y tế và dựa theo tư vấn của Trường
-                Đại học Y tế Công cộng.
-            </div>
-            <div css={itemStyles}>
-                Biểu đồ theo dõi chỉ số Cholesterol toàn phần có trục tung (trục thẳng đứng) là giá
-                trị Cholesterol toàn phần trong máu đo được và trục hoành (trục nằm ngang) là
-                ngày/tháng/năm tiến hành kiểm tra.
-            </div>
-            <div css={itemStyles}>
-                Chỉ số Cholesterol toàn phần của bạn trong mỗi lần đo sẽ được hiển thị bằng hình
-                chấm tròn.
-            </div>
-            <div css={itemStyles}>
-                Vị trí của những điểm biểu thị giá trị Cholesterol toàn phần của bạn sẽ có ý nghĩa
-                như sau:
-            </div>
-            <div css={basicGuideInfoStyles}>
-                <div>
-                    <span />
-                    <div>
-                        Nếu giá trị Cholesterol toàn phần nằm trong khu vực màu xanh dương (Chỉ số{' '}
-                        <strong>{'<'}3,9 mmol/L</strong>): Giá trị Cholesterol toàn phần của bạn
-                        hiện được phân loại <span>Thấp hơn bình thường.</span>
-                    </div>
-                </div>
-                <div>
-                    <span />
-                    <div>
-                        Nếu giá trị Cholesterol toàn phần nằm trong khu vực màu xanh lá (Chỉ số
-                        trong khoảng <strong>3,9 - 5,2 mmol/L</strong>): Giá trị Cholesterol toàn phần của
-                        bạn hiện được phân loại <span>Bình thường.</span>
-                    </div>
-                </div>
-                <div>
-                    <span />
-                    <div>
-                        Nếu giá trị Cholesterol toàn phần nằm trong khu vực màu cam (Chỉ số{' '}
-                        <strong>{'>'} 5,2 mmol/L</strong>): Giá trị Cholesterol toàn phần của bạn hiện
-                        được phân loại <span>Cao hơn bình thường.</span>
-                    </div>
-                </div>
-            </div>
+  return (
+    <div css={rootStyles}>
+      <div css={itemStyles}>
+        <strong>Cholesterol toàn phần là gì?</strong>
+        <br />
+        Cholesterol toàn phần là tổng lượng cholesterol có trong máu, bao gồm cả cholesterol tốt (HDL), cholesterol xấu (LDL) và một phần triglyceride.
+      </div>
+      <div css={itemStyles}>
+        <strong>Tác động đến cơ thể:</strong>
+        <br />
+        Đây là chỉ số quan trọng để đánh giá nguy cơ chung về bệnh tim mạch. Mức cholesterol toàn phần cao là một trong những yếu tố nguy cơ chính gây xơ vữa động mạch và nhồi máu cơ tim.
+      </div>
+      <div css={itemStyles}>
+        Các khoảng tham chiếu của{' '}
+        <strong>biểu đồ theo dõi chỉ số Cholesterol toàn phần</strong> được căn cứ theo
+        Quyết định số 3876/QĐ-BYT về Hướng dẫn chẩn đoán và điều trị
+        rối loạn lipid máu của Bộ Y tế và dựa theo tư vấn của Trường
+        Đại học Y tế Công cộng.
+      </div>
+      <div css={itemStyles}>
+        Biểu đồ theo dõi chỉ số Cholesterol toàn phần có trục tung (trục thẳng đứng) là giá
+        trị Cholesterol toàn phần trong máu đo được và trục hoành (trục nằm ngang) là
+        ngày/tháng/năm tiến hành kiểm tra.
+      </div>
+      <div css={itemStyles}>
+        Chỉ số Cholesterol toàn phần của bạn trong mỗi lần đo sẽ được hiển thị bằng hình
+        chấm tròn.
+      </div>
+      <div css={itemStyles}>
+        Vị trí của những điểm biểu thị giá trị Cholesterol toàn phần của bạn sẽ có ý nghĩa
+        như sau:
+      </div>
+      <div css={basicGuideInfoStyles}>
+        <div>
+          <span />
+          <div>
+            Nếu giá trị Cholesterol toàn phần nằm trong khu vực màu xanh dương (Chỉ số{' '}
+            <strong>{'<'}3,9 mmol/L</strong>): Giá trị Cholesterol toàn phần của bạn
+            hiện được phân loại <span>Thấp hơn bình thường.</span>
+          </div>
         </div>
-    );
+        <div>
+          <span />
+          <div>
+            Nếu giá trị Cholesterol toàn phần nằm trong khu vực màu xanh lá (Chỉ số
+            trong khoảng <strong>3,9 - 5,2 mmol/L</strong>): Giá trị Cholesterol toàn phần của
+            bạn hiện được phân loại <span>Bình thường.</span>
+          </div>
+        </div>
+        <div>
+          <span />
+          <div>
+            Nếu giá trị Cholesterol toàn phần nằm trong khu vực màu cam (Chỉ số{' '}
+            <strong>{'>'} 5,2 mmol/L</strong>): Giá trị Cholesterol toàn phần của bạn hiện
+            được phân loại <span>Cao hơn bình thường.</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
 }
 
 const rootStyles = css`
