@@ -7,15 +7,34 @@ import heroBanner1 from '@/assets/hero-banner.png';
 import heroBanner2 from '@/assets/hero-banner-2.png';
 import heroBanner3 from '@/assets/hero-banner-3.png';
 
+import { useGetActiveBannersQuery } from '@/store/api/bannerApi';
+
 const HeroSection: React.FC = () => {
   const carouselRef = React.useRef<CarouselRef>(null);
   const [activeSlide, setActiveSlide] = useState(0);
 
-  const banners = [
+  const { data: bannerData } = useGetActiveBannersQuery();
+
+  const defaultBanners = [
     { image: heroBanner1, gradient: 'from-white/90 via-white/80 to-white/70' },
     { image: heroBanner2, gradient: 'from-blue-50/90 via-blue-50/80 to-transparent' },
     { image: heroBanner3, gradient: 'from-orange-50/90 via-orange-50/80 to-transparent' }
   ];
+
+  const gradients = [
+    'from-white/90 via-white/80 to-white/70',
+    'from-blue-50/90 via-blue-50/80 to-transparent',
+    'from-orange-50/90 via-orange-50/80 to-transparent'
+  ];
+
+  const apiBanners = bannerData?.success && bannerData?.data && bannerData.data.length > 0
+    ? bannerData.data.map((b, index) => ({
+      image: b.IMAGE,
+      gradient: gradients[index % gradients.length]
+    }))
+    : [];
+
+  const banners = apiBanners.length > 0 ? apiBanners : defaultBanners;
 
   const features = [
     {
@@ -77,8 +96,8 @@ const HeroSection: React.FC = () => {
               key={index}
               onClick={() => carouselRef.current?.goTo(index)}
               className={`h-2 rounded-full transition-all duration-300 ${activeSlide === index
-                  ? 'w-8 bg-primary'
-                  : 'w-2 bg-white/50 hover:bg-white/80'
+                ? 'w-8 bg-primary'
+                : 'w-2 bg-white/50 hover:bg-white/80'
                 }`}
               aria-label={`Go to slide ${index + 1}`}
             />
